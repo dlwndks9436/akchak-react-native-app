@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import LoadingView from '../screens/LoadingView';
+import LoadingScreen from '../screens/LoadingScreen';
 import {useIsFocused} from '@react-navigation/native';
 
 export default function CameraView() {
@@ -10,7 +10,7 @@ export default function CameraView() {
 
   const device = devices.back;
   const isFocused = useIsFocused();
-  if (device == null) return <LoadingView />;
+  if (device == null) return <LoadingScreen />;
   return (
     <Camera
       style={StyleSheet.absoluteFill}

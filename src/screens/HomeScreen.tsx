@@ -12,7 +12,7 @@ import {RootStackScreenProps} from '../types/type';
 import TextButton from '../components/TextButton';
 import {Camera} from 'react-native-vision-camera';
 
-export default function Home({navigation}: RootStackScreenProps) {
+export default function HomeScreen({navigation}: RootStackScreenProps) {
   const navigateToCamera = async () => {
     try {
       const cameraPermission = await Camera.getCameraPermissionStatus();
