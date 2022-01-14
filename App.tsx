@@ -10,6 +10,12 @@ export type RootStackParamList = {
   Camera: undefined;
 };
 
+export type ButtonParamList = {
+  CustomButton: {
+    level: number;
+  };
+};
+
 const RootStack = createStackNavigator<RootStackParamList>();
 
 const App = () => {
