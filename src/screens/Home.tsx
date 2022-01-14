@@ -8,14 +8,11 @@ import {
   Alert,
   Linking,
 } from 'react-native';
-import {RootStackParamList} from '../App';
-import {StackScreenProps} from '@react-navigation/stack';
+import {RootStackScreenProps} from '../types/type';
 import TextButton from '../components/TextButton';
 import {Camera} from 'react-native-vision-camera';
 
-type Props = StackScreenProps<RootStackParamList, 'Home'>;
-
-export default function Home({navigation}: Props) {
+export default function Home({navigation}: RootStackScreenProps) {
   const navigateToCamera = async () => {
     try {
       const cameraPermission = await Camera.getCameraPermissionStatus();
