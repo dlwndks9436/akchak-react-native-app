@@ -1,6 +1,6 @@
 import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
-import {gray} from './GlobalStyle';
+import {gray} from '../styles/colors';
 
 const TextButton: React.FC<{
   colorDepth: number;

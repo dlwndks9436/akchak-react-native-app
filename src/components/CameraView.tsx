@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import LoadingView from './LoadingView';
+import LoadingView from '../screens/LoadingView';
 import {useIsFocused} from '@react-navigation/native';
 
 export default function CameraView() {

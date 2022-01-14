@@ -8,9 +8,9 @@ import {
   Alert,
   Linking,
 } from 'react-native';
-import {RootStackParamList} from './App';
+import {RootStackParamList} from '../App';
 import {StackScreenProps} from '@react-navigation/stack';
-import TextButton from './TextButton';
+import TextButton from '../components/TextButton';
 import {Camera} from 'react-native-vision-camera';
 
 type Props = StackScreenProps<RootStackParamList, 'Home'>;
