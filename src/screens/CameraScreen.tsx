@@ -1,10 +1,10 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import LoadingScreen from '../screens/LoadingScreen';
+import LoadingScreen from './LoadingScreen';
 import {useIsFocused} from '@react-navigation/native';
 
-export default function CameraView() {
+export default function CameraScreen() {
   const devices = useCameraDevices();
   console.log(devices);
 
