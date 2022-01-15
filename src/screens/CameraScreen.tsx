@@ -1,13 +1,15 @@
 import React, {useRef, useState} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import LoadingScreen from './LoadingScreen';
 import {useIsFocused} from '@react-navigation/native';
+import RNFS from 'react-native-fs';
+import RecordButton from '../components/molecules/RecordButton';
 
 export default function CameraScreen() {
   const devices = useCameraDevices();
   const camera = useRef<Camera>(null);
-  const [recording, setRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   const device = devices.back;
   const isFocused = useIsFocused();
@@ -15,16 +17,28 @@ export default function CameraScreen() {
   const record = () => {
     camera?.current?.startRecording({
       flash: 'on',
-      onRecordingFinished: video => console.log(video),
-      onRecordingError: error => console.error(error),
+      onRecordingFinished: video => {
+        console.log(video);
+        const fileName: string = video.path.split('/')[8].split('-')[1];
+        console.log(fileName);
+        const newFilePath: string = RNFS.ExternalDirectoryPath + '/' + fileName;
+        RNFS.moveFile(video.path, newFilePath).catch(err => {
+          console.log(err);
+          Alert.alert('Error', 'Issue occured while saving File');
+        });
+      },
+      onRecordingError: error => {
+        console.error(error);
+        Alert.alert('Error', 'Issue occured regarding to recording');
+      },
     });
-    setRecording(true);
+    setIsRecording(true);
   };
 
   const stopRecord = async () => {
-    console.log('hello');
-    await camera?.current?.stopRecording().finally(() => {
-      setRecording(false);
+    await camera?.current?.stopRecording().then(() => {
+      console.log('Stopped recording');
+      setIsRecording(false);
     });
   };
 
@@ -39,11 +53,10 @@ export default function CameraScreen() {
         audio={true}
         ref={camera}
       />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={recording ? stopRecord : record}>
-        <Text style={styles.text}>{recording ? 'Stop' : 'Record'}</Text>
-      </TouchableOpacity>
+      <RecordButton
+        onPressFunction={isRecording ? stopRecord : record}
+        isRecording={isRecording}
+      />
     </View>
   );
 }
