@@ -4,7 +4,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
 import {gray} from '../styles/colors';
-import CameraScreen from '../screens/CameraScreen';
+import CameraPermissionScreen from '../screens/CameraPermissionScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,8 +30,8 @@ export default function BottomTab() {
         }}
       />
       <Tab.Screen
-        name="Camera"
-        component={CameraScreen}
+        name="CameraPermission"
+        component={CameraPermissionScreen}
         options={() => ({
           tabBarIcon: ({color}) => (
             <MaterialCommunityIcon
@@ -40,7 +40,8 @@ export default function BottomTab() {
               size={40}
             />
           ),
-          tabBarStyle: {height: 0, backgroundColor: '#000000'},
+          // tabBarStyle: {height: 0, backgroundColor: '#000000'},
+          tabBarStyle: {backgroundColor: '#000000'},
         })}
       />
     </Tab.Navigator>
