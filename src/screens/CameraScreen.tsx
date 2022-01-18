@@ -17,8 +17,12 @@ export default function CameraScreen({navigation}: RootStackScreenProps) {
   const isFocused = useIsFocused();
 
   useAndroidBackHandler(() => {
-    navigation.navigate('Tab');
-    return false;
+    if (isRecording) {
+      checkGoBack();
+    } else {
+      navigation.replace('Tab');
+    }
+    return true;
   });
 
   const record = () => {
@@ -29,14 +33,17 @@ export default function CameraScreen({navigation}: RootStackScreenProps) {
         const fileName: string = video.path.split('/')[8].split('-')[1];
         console.log(fileName);
         const newFilePath: string = RNFS.ExternalDirectoryPath + '/' + fileName;
-        RNFS.moveFile(video.path, newFilePath).catch(err => {
-          console.log(err);
-          Alert.alert('Error', 'Issue occured while saving File');
-        });
+        RNFS.moveFile(video.path, newFilePath)
+          .then(() => {
+            navigation.navigate('VideoTrim');
+          })
+          .catch(err => {
+            console.log(err);
+            Alert.alert('Error', 'Issue occured while saving File');
+          });
       },
       onRecordingError: error => {
         console.error(error);
-        Alert.alert('Error', 'Issue occured regarding to recording');
       },
     });
     setIsRecording(true);
@@ -47,6 +54,30 @@ export default function CameraScreen({navigation}: RootStackScreenProps) {
       console.log('Stopped recording');
       setIsRecording(false);
     });
+  };
+
+  const checkRecordFinished = () => {
+    Alert.alert('Did you finish your practice?', undefined, [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'OK',
+        onPress: () => {
+          stopRecord();
+        },
+      },
+    ]);
+  };
+
+  const checkGoBack = () => {
+    Alert.alert('Would you discard this practice?', undefined, [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'OK',
+        onPress: () => {
+          navigation.replace('Tab');
+        },
+      },
+    ]);
   };
 
   if (device == null) return <LoadingScreen />;
@@ -61,7 +92,7 @@ export default function CameraScreen({navigation}: RootStackScreenProps) {
         ref={camera}
       />
       <RecordButton
-        onPressFunction={isRecording ? stopRecord : record}
+        onPressFunction={isRecording ? checkRecordFinished : record}
         isRecording={isRecording}
       />
     </View>
