@@ -5,7 +5,15 @@ export type RootStackParamList = {
   Tab: undefined;
   CameraPermission: undefined;
   CameraModal: undefined;
-  VideoTrim: undefined;
+  VideoTrim: {videoUri: string};
 };
 
-export type RootStackScreenProps = StackScreenProps<RootStackParamList, 'Tab'>;
+export type RootStackTabScreenProps = StackScreenProps<
+  RootStackParamList,
+  'Tab'
+>;
+
+export type RootStackTrimScreenProps = StackScreenProps<
+  RootStackParamList,
+  'VideoTrim'
+>;

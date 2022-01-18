@@ -205,6 +205,10 @@ dependencies {
 
     implementation project(':react-native-fs')
 
+    // react-native-video prerequisites
+    implementation project(':react-native-video')
+    implementation "androidx.appcompat:appcompat:1.0.0"
+
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
         exclude group:'com.facebook.fbjni'
     }

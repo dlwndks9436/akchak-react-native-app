@@ -1,12 +1,12 @@
-import {BottomTabScreenProps} from '@react-navigation/bottom-tabs';
 import {useIsFocused} from '@react-navigation/native';
 import React, {useEffect} from 'react';
-import {StyleSheet, Text, View, Alert, Linking} from 'react-native';
+import {StyleSheet, View, Alert, Linking} from 'react-native';
 import {Camera} from 'react-native-vision-camera';
+import {RootStackScreenProps} from '../types/type';
 
 export default function CameraPermissionScreen({
   navigation,
-}: BottomTabScreenProps<any, 'CameraPermission'>) {
+}: RootStackScreenProps) {
   const isFocused = useIsFocused();
   useEffect(() => {
     const navigateToCamera = async () => {
@@ -21,22 +21,28 @@ export default function CameraPermissionScreen({
           cameraPermission === 'authorized' &&
           microphonePermission === 'authorized'
         ) {
-          navigation.navigate('Camera');
+          navigation.replace('Camera');
         } else if (
           cameraPermission === 'denied' ||
           microphonePermission === 'denied'
         ) {
-          await Linking.openSettings().then(() => {
-            if (
-              cameraPermission === 'authorized' &&
-              microphonePermission === 'authorized'
-            ) {
-              navigation.navigate('Camera');
-            } else {
-              Alert.alert('Info', 'Camera and Microphone must be permitted');
-              navigation.navigate('Home');
-            }
-          });
+          Alert.alert('Camera and Microphone must be permitted', undefined, [
+            {
+              text: 'OK',
+              onPress: async () => {
+                await Linking.openSettings().then(() => {
+                  if (
+                    cameraPermission === 'authorized' &&
+                    microphonePermission === 'authorized'
+                  ) {
+                    navigation.replace('Camera');
+                  } else {
+                    navigation.navigate('Tab');
+                  }
+                });
+              },
+            },
+          ]);
         } else {
           const newCameraPermission = await Camera.requestCameraPermission();
           const newMicrophonePermission =
@@ -45,29 +51,24 @@ export default function CameraPermissionScreen({
             newCameraPermission === 'authorized' &&
             newMicrophonePermission === 'authorized'
           ) {
-            navigation.navigate('Camera');
+            navigation.replace('Camera');
           } else {
-            Alert.alert('Info', 'Camera and Microphone must be permitted');
-            navigation.navigate('Home');
+            navigation.navigate('Tab');
           }
         }
       } catch (err) {
         Alert.alert('Info', 'Error occured during permission process');
         console.log(err);
-        navigation.navigate('Home');
+        navigation.navigate('Tab');
       }
     };
     navigateToCamera();
   }, [navigation, isFocused]);
-  return (
-    <View style={styles.body}>
-      <Text>Camera Permission</Text>
-    </View>
-  );
+  return <View style={styles.body} />;
 }
 
 const styles = StyleSheet.create({
   body: {
-    flex: 1,
+    backgroundColor: '#000000',
   },
 });

@@ -6,9 +6,10 @@ import {useIsFocused} from '@react-navigation/native';
 import RNFS from 'react-native-fs';
 import RecordButton from '../components/molecules/RecordButton';
 import {useAndroidBackHandler} from 'react-navigation-backhandler';
-import {RootStackScreenProps} from '../types/type';
+import {RootStackTabScreenProps} from '../types/type';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function CameraScreen({navigation}: RootStackScreenProps) {
+export default function CameraScreen({navigation}: RootStackTabScreenProps) {
   const devices = useCameraDevices();
   const camera = useRef<Camera>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -20,7 +21,7 @@ export default function CameraScreen({navigation}: RootStackScreenProps) {
     if (isRecording) {
       checkGoBack();
     } else {
-      navigation.replace('Tab');
+      navigation.reset({index: 0, routes: [{name: 'Tab'}]});
     }
     return true;
   });
@@ -34,8 +35,11 @@ export default function CameraScreen({navigation}: RootStackScreenProps) {
         console.log(fileName);
         const newFilePath: string = RNFS.ExternalDirectoryPath + '/' + fileName;
         RNFS.moveFile(video.path, newFilePath)
-          .then(() => {
-            navigation.navigate('VideoTrim');
+          .then(async () => {
+            await AsyncStorage.setItem('filePath', newFilePath).then(() =>
+              console.log('Saved filePath in asyncStorage', newFilePath),
+            );
+            navigation.navigate('VideoTrim', {videoUri: newFilePath});
           })
           .catch(err => {
             console.log(err);
@@ -74,7 +78,7 @@ export default function CameraScreen({navigation}: RootStackScreenProps) {
       {
         text: 'OK',
         onPress: () => {
-          navigation.replace('Tab');
+          navigation.reset({index: 0, routes: [{name: 'Tab'}]});
         },
       },
     ]);
