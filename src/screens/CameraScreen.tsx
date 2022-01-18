@@ -5,14 +5,21 @@ import LoadingScreen from './LoadingScreen';
 import {useIsFocused} from '@react-navigation/native';
 import RNFS from 'react-native-fs';
 import RecordButton from '../components/molecules/RecordButton';
+import {useAndroidBackHandler} from 'react-navigation-backhandler';
+import {RootStackScreenProps} from '../types/type';
 
-export default function CameraScreen() {
+export default function CameraScreen({navigation}: RootStackScreenProps) {
   const devices = useCameraDevices();
   const camera = useRef<Camera>(null);
   const [isRecording, setIsRecording] = useState(false);
 
   const device = devices.back;
   const isFocused = useIsFocused();
+
+  useAndroidBackHandler(() => {
+    navigation.navigate('Tab');
+    return false;
+  });
 
   const record = () => {
     camera?.current?.startRecording({

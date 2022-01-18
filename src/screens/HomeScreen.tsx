@@ -1,8 +1,7 @@
 import React from 'react';
 import {View, Text, StatusBar, useColorScheme, StyleSheet} from 'react-native';
-import {RootStackScreenProps} from '../types/type';
 
-export default function HomeScreen({}: RootStackScreenProps) {
+export default function HomeScreen() {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.body}>

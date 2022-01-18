@@ -4,6 +4,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {RootStackParamList} from './types/type';
 import BottomTab from './navigation/BottomTab';
 import CameraScreen from './screens/CameraScreen';
+import CameraPermissionScreen from './screens/CameraPermissionScreen';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -15,6 +16,10 @@ const App = () => {
         screenOptions={{headerShown: false}}>
         <RootStack.Screen name="Camera" component={CameraScreen} />
         <RootStack.Screen name="Tab" component={BottomTab} />
+        <RootStack.Screen
+          name="CameraPermission"
+          component={CameraPermissionScreen}
+        />
       </RootStack.Navigator>
     </NavigationContainer>
   );
