@@ -1431,7 +1431,16 @@
     "@types/react" "*"
     "@types/react-native" "*"
 
-"@types/react-native-video@^5.0.12":
+"@types/react-native-video-player@^0.10.3":
+  version "0.10.3"
+  resolved "https://registry.yarnpkg.com/@types/react-native-video-player/-/react-native-video-player-0.10.3.tgz#bedfa478eb69e5f1e513aa555c789bb5f0f8dec7"
+  integrity sha512-7ME/pS1uKq+zu3jELgriweYJi83c6nZZvKojLRDvabOPuJNDC2AtQom8UwwRrbnZt9tRFpQcQ6DX9R7Hj+f3pw==
+  dependencies:
+    "@types/react" "*"
+    "@types/react-native" "*"
+    "@types/react-native-video" "*"
+
+"@types/react-native-video@*", "@types/react-native-video@^5.0.12":
   version "5.0.12"
   resolved "https://registry.yarnpkg.com/@types/react-native-video/-/react-native-video-5.0.12.tgz#a90c00ec222923430d5f576cca337f49d11c148a"
   integrity sha512-ohc2zsFGF+AQbd1joRq+dk4lJHimaRMDjYofCdALBRh0SPKQtNu2NQHcTfgyJDrFVL1yh01G++Z9WjofySJABQ==
@@ -4677,7 +4686,7 @@ lodash.truncate@^4.4.2:
   resolved "https://registry.yarnpkg.com/lodash.truncate/-/lodash.truncate-4.4.2.tgz#5a350da0b1113b837ecfffd5812cbe58d6eae193"
   integrity sha1-WjUNoLERO4N+z//VgSy+WNbq4ZM=
 
-lodash@^4.16.4, lodash@^4.17.10, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.21, lodash@^4.7.0:
+lodash@^4.17.10, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.21, lodash@^4.7.0:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -5778,12 +5787,10 @@ react-native-vector-icons@^9.0.0:
     prop-types "^15.7.2"
     yargs "^16.1.1"
 
-react-native-video-controls@^2.8.1:
-  version "2.8.1"
-  resolved "https://registry.yarnpkg.com/react-native-video-controls/-/react-native-video-controls-2.8.1.tgz#30ae707d8d218fed34bba3fc027b3943c5f438d9"
-  integrity sha512-dBmrE3TAKaR1gYMfbukjAM6Xo8OMZyRrxPzZtnaUgWcvGo11PQwzaI/j8HPD5fLgO+rlweP2pDpEJyIBsJvJkw==
-  dependencies:
-    lodash "^4.16.4"
+react-native-video-player@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/react-native-video-player/-/react-native-video-player-0.12.0.tgz#4e4d8a27c99b906da0f2b414be88eaab449be6a2"
+  integrity sha512-7h288hwlvjxxBOJ1UOoUctW8auPyq22Lxltc1FIxSJAF/tYyPcnBxAtaWOxI7CGflRn51BLVlUTclXC4CB3BZA==
 
 react-native-video@^5.2.0:
   version "5.2.0"

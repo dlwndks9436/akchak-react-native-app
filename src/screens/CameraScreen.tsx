@@ -28,7 +28,7 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
 
   const record = () => {
     camera?.current?.startRecording({
-      flash: 'on',
+      fileType: 'mp4',
       onRecordingFinished: video => {
         console.log(video);
         const fileName: string = video.path.split('/')[8].split('-')[1];
