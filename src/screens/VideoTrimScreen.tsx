@@ -7,6 +7,10 @@ import VideoPlayer from 'react-native-video-player';
 
 //handle back button to home!
 
+// ffmpeg -i input.mp4 -force_key_frames "expr:gte(t,n_forced*1)"  output.mp4
+// Solved by forcing adding keyframes to the video.
+
+// https://stackoverflow.com/questions/10328401/html5-how-to-stream-large-mp4-files#comment62603535_10330501
 export default function VideoTrimScreen({
   navigation,
   route,

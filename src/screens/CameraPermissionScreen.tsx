@@ -1,19 +1,25 @@
-import {useIsFocused} from '@react-navigation/native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, View, Alert, Linking} from 'react-native';
 import {Camera} from 'react-native-vision-camera';
-import {RootStackScreenProps} from '../types/type';
+import {RootStackPermissionScreenProps} from '../types/type';
+import {CameraPermissionStatus} from 'react-native-vision-camera';
+import {useIsFocused} from '@react-navigation/native';
 
 export default function CameraPermissionScreen({
   navigation,
-}: RootStackScreenProps) {
+}: RootStackPermissionScreenProps) {
+  const [permissions, setPermissions] = useState<
+    (CameraPermissionStatus | null)[]
+  >([null, null]);
+
   const isFocused = useIsFocused();
+
   useEffect(() => {
     const navigateToCamera = async () => {
       try {
-        const cameraPermission = await Camera.getCameraPermissionStatus();
-        const microphonePermission =
-          await Camera.getMicrophonePermissionStatus();
+        let cameraPermission = await Camera.getCameraPermissionStatus();
+        let microphonePermission = await Camera.getMicrophonePermissionStatus();
+
         console.log('cameraPermission : ', cameraPermission);
         console.log('microphonePermission : ', microphonePermission);
 
@@ -26,44 +32,33 @@ export default function CameraPermissionScreen({
           cameraPermission === 'denied' ||
           microphonePermission === 'denied'
         ) {
-          Alert.alert('Camera and Microphone must be permitted', undefined, [
-            {
-              text: 'OK',
-              onPress: async () => {
-                await Linking.openSettings().then(() => {
-                  if (
-                    cameraPermission === 'authorized' &&
-                    microphonePermission === 'authorized'
-                  ) {
-                    navigation.replace('Camera');
-                  } else {
-                    navigation.navigate('Tab');
-                  }
-                });
+          await Alert.alert(
+            'Camera and Microphone must be permitted',
+            undefined,
+            [
+              {
+                text: 'OK',
+                onPress: async () => {
+                  await Linking.openSettings().then(async () => {
+                    navigation.replace('Tab');
+                  });
+                },
               },
-            },
-          ]);
+            ],
+          );
         } else {
-          const newCameraPermission = await Camera.requestCameraPermission();
-          const newMicrophonePermission =
-            await Camera.requestMicrophonePermission();
-          if (
-            newCameraPermission === 'authorized' &&
-            newMicrophonePermission === 'authorized'
-          ) {
-            navigation.replace('Camera');
-          } else {
-            navigation.navigate('Tab');
-          }
+          cameraPermission = await Camera.requestCameraPermission();
+          microphonePermission = await Camera.requestMicrophonePermission();
+          setPermissions([cameraPermission, microphonePermission]);
         }
       } catch (err) {
-        Alert.alert('Info', 'Error occured during permission process');
+        await Alert.alert('Info', 'Error occured during permission process');
         console.log(err);
-        navigation.navigate('Tab');
+        navigation.replace('Tab');
       }
     };
     navigateToCamera();
-  }, [navigation, isFocused]);
+  }, [navigation, permissions, isFocused]);
   return <View style={styles.body} />;
 }
 

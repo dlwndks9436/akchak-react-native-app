@@ -17,3 +17,21 @@ export type RootStackTrimScreenProps = StackScreenProps<
   RootStackParamList,
   'VideoTrim'
 >;
+
+export type RootStackPermissionScreenProps = StackScreenProps<
+  RootStackParamList,
+  'CameraPermission'
+>;
+
+export interface PracticeLogType {
+  id: number;
+  filePath: string;
+  fileName: string;
+  duration: number | undefined;
+  date: Date;
+}
+
+export type PracticeLogsType = {
+  datas: PracticeLogType[];
+  nextID: number;
+};

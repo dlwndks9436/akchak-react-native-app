@@ -5,6 +5,7 @@ import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIc
 import HomeScreen from '../screens/HomeScreen';
 import {gray} from '../styles/colors';
 import NavigateCameraScreen from '../screens/NavigateCameraScreen';
+import PracticeLogListScreen from '../screens/PracticeLogListScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -25,6 +26,20 @@ export default function BottomTab() {
         options={{
           tabBarIcon: ({color}) => (
             <MaterialCommunityIcon name="home" color={color} size={30} />
+          ),
+          tabBarStyle: {elevation: 5},
+        }}
+      />
+      <Tab.Screen
+        name="PracticeLog"
+        component={PracticeLogListScreen}
+        options={{
+          tabBarIcon: ({color}) => (
+            <MaterialCommunityIcon
+              name="filmstrip-box-multiple"
+              color={color}
+              size={30}
+            />
           ),
           tabBarStyle: {elevation: 5},
         }}
