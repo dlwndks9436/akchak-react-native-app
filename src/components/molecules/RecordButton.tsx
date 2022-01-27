@@ -14,14 +14,14 @@ type buttonProps = {
 export default function recordButton(props: buttonProps) {
   return (
     <TouchableOpacity style={styles.button} onPress={props.onPressFunction}>
-      <RecordText text={props.isRecording ? 'Stop' : 'Record'} />
+      <RecordText text={props.isRecording ? 'Stop' : 'Start'} />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#ffffffbb',
     position: 'absolute',
     width: '40%',
     height: '10%',

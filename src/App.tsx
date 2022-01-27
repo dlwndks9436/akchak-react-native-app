@@ -6,30 +6,37 @@ import BottomTab from './navigation/BottomTab';
 import CameraScreen from './screens/CameraScreen';
 import CameraPermissionScreen from './screens/CameraPermissionScreen';
 import CameraModalScreen from './screens/CameraModalScreen';
-import VideoTrimScreen from './screens/VideoTrimScreen';
+import VideoPlayScreen from './screens/VideoPlayScreen';
+import {Provider} from 'react-redux';
+import {store} from './redux';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
 const App = () => {
   return (
-    <NavigationContainer>
-      <RootStack.Navigator
-        initialRouteName="Tab"
-        screenOptions={{headerShown: false}}>
-        <RootStack.Group>
-          <RootStack.Screen name="Camera" component={CameraScreen} />
-          <RootStack.Screen name="Tab" component={BottomTab} />
-          <RootStack.Screen name="VideoTrim" component={VideoTrimScreen} />
-          <RootStack.Screen
-            name="CameraPermission"
-            component={CameraPermissionScreen}
-          />
-        </RootStack.Group>
-        <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
-          <RootStack.Screen name="CameraModal" component={CameraModalScreen} />
-        </RootStack.Group>
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      <NavigationContainer>
+        <RootStack.Navigator
+          initialRouteName="Tab"
+          screenOptions={{headerShown: false}}>
+          <RootStack.Group>
+            <RootStack.Screen name="Camera" component={CameraScreen} />
+            <RootStack.Screen name="Tab" component={BottomTab} />
+            <RootStack.Screen name="VideoPlay" component={VideoPlayScreen} />
+            <RootStack.Screen
+              name="CameraPermission"
+              component={CameraPermissionScreen}
+            />
+          </RootStack.Group>
+          <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
+            <RootStack.Screen
+              name="CameraModal"
+              component={CameraModalScreen}
+            />
+          </RootStack.Group>
+        </RootStack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 };
 

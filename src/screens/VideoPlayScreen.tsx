@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {AndroidBackHandler} from 'react-navigation-backhandler';
-import {Alert} from 'react-native';
+// import {Alert} from 'react-native';
 import {RootStackTrimScreenProps} from '../types/type';
 import VideoPlayer from 'react-native-video-player';
 
@@ -11,23 +11,23 @@ import VideoPlayer from 'react-native-video-player';
 // Solved by forcing adding keyframes to the video.
 
 // https://stackoverflow.com/questions/10328401/html5-how-to-stream-large-mp4-files#comment62603535_10330501
-export default function VideoTrimScreen({
+export default function VideoPlayScreen({
   navigation,
   route,
 }: RootStackTrimScreenProps) {
   // const player = useRef<Video>(null);
 
-  const checkGoBack = () => {
-    Alert.alert('Would you discard this practice?', undefined, [
-      {text: 'Cancel', style: 'cancel'},
-      {
-        text: 'OK',
-        onPress: () => {
-          navigation.reset({index: 0, routes: [{name: 'Tab'}]});
-        },
-      },
-    ]);
-  };
+  // const checkGoBack = () => {
+  //   Alert.alert('Would you discard this practice?', undefined, [
+  //     {text: 'Cancel', style: 'cancel'},
+  //     {
+  //       text: 'OK',
+  //       onPress: () => {
+  //         navigation.reset({index: 0, routes: [{name: 'Tab'}]});
+  //       },
+  //     },
+  //   ]);
+  // };
 
   const onBackButtonPressAndroid = () => {
     /*
@@ -37,7 +37,8 @@ export default function VideoTrimScreen({
      *   Returning `false` will cause the event to bubble up and react-navigation's listener will pop the screen.
      * */
 
-    checkGoBack();
+    // checkGoBack();
+    navigation.reset({index: 0, routes: [{name: 'Tab'}]});
     return true;
   };
 

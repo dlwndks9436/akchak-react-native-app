@@ -5,7 +5,7 @@ export type RootStackParamList = {
   Tab: undefined;
   CameraPermission: undefined;
   CameraModal: undefined;
-  VideoTrim: {videoUri: string};
+  VideoPlay: {videoUri: string};
 };
 
 export type RootStackTabScreenProps = StackScreenProps<
@@ -15,12 +15,17 @@ export type RootStackTabScreenProps = StackScreenProps<
 
 export type RootStackTrimScreenProps = StackScreenProps<
   RootStackParamList,
-  'VideoTrim'
+  'VideoPlay'
 >;
 
 export type RootStackPermissionScreenProps = StackScreenProps<
   RootStackParamList,
   'CameraPermission'
+>;
+
+export type RootStackModalScreenProps = StackScreenProps<
+  RootStackParamList,
+  'CameraModal'
 >;
 
 export interface PracticeLogType {

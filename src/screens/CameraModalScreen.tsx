@@ -1,9 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import TextButton from '../components/IconButton';
-import {RootStackScreenProps} from '../types/type';
+import {RootStackModalScreenProps} from '../types/type';
 
-export default function CameraModalScreen({navigation}: RootStackScreenProps) {
+export default function CameraModalScreen({
+  navigation,
+}: RootStackModalScreenProps) {
   return (
     <View style={styles.body}>
       <View style={styles.button}>
@@ -15,7 +17,8 @@ export default function CameraModalScreen({navigation}: RootStackScreenProps) {
             colorDepth={1}
             text="Yes"
             onPressFunc={() => {
-              navigation.replace('VideoTrim');
+              // navigation.replace('VideoPlay');
+              navigation.goBack();
             }}
           />
           <TextButton

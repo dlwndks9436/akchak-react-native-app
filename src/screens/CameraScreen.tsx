@@ -101,7 +101,7 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
               console.log('error');
             }
             // });
-            navigation.navigate('VideoTrim', {videoUri: newFilePath});
+            navigation.navigate('VideoPlay', {videoUri: newFilePath});
           })
           .catch(err => {
             console.log(err);

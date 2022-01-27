@@ -7,12 +7,21 @@ import {
   // StatusBar,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {PracticeLogsType, PracticeLogType} from '../types/type';
+import RNFS from 'react-native-fs';
+import {useSelector, useDispatch} from 'react-redux';
+import {ApplicationState, setPracticeLogs} from '../redux';
 
-const PracticeLog: React.FC<PracticeLogType> = ({duration, fileName}) => {
+const PracticeLog: React.FC<PracticeLogType> = ({
+  duration,
+  fileName,
+  filePath,
+  id,
+}) => {
   duration = parseInt(duration!.toString(), 10);
   const hours = Math.floor(duration! / 60 / 60);
   const minutes = Math.floor(duration! / 60) - hours * 60;
@@ -28,8 +37,48 @@ const PracticeLog: React.FC<PracticeLogType> = ({duration, fileName}) => {
         minutes.toString().padStart(2, '0') +
         ':' +
         seconds.toString().padStart(2, '0');
+
+  const dispatch = useDispatch();
+
+  const deleteLog = () => {
+    Alert.alert('Would you delete ' + fileName, undefined, [
+      {
+        text: 'OK',
+        onPress: async () => {
+          RNFS.unlink(filePath)
+            .then(async () => {
+              console.log('file deleted');
+              const previousLogStr: string = (await AsyncStorage.getItem(
+                'practice_logs',
+              )) as string;
+              const previousLogs: PracticeLogsType = JSON.parse(previousLogStr);
+              const newLogDatas: PracticeLogType[] = previousLogs.datas.filter(
+                value => value.id !== id,
+              );
+              const newLogs: PracticeLogsType = {
+                datas: newLogDatas,
+                nextID: previousLogs.nextID,
+              };
+              await AsyncStorage.setItem(
+                'practice_logs',
+                JSON.stringify(newLogs),
+              );
+              dispatch(setPracticeLogs(newLogDatas));
+            })
+            .catch(err => console.log(err));
+        },
+      },
+      {
+        text: 'Cancel',
+        onPress: async () => {},
+        style: 'cancel',
+      },
+    ]);
+  };
   return (
-    <TouchableOpacity style={styles.practice_log}>
+    <TouchableOpacity
+      style={styles.practice_log}
+      onLongPress={() => deleteLog()}>
       <View style={styles.content}>
         <Text style={styles.title}>{fileName}</Text>
         <Text style={styles.time_text}>{formatted}</Text>
@@ -43,6 +92,10 @@ const PracticeLog: React.FC<PracticeLogType> = ({duration, fileName}) => {
 
 export default function PracticeLogListScreen() {
   const [logDatas, setlogDatas] = useState<PracticeLogType[] | null>(null);
+
+  const {globalPracticeLogs} = useSelector(
+    (state: ApplicationState) => state.practiceLogReducer,
+  );
 
   useEffect(() => {
     const fetchLogDatas = async () => {
@@ -59,6 +112,10 @@ export default function PracticeLogListScreen() {
     fetchLogDatas();
   }, []);
 
+  useEffect(() => {
+    setlogDatas(globalPracticeLogs);
+  }, [globalPracticeLogs]);
+
   const renderItem: ListRenderItem<PracticeLogType> = ({item}) => (
     <PracticeLog
       duration={item.duration}
@@ -71,11 +128,17 @@ export default function PracticeLogListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={logDatas}
-        renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
-      />
+      {logDatas ? (
+        <FlatList
+          data={logDatas}
+          renderItem={renderItem}
+          keyExtractor={item => item.id.toString()}
+        />
+      ) : (
+        <View style={styles.empty_container}>
+          <Text style={styles.title}>Practice logs not found</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -85,6 +148,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     flex: 1,
     // paddingTop: StatusBar.currentHeight,
+  },
+  empty_container: {
+    backgroundColor: '#ffffff',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   practice_log: {
     backgroundColor: '#ffffff',

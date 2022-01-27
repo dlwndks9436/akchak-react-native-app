@@ -1,12 +1,12 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useEffect} from 'react';
-import {RootStackScreenProps} from '../types/type';
+import {RootStackTabScreenProps} from '../types/type';
 import {useIsFocused} from '@react-navigation/native';
 
 export default function NavigateCameraScreen({
   navigation,
-}: RootStackScreenProps) {
+}: RootStackTabScreenProps) {
   const isFocused = useIsFocused();
   useEffect(() => {
     navigation.navigate('CameraPermission');
