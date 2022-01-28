@@ -9,6 +9,7 @@ import CameraModalScreen from './screens/CameraModalScreen';
 import VideoPlayScreen from './screens/VideoPlayScreen';
 import {Provider} from 'react-redux';
 import {store} from './redux';
+import VideoTrimScreen from './screens/VideoTrimScreen';
 
 const RootStack = createStackNavigator<RootStackParamList>();
 
@@ -23,6 +24,7 @@ const App = () => {
             <RootStack.Screen name="Camera" component={CameraScreen} />
             <RootStack.Screen name="Tab" component={BottomTab} />
             <RootStack.Screen name="VideoPlay" component={VideoPlayScreen} />
+            <RootStack.Screen name="VideoTrim" component={VideoTrimScreen} />
             <RootStack.Screen
               name="CameraPermission"
               component={CameraPermissionScreen}

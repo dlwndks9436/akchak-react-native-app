@@ -11,16 +11,22 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {PracticeLogsType, PracticeLogType} from '../types/type';
+import {
+  PracticeLogsType,
+  PracticeLogType,
+  PracticeLogItemType,
+  RootStackTabScreenProps,
+} from '../types/type';
 import RNFS from 'react-native-fs';
 import {useSelector, useDispatch} from 'react-redux';
 import {ApplicationState, setPracticeLogs} from '../redux';
 
-const PracticeLog: React.FC<PracticeLogType> = ({
+const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
   fileName,
   filePath,
   id,
+  navigation,
 }) => {
   duration = parseInt(duration!.toString(), 10);
   const hours = Math.floor(duration! / 60 / 60);
@@ -78,19 +84,24 @@ const PracticeLog: React.FC<PracticeLogType> = ({
   return (
     <TouchableOpacity
       style={styles.practice_log}
-      onLongPress={() => deleteLog()}>
+      onLongPress={() => deleteLog()}
+      onPress={() => navigation.navigate('VideoPlay', {videoUri: filePath})}>
       <View style={styles.content}>
         <Text style={styles.title}>{fileName}</Text>
         <Text style={styles.time_text}>{formatted}</Text>
       </View>
-      <TouchableOpacity style={styles.upload_button}>
+      <TouchableOpacity
+        style={styles.upload_button}
+        onPress={() => navigation.navigate('VideoTrim', {videoUri: filePath})}>
         <Text style={styles.upload_text}>Upload</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
 };
 
-export default function PracticeLogListScreen() {
+export default function PracticeLogListScreen({
+  navigation,
+}: RootStackTabScreenProps) {
   const [logDatas, setlogDatas] = useState<PracticeLogType[] | null>(null);
 
   const {globalPracticeLogs} = useSelector(
@@ -123,6 +134,7 @@ export default function PracticeLogListScreen() {
       filePath={item.filePath}
       date={item.date}
       id={item.id}
+      navigation={navigation}
     />
   );
 

@@ -1,4 +1,4 @@
-import {StackScreenProps} from '@react-navigation/stack';
+import {StackNavigationProp, StackScreenProps} from '@react-navigation/stack';
 
 export type RootStackParamList = {
   Camera: undefined;
@@ -6,6 +6,7 @@ export type RootStackParamList = {
   CameraPermission: undefined;
   CameraModal: undefined;
   VideoPlay: {videoUri: string};
+  VideoTrim: {videoUri: string};
 };
 
 export type RootStackTabScreenProps = StackScreenProps<
@@ -13,9 +14,14 @@ export type RootStackTabScreenProps = StackScreenProps<
   'Tab'
 >;
 
-export type RootStackTrimScreenProps = StackScreenProps<
+export type RootStackPlayScreenProps = StackScreenProps<
   RootStackParamList,
   'VideoPlay'
+>;
+
+export type RootStackTrimScreenProps = StackScreenProps<
+  RootStackParamList,
+  'VideoTrim'
 >;
 
 export type RootStackPermissionScreenProps = StackScreenProps<
@@ -34,6 +40,15 @@ export interface PracticeLogType {
   fileName: string;
   duration: number | undefined;
   date: Date;
+}
+
+export interface PracticeLogItemType {
+  id: number;
+  filePath: string;
+  fileName: string;
+  duration: number | undefined;
+  date: Date;
+  navigation: StackNavigationProp<RootStackParamList, 'Tab'>;
 }
 
 export type PracticeLogsType = {

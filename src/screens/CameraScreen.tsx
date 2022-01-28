@@ -35,19 +35,27 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
     camera?.current?.startRecording({
       fileType: 'mp4',
       onRecordingFinished: video => {
-        console.log(video);
+        // console.log(video);
         const fileName: string = video.path.split('/')[8].split('-')[1];
-        console.log(fileName);
+        // console.log(fileName);
         const newFilePath: string = RNFS.ExternalDirectoryPath + '/' + fileName;
+
         FFmpegKit.execute(
+          // '-i ' +
+          //   video.path +
+          //   '  -force_key_frames "expr:gte(t,n_forced*1)" ' +
+          //   newFilePath,
           '-i ' +
             video.path +
-            ' -force_key_frames "expr:gte(t,n_forced*1)"  ' +
+            ' -ss 00:00:04 -movflags +faststart ' +
             newFilePath,
         )
           .then(async session => {
             const returnCode = await session.getReturnCode();
             const dateOfPractice: Date = session.getCreateTime();
+            const dur = await session.getLogsAsString();
+            console.log('session info: ', dur);
+
             if (ReturnCode.isSuccess(returnCode)) {
               // SUCCESS
               try {
@@ -65,12 +73,12 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
                     duration: video.duration,
                     date: dateOfPractice,
                   };
-                  console.log('newLogData', newLogData);
+                  // console.log('newLogData', newLogData);
                   const newPracticeLogs: PracticeLogsType = {
                     datas: [...practiceLogs.datas, newLogData],
                     nextID: practiceLogs.nextID + 1,
                   };
-                  console.log('newPracticeLogs', newPracticeLogs);
+                  // console.log('newPracticeLogs', newPracticeLogs);
                   await AsyncStorage.setItem(
                     'practice_logs',
                     JSON.stringify(newPracticeLogs),

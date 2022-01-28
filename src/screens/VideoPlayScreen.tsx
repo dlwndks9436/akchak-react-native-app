@@ -2,7 +2,7 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {AndroidBackHandler} from 'react-navigation-backhandler';
 // import {Alert} from 'react-native';
-import {RootStackTrimScreenProps} from '../types/type';
+import {RootStackPlayScreenProps} from '../types/type';
 import VideoPlayer from 'react-native-video-player';
 
 //handle back button to home!
@@ -14,7 +14,7 @@ import VideoPlayer from 'react-native-video-player';
 export default function VideoPlayScreen({
   navigation,
   route,
-}: RootStackTrimScreenProps) {
+}: RootStackPlayScreenProps) {
   // const player = useRef<Video>(null);
 
   // const checkGoBack = () => {
@@ -49,10 +49,9 @@ export default function VideoPlayScreen({
           video={{
             uri: route.params.videoUri,
           }}
-          videoWidth={200}
+          videoWidth={100}
           videoHeight={100}
           showDuration={true}
-          fullScreenOnLongPress={true}
         />
       </View>
     </AndroidBackHandler>
