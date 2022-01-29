@@ -38,9 +38,15 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
       fileType: 'mp4',
       onRecordingFinished: video => {
         // console.log(video);
-        const fileName: string = video.path.split('/')[8].split('-')[1];
-        // console.log(fileName);
-        const newFilePath: string = RNFS.ExternalDirectoryPath + '/' + fileName;
+        const fileName: string = video.path
+          .split('/')[8]
+          .split('-')[1]
+          .split('.')[0];
+        console.log(fileName);
+        const newFilePath: string =
+          RNFS.ExternalDirectoryPath + '/' + fileName + '/practice.mp4';
+
+        RNFS.mkdir(RNFS.ExternalDirectoryPath + '/' + fileName);
 
         FFmpegKit.execute(
           // '-i ' +

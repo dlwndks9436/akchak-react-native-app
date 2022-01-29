@@ -21,6 +21,7 @@ import RNFS from 'react-native-fs';
 import {useSelector, useDispatch} from 'react-redux';
 import {ApplicationState, setPracticeLogs} from '../redux';
 import Orientation from 'react-native-orientation-locker';
+import {formatDuration} from '../utils';
 
 const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
@@ -30,20 +31,8 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
   navigation,
 }) => {
   duration = parseInt(duration!.toString(), 10);
-  const hours = Math.floor(duration! / 60 / 60);
-  const minutes = Math.floor(duration! / 60) - hours * 60;
-  const seconds = duration! % 60;
 
-  const formatted =
-    hours === 0
-      ? minutes.toString().padStart(2, '0') +
-        ':' +
-        seconds.toString().padStart(2, '0')
-      : hours +
-        ':' +
-        minutes.toString().padStart(2, '0') +
-        ':' +
-        seconds.toString().padStart(2, '0');
+  const formatted = formatDuration(duration);
 
   const dispatch = useDispatch();
 
@@ -93,7 +82,12 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
       </View>
       <TouchableOpacity
         style={styles.upload_button}
-        onPress={() => navigation.navigate('VideoTrim', {videoUri: filePath})}>
+        onPress={() =>
+          navigation.navigate('VideoTrim', {
+            videoUri: filePath,
+            duration: duration as number,
+          })
+        }>
         <Text style={styles.upload_text}>Upload</Text>
       </TouchableOpacity>
     </TouchableOpacity>

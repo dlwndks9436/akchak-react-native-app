@@ -6,7 +6,7 @@ export type RootStackParamList = {
   CameraPermission: undefined;
   CameraModal: undefined;
   VideoPlay: {videoUri: string};
-  VideoTrim: {videoUri: string};
+  VideoTrim: {videoUri: string; duration: number};
 };
 
 export type RootStackTabScreenProps = StackScreenProps<
