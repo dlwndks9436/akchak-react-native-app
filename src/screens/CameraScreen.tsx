@@ -13,6 +13,7 @@ import {
 } from '../types/type';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+import Orientation, {OrientationLocker} from 'react-native-orientation-locker';
 
 export default function CameraScreen({navigation}: RootStackTabScreenProps) {
   const devices = useCameraDevices();
@@ -26,6 +27,7 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
     if (isRecording) {
       checkGoBack();
     } else {
+      Orientation.unlockAllOrientations();
       navigation.reset({index: 0, routes: [{name: 'Tab'}]});
     }
     return true;
@@ -109,6 +111,7 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
               console.log('error');
             }
             // });
+            Orientation.unlockAllOrientations();
             navigation.navigate('VideoPlay', {videoUri: newFilePath});
           })
           .catch(err => {
@@ -148,6 +151,7 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
       {
         text: 'OK',
         onPress: () => {
+          Orientation.unlockAllOrientations();
           navigation.reset({index: 0, routes: [{name: 'Tab'}]});
         },
       },
@@ -157,6 +161,7 @@ export default function CameraScreen({navigation}: RootStackTabScreenProps) {
   if (device == null) return <LoadingScreen />;
   return (
     <View style={styles.body}>
+      <OrientationLocker orientation={'LANDSCAPE'} />
       <Camera
         style={StyleSheet.absoluteFill}
         device={device}

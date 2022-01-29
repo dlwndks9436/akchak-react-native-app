@@ -4,6 +4,7 @@ import {AndroidBackHandler} from 'react-navigation-backhandler';
 // import {Alert} from 'react-native';
 import {RootStackPlayScreenProps} from '../types/type';
 import VideoPlayer from 'react-native-video-player';
+import Orientation, {OrientationLocker} from 'react-native-orientation-locker';
 
 //handle back button to home!
 
@@ -38,18 +39,20 @@ export default function VideoPlayScreen({
      * */
 
     // checkGoBack();
+    Orientation.unlockAllOrientations();
     navigation.reset({index: 0, routes: [{name: 'Tab'}]});
     return true;
   };
 
   return (
     <AndroidBackHandler onBackPress={onBackButtonPressAndroid}>
+      <OrientationLocker orientation={'LANDSCAPE'} />
       <View style={styles.body}>
         <VideoPlayer
           video={{
             uri: route.params.videoUri,
           }}
-          videoWidth={100}
+          videoWidth={200}
           videoHeight={100}
           showDuration={true}
         />

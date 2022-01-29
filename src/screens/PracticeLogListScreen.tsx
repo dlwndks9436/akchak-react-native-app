@@ -20,6 +20,7 @@ import {
 import RNFS from 'react-native-fs';
 import {useSelector, useDispatch} from 'react-redux';
 import {ApplicationState, setPracticeLogs} from '../redux';
+import Orientation from 'react-native-orientation-locker';
 
 const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
@@ -109,6 +110,7 @@ export default function PracticeLogListScreen({
   );
 
   useEffect(() => {
+    Orientation.unlockAllOrientations();
     const fetchLogDatas = async () => {
       const savedLogs: string | null = await AsyncStorage.getItem(
         'practice_logs',
