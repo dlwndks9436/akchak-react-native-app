@@ -3,9 +3,10 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {RootStackParamList} from './types/type';
 import BottomTab from './navigation/BottomTab';
+import CameraScreenPrev from './screens/CameraScreenPrev';
 import CameraScreen from './screens/CameraScreen';
 import CameraPermissionScreen from './screens/CameraPermissionScreen';
-import CameraModalScreen from './screens/CameraModalScreen';
+// import CameraModalScreen from './screens/CameraModalScreen';
 import VideoPlayScreen from './screens/VideoPlayScreen';
 import {Provider} from 'react-redux';
 import {store} from './redux';
@@ -19,9 +20,8 @@ const App = () => {
       <NavigationContainer>
         <RootStack.Navigator
           initialRouteName="Tab"
-          screenOptions={{headerShown: false}}>
+          screenOptions={{headerShown: false, animationTypeForReplace: 'push'}}>
           <RootStack.Group>
-            <RootStack.Screen name="Camera" component={CameraScreen} />
             <RootStack.Screen name="Tab" component={BottomTab} />
             <RootStack.Screen name="VideoPlay" component={VideoPlayScreen} />
             <RootStack.Screen name="VideoTrim" component={VideoTrimScreen} />
@@ -30,11 +30,9 @@ const App = () => {
               component={CameraPermissionScreen}
             />
           </RootStack.Group>
-          <RootStack.Group screenOptions={{presentation: 'transparentModal'}}>
-            <RootStack.Screen
-              name="CameraModal"
-              component={CameraModalScreen}
-            />
+          <RootStack.Group screenOptions={{presentation: 'modal'}}>
+            <RootStack.Screen name="CameraPrev" component={CameraScreenPrev} />
+            <RootStack.Screen name="Camera" component={CameraScreen} />
           </RootStack.Group>
         </RootStack.Navigator>
       </NavigationContainer>

@@ -40,8 +40,14 @@ export default function VideoPlayScreen({
 
     // checkGoBack();
     Orientation.unlockAllOrientations();
-    navigation.reset({index: 0, routes: [{name: 'Tab'}]});
-    return true;
+    const fileName = route.params.videoUri.split('/').pop();
+    if (fileName === 'practice.mp4') {
+      navigation.reset({index: 0, routes: [{name: 'Tab'}]});
+      return true;
+    } else {
+      navigation.goBack();
+      return true;
+    }
   };
 
   return (

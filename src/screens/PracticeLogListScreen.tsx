@@ -21,18 +21,17 @@ import RNFS from 'react-native-fs';
 import {useSelector, useDispatch} from 'react-redux';
 import {ApplicationState, setPracticeLogs} from '../redux';
 import Orientation from 'react-native-orientation-locker';
-import {formatDuration} from '../utils';
 
 const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
+  formattedDurationWithoutMillisecond,
   fileName,
   filePath,
   id,
   navigation,
+  directory,
 }) => {
   duration = parseInt(duration!.toString(), 10);
-
-  const formatted = formatDuration(duration);
 
   const dispatch = useDispatch();
 
@@ -41,7 +40,7 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
       {
         text: 'OK',
         onPress: async () => {
-          RNFS.unlink(filePath)
+          RNFS.unlink(directory)
             .then(async () => {
               console.log('file deleted');
               const previousLogStr: string = (await AsyncStorage.getItem(
@@ -78,7 +77,9 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
       onPress={() => navigation.navigate('VideoPlay', {videoUri: filePath})}>
       <View style={styles.content}>
         <Text style={styles.title}>{fileName}</Text>
-        <Text style={styles.time_text}>{formatted}</Text>
+        <Text style={styles.time_text}>
+          {formattedDurationWithoutMillisecond}
+        </Text>
       </View>
       <TouchableOpacity
         style={styles.upload_button}
@@ -86,6 +87,7 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
           navigation.navigate('VideoTrim', {
             videoUri: filePath,
             duration: duration as number,
+            directory: directory,
           })
         }>
         <Text style={styles.upload_text}>Upload</Text>
@@ -126,6 +128,11 @@ export default function PracticeLogListScreen({
   const renderItem: ListRenderItem<PracticeLogType> = ({item}) => (
     <PracticeLog
       duration={item.duration}
+      directory={item.directory}
+      formattedDuration={item.formattedDuration}
+      formattedDurationWithoutMillisecond={
+        item.formattedDurationWithoutMillisecond
+      }
       fileName={item.fileName}
       filePath={item.filePath}
       date={item.date}
@@ -180,10 +187,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginVertical: 5,
     fontWeight: 'bold',
+    color: 'gray',
   },
   time_text: {
     fontSize: 20,
     marginVertical: 5,
+    color: 'gray',
   },
   upload_button: {
     justifyContent: 'center',
@@ -192,5 +201,6 @@ const styles = StyleSheet.create({
   },
   upload_text: {
     fontWeight: 'bold',
+    color: 'gray',
   },
 });

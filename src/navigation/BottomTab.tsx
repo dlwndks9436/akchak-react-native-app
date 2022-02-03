@@ -1,15 +1,29 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
 import {gray} from '../styles/colors';
-import NavigateCameraScreen from '../screens/NavigateCameraScreen';
+import DummyScreen from '../screens/DummyScreen';
 import PracticeLogListScreen from '../screens/PracticeLogListScreen';
+import {Camera, CameraPermissionStatus} from 'react-native-vision-camera';
 
 const Tab = createBottomTabNavigator();
 
 export default function BottomTab() {
+  const [cameraPermission, setCameraPermission] =
+    useState<CameraPermissionStatus>();
+  const [microphonePermission, setMicrophonePermission] =
+    useState<CameraPermissionStatus>();
+
+  useEffect(() => {
+    Camera.getCameraPermissionStatus().then(setCameraPermission);
+    Camera.getMicrophonePermissionStatus().then(setMicrophonePermission);
+  }, []);
+
+  const showPermissionsPage =
+    cameraPermission !== 'authorized' || microphonePermission !== 'authorized';
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -46,7 +60,7 @@ export default function BottomTab() {
       />
       <Tab.Screen
         name="NavigateCamera"
-        component={NavigateCameraScreen}
+        component={DummyScreen}
         options={() => ({
           tabBarIcon: ({color}) => (
             <MaterialCommunityIcon
@@ -57,6 +71,14 @@ export default function BottomTab() {
           ),
           // tabBarStyle: {height: 0, backgroundColor: '#000000'},
           tabBarStyle: {backgroundColor: '#000000'},
+        })}
+        listeners={({navigation}) => ({
+          tabPress: event => {
+            event.preventDefault();
+            showPermissionsPage
+              ? navigation.navigate('CameraPermission')
+              : navigation.navigate('Camera');
+          },
         })}
       />
     </Tab.Navigator>

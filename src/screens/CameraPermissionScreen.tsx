@@ -1,69 +1,133 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Alert, Linking} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {StyleSheet, View, Linking, Text, TouchableOpacity} from 'react-native';
 import {Camera} from 'react-native-vision-camera';
 import {RootStackPermissionScreenProps} from '../types/type';
 import {CameraPermissionStatus} from 'react-native-vision-camera';
-import {useIsFocused} from '@react-navigation/native';
+import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function CameraPermissionScreen({
   navigation,
 }: RootStackPermissionScreenProps) {
-  const [permissions, setPermissions] = useState<
-    (CameraPermissionStatus | null)[]
-  >([null, null]);
+  const [cameraPermissionStatus, setCameraPermissionStatus] =
+    useState<CameraPermissionStatus>('not-determined');
+  const [microphonePermissionStatus, setMicrophonePermissionStatus] =
+    useState<CameraPermissionStatus>('not-determined');
 
-  const isFocused = useIsFocused();
+  const requestMicrophonePermission = useCallback(async () => {
+    console.log('Requesting microphone permission...');
+    const permission = await Camera.requestMicrophonePermission();
+    console.log(`Microphone permission status: ${permission}`);
+
+    if (permission === 'denied') await Linking.openSettings();
+    setMicrophonePermissionStatus(permission);
+  }, []);
+
+  const requestCameraPermission = useCallback(async () => {
+    console.log('Requesting camera permission...');
+    const permission = await Camera.requestCameraPermission();
+    console.log(`Camera permission status: ${permission}`);
+
+    if (permission === 'denied') await Linking.openSettings();
+    setCameraPermissionStatus(permission);
+  }, []);
 
   useEffect(() => {
-    const navigateToCamera = async () => {
-      try {
-        let cameraPermission = await Camera.getCameraPermissionStatus();
-        let microphonePermission = await Camera.getMicrophonePermissionStatus();
+    Camera.getCameraPermissionStatus().then(setCameraPermissionStatus);
+    Camera.getMicrophonePermissionStatus().then(setMicrophonePermissionStatus);
 
-        console.log('cameraPermission : ', cameraPermission);
-        console.log('microphonePermission : ', microphonePermission);
+    if (
+      cameraPermissionStatus === 'authorized' &&
+      microphonePermissionStatus === 'authorized'
+    ) {
+      navigation.replace('Camera');
+    }
+    if (
+      cameraPermissionStatus === 'not-determined' &&
+      microphonePermissionStatus === 'not-determined'
+    ) {
+      const checkCameraPermission = async () => {
+        const result = await Camera.requestCameraPermission();
+        return result;
+      };
+      const checkMicrophonePermission = async () => {
+        const result = await Camera.requestMicrophonePermission();
+        return result;
+      };
+      checkCameraPermission().then(cameraPermission => {
+        checkMicrophonePermission().then(microphonePermission => {
+          setMicrophonePermissionStatus(microphonePermission);
+          setCameraPermissionStatus(cameraPermission);
+        });
+      });
+    }
+  }, [cameraPermissionStatus, microphonePermissionStatus, navigation]);
 
-        if (
-          cameraPermission === 'authorized' &&
-          microphonePermission === 'authorized'
-        ) {
-          navigation.replace('Camera');
-        } else if (
-          cameraPermission === 'denied' ||
-          microphonePermission === 'denied'
-        ) {
-          await Alert.alert(
-            'Camera and Microphone must be permitted',
-            undefined,
-            [
-              {
-                text: 'OK',
-                onPress: async () => {
-                  await Linking.openSettings().then(async () => {
-                    navigation.replace('Tab');
-                  });
-                },
-              },
-            ],
-          );
-        } else {
-          cameraPermission = await Camera.requestCameraPermission();
-          microphonePermission = await Camera.requestMicrophonePermission();
-          setPermissions([cameraPermission, microphonePermission]);
-        }
-      } catch (err) {
-        await Alert.alert('Info', 'Error occured during permission process');
-        console.log(err);
-        navigation.replace('Tab');
-      }
-    };
-    navigateToCamera();
-  }, [navigation, permissions, isFocused]);
-  return <View style={styles.body} />;
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>
+        Permissions of following must be granted to use video recording.
+      </Text>
+      {cameraPermissionStatus !== 'authorized' && (
+        <View style={styles.permissionContainer}>
+          <Text style={styles.boldText}>Camera function</Text>
+          <TouchableOpacity
+            onPress={requestCameraPermission}
+            style={styles.button}>
+            <Text style={styles.normalText}>Grant permission</Text>
+            <MaterialCommunityIcon
+              name="chevron-right"
+              size={40}
+              color="white"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+      {microphonePermissionStatus !== 'authorized' && (
+        <View style={styles.permissionContainer}>
+          <Text style={styles.boldText}>Microphone function</Text>
+          <TouchableOpacity
+            onPress={requestMicrophonePermission}
+            style={styles.button}>
+            <Text style={styles.normalText}>Grant permission</Text>
+            <MaterialCommunityIcon
+              name="chevron-right"
+              size={40}
+              color="white"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  body: {
+  container: {
     backgroundColor: '#000000',
+    flex: 1,
+    padding: 20,
+  },
+  permissionContainer: {
+    marginTop: 40,
+  },
+  title: {
+    fontFamily: 'Orbitron-VariableFont_wght',
+    color: 'white',
+    fontSize: 30,
+  },
+  boldText: {
+    fontFamily: 'Orbitron-VariableFont_wght',
+    color: 'white',
+    fontSize: 30,
+  },
+  normalText: {
+    fontFamily: 'Orbitron-VariableFont_wght',
+    color: 'white',
+    fontSize: 20,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
   },
 });
