@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {RootStackTrimScreenProps} from '../types/type';
@@ -21,8 +22,8 @@ export default function VideoTrimScreen({
   navigation,
   route,
 }: RootStackTrimScreenProps) {
-  const [startTime, setStartTime] = useState(0);
-  const [endTime, setEndTime] = useState(route.params.duration);
+  const [startTime, setStartTime] = useState<number>();
+  const [endTime, setEndTime] = useState<number>();
   const [thumbnailUri, setThumbnailUri] = useState<string>();
   const [videoUri] = useState(route.params.videoUri);
   const [trimmedVideoUri, setTrimmedVideoUri] = useState<string>();
@@ -54,13 +55,28 @@ export default function VideoTrimScreen({
   };
 
   const trimVideo = () => {
+    if (!startTime || !endTime) {
+      Alert.alert(
+        'Notice',
+        '"Start time" and "End time" needs to be set to proceed video trimming.',
+      );
+      return;
+    }
     console.log('trimming start');
-    const previousTrimmedVideoUri = trimmedVideoUri;
+    const previousTrimmedVideosUri = new Array();
+    RNFS.readDir(route.params.directory).then(videos => {
+      videos.forEach(video => {
+        if (video.name.includes('editted')) {
+          previousTrimmedVideosUri.push(video.path);
+        }
+      });
+    });
     console.log('start time: ', startTime, 'end time: ', endTime);
 
     const milsec = new Date().getMilliseconds();
     const sec = new Date().getSeconds();
-    const newUri = route.params.directory + '/practice' + sec + milsec + '.mp4';
+    const newUri =
+      route.params.directory + '/practice_editted' + sec + milsec + '.mp4';
     FFmpegKit.execute(
       '-i ' +
         route.params.videoUri +
@@ -76,14 +92,17 @@ export default function VideoTrimScreen({
         if (ReturnCode.isSuccess(returnCode)) {
           setTrimmedVideoUri(newUri);
           console.log(newUri);
-          if (previousTrimmedVideoUri !== undefined) {
-            RNFS.unlink(previousTrimmedVideoUri)
-              .then(() => console.log('PREVIOUS TRIMMED VIDEO DELETED'))
-              .catch(err => {
-                console.log(err);
-              });
+          if (previousTrimmedVideosUri.length > 0) {
+            previousTrimmedVideosUri.forEach(videoPath => {
+              RNFS.unlink(videoPath)
+                .then(() => console.log('PREVIOUS TRIMMED VIDEO DELETED'))
+                .catch(err => {
+                  console.log(err);
+                });
+            });
           }
           console.log('trimming finish');
+          Alert.alert('Video trimming successfully done');
         }
       })
       .catch(err => {
@@ -146,23 +165,23 @@ export default function VideoTrimScreen({
         </View>
         <View style={styles.timeContainer}>
           <Text style={styles.timeText}>
-            {formatDuration(Math.floor(startTime))}
+            {startTime !== undefined && formatDuration(Math.floor(startTime))}
           </Text>
-          <Text style={styles.trimText}>Trim Video</Text>
           <Text style={styles.timeText}>
-            {formatDuration(Math.floor(endTime))}
+            {endTime !== undefined && formatDuration(Math.floor(endTime))}
           </Text>
         </View>
         <View style={styles.setTimeContainer}>
           <TouchableOpacity
             style={styles.setButton}
             onPress={() => {
-              if (videoPlayer.current?.state.currentTime! < endTime) {
+              if (
+                !endTime ||
+                videoPlayer.current?.state.currentTime! < endTime
+              ) {
                 try {
                   setStartTime(videoPlayer.current?.state!.currentTime!);
                   console.log(videoPlayer.current?.state!.currentTime!);
-
-                  trimVideo();
                 } catch (error) {
                   console.log(error);
                 }
@@ -173,26 +192,21 @@ export default function VideoTrimScreen({
               size={40}
               color={'gray'}
             />
+            <Text style={styles.setButtonText}>Set Start</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.previewButton}
-            onPress={() => {
-              if (trimmedVideoUri) {
-                navigation.navigate('VideoPlay', {
-                  videoUri: trimmedVideoUri,
-                });
-              }
-            }}>
-            <Text style={styles.previewText}>Preview</Text>
+          <TouchableOpacity style={styles.previewButton} onPress={trimVideo}>
+            <Text style={styles.previewText}>Trim video</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.setButton}
             onPress={() => {
-              if (videoPlayer.current?.state.currentTime! > startTime) {
+              if (
+                !startTime ||
+                videoPlayer.current?.state.currentTime! > startTime
+              ) {
                 try {
                   setEndTime(videoPlayer.current?.state!.currentTime!);
                   console.log(videoPlayer.current?.state!.currentTime!);
-                  trimVideo();
                 } catch (error) {
                   console.log(error);
                 }
@@ -203,6 +217,7 @@ export default function VideoTrimScreen({
               size={40}
               color={'gray'}
             />
+            <Text style={styles.setButtonText}>Set End</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.imageControl}>
@@ -228,10 +243,27 @@ export default function VideoTrimScreen({
               onPress={() => {
                 getThumbnailWithTime(videoPlayer.current?.state.currentTime!);
               }}>
-              <Text style={styles.setButtonText}>Set thumbnail</Text>
+              <Text style={styles.setThumbnailText}>Set thumbnail</Text>
             </TouchableOpacity>
           </View>
         </View>
+        <TouchableOpacity
+          style={styles.previewButton}
+          onPress={() => {
+            if (trimmedVideoUri) {
+              navigation.navigate('VideoPlay', {
+                videoUri: trimmedVideoUri,
+              });
+            } else {
+              Alert.alert(
+                'Notice',
+                'There is no video trimmed to preview. Trim video and try again. ',
+              );
+              return;
+            }
+          }}>
+          <Text style={styles.previewText}>Preview</Text>
+        </TouchableOpacity>
         <View style={styles.pageNavigator}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -297,7 +329,7 @@ const styles = StyleSheet.create({
     flex: 2,
     alignItems: 'center',
   },
-  setButtonText: {
+  setThumbnailText: {
     fontSize: 20,
     fontFamily: 'Orbitron-VariableFont_wght',
     color: 'gray',
@@ -306,6 +338,8 @@ const styles = StyleSheet.create({
     height: '100%',
     width: '100%',
     resizeMode: 'contain',
+    borderRadius: 20,
+    marginVertical: 10,
   },
   timeText: {
     fontSize: 15,
@@ -329,6 +363,7 @@ const styles = StyleSheet.create({
   pageNavigator: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginVertical: 20,
   },
   pageNavigatorText: {
     fontFamily: 'Orbitron-VariableFont_wght',
@@ -349,4 +384,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginRight: 20,
   },
+  setButtonText: {color: 'gray', fontFamily: 'Orbitron-VariableFont_wght'},
 });
