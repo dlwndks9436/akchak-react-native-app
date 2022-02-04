@@ -33,6 +33,7 @@ export default function BottomTab() {
         tabBarInactiveTintColor: gray[6],
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarIconStyle: {width: '100%', height: '100%'},
       })}>
       <Tab.Screen
         name="Home"

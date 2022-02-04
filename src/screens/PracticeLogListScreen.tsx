@@ -4,10 +4,10 @@ import {
   StyleSheet,
   View,
   SafeAreaView,
-  // StatusBar,
   FlatList,
   TouchableOpacity,
   Alert,
+  StatusBar,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,6 +21,7 @@ import RNFS from 'react-native-fs';
 import {useSelector, useDispatch} from 'react-redux';
 import {ApplicationState, setPracticeLogs} from '../redux';
 import Orientation from 'react-native-orientation-locker';
+import FocusAwareStatusBar from '../components/atoms/FocusAwareStatusBar';
 
 const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
@@ -143,6 +144,11 @@ export default function PracticeLogListScreen({
 
   return (
     <SafeAreaView style={styles.container}>
+      <FocusAwareStatusBar
+        translucent={true}
+        barStyle={'dark-content'}
+        backgroundColor={'#ffffff00'}
+      />
       {logDatas ? (
         <FlatList
           data={logDatas}
@@ -162,7 +168,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#ffffff',
     flex: 1,
-    // paddingTop: StatusBar.currentHeight,
+    paddingTop: StatusBar.currentHeight,
   },
   empty_container: {
     backgroundColor: '#ffffff',

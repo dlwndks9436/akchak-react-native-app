@@ -1,24 +1,29 @@
 import React, {useEffect} from 'react';
-import {View, Text, StatusBar, useColorScheme, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 import Orientation from 'react-native-orientation-locker';
+import FocusAwareStatusBar from '../components/atoms/FocusAwareStatusBar';
 
 export default function HomeScreen() {
-  const isDarkMode = useColorScheme() === 'dark';
   useEffect(() => {
     Orientation.unlockAllOrientations();
   }, []);
   return (
-    <View style={styles.body}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+    <View style={styles.container}>
+      <FocusAwareStatusBar
+        translucent={true}
+        barStyle={'dark-content'}
+        backgroundColor={'#ffffff00'}
+      />
       <Text style={{marginBottom: 20}}>This is home.</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  body: {
+  container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'white',
   },
 });

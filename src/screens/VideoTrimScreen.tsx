@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   Image,
+  StatusBar,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {RootStackTrimScreenProps} from '../types/type';
@@ -55,6 +56,7 @@ export default function VideoTrimScreen({
   const trimVideo = () => {
     console.log('trimming start');
     const previousTrimmedVideoUri = trimmedVideoUri;
+    console.log('start time: ', startTime, 'end time: ', endTime);
 
     const milsec = new Date().getMilliseconds();
     const sec = new Date().getSeconds();
@@ -64,7 +66,7 @@ export default function VideoTrimScreen({
         route.params.videoUri +
         ' -ss ' +
         startTime +
-        ' -t ' +
+        ' -to ' +
         endTime +
         ' -async 1 -c copy ' +
         newUri,
@@ -74,7 +76,7 @@ export default function VideoTrimScreen({
         if (ReturnCode.isSuccess(returnCode)) {
           setTrimmedVideoUri(newUri);
           console.log(newUri);
-          if (previousTrimmedVideoUri) {
+          if (previousTrimmedVideoUri !== undefined) {
             RNFS.unlink(previousTrimmedVideoUri)
               .then(() => console.log('PREVIOUS TRIMMED VIDEO DELETED'))
               .catch(err => {
@@ -124,6 +126,7 @@ export default function VideoTrimScreen({
     <AndroidBackHandler onBackPress={onBackButtonPressAndroid}>
       <OrientationLocker orientation={'PORTRAIT'} />
       <View style={styles.container}>
+        <StatusBar backgroundColor={'black'} barStyle={'light-content'} />
         <View style={[{height: height / 3}, styles.videoContainer]}>
           <VideoPlayer
             source={{uri: videoUri}}
@@ -157,13 +160,19 @@ export default function VideoTrimScreen({
               if (videoPlayer.current?.state.currentTime! < endTime) {
                 try {
                   setStartTime(videoPlayer.current?.state!.currentTime!);
+                  console.log(videoPlayer.current?.state!.currentTime!);
+
                   trimVideo();
                 } catch (error) {
                   console.log(error);
                 }
               }
             }}>
-            <MaterialCommunityIcon name="contain-start" size={40} />
+            <MaterialCommunityIcon
+              name="contain-start"
+              size={40}
+              color={'gray'}
+            />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.previewButton}
@@ -182,13 +191,18 @@ export default function VideoTrimScreen({
               if (videoPlayer.current?.state.currentTime! > startTime) {
                 try {
                   setEndTime(videoPlayer.current?.state!.currentTime!);
+                  console.log(videoPlayer.current?.state!.currentTime!);
                   trimVideo();
                 } catch (error) {
                   console.log(error);
                 }
               }
             }}>
-            <MaterialCommunityIcon name="contain-end" size={40} />
+            <MaterialCommunityIcon
+              name="contain-end"
+              size={40}
+              color={'gray'}
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.imageControl}>
@@ -222,12 +236,20 @@ export default function VideoTrimScreen({
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}>
-            <MaterialCommunityIcon name="chevron-left" size={30} />
+            <MaterialCommunityIcon
+              name="chevron-left"
+              size={30}
+              color={'gray'}
+            />
             <Text style={styles.pageNavigatorText}>Back</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.nextButton}>
             <Text style={styles.pageNavigatorText}>Next</Text>
-            <MaterialCommunityIcon name="chevron-right" size={30} />
+            <MaterialCommunityIcon
+              name="chevron-right"
+              size={30}
+              color={'gray'}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -278,6 +300,7 @@ const styles = StyleSheet.create({
   setButtonText: {
     fontSize: 20,
     fontFamily: 'Orbitron-VariableFont_wght',
+    color: 'gray',
   },
   thumbnail: {
     height: '100%',
@@ -286,6 +309,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 15,
+    color: 'gray',
   },
   previewButton: {
     flex: 5,
@@ -300,6 +324,7 @@ const styles = StyleSheet.create({
   previewText: {
     fontSize: 20,
     fontFamily: 'Orbitron-VariableFont_wght',
+    color: 'gray',
   },
   pageNavigator: {
     flexDirection: 'row',
@@ -308,9 +333,11 @@ const styles = StyleSheet.create({
   pageNavigatorText: {
     fontFamily: 'Orbitron-VariableFont_wght',
     fontSize: 20,
+    color: 'gray',
   },
   trimText: {
     fontFamily: 'Orbitron-VariableFont_wght',
+    color: 'gray',
   },
   backButton: {
     alignItems: 'center',

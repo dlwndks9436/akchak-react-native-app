@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useRef, useState, useMemo, useCallback} from 'react';
-import {Alert, StyleSheet, Text, View} from 'react-native';
+import {Alert, StatusBar, StyleSheet, Text, View} from 'react-native';
 import {
   PinchGestureHandler,
   PinchGestureHandlerGestureEvent,
@@ -372,6 +372,7 @@ export default function CameraScreen2({
 
   return (
     <View style={styles.container}>
+      <StatusBar translucent={true} backgroundColor={'#00000000'} />
       {device != null && (
         <PinchGestureHandler onGestureEvent={onPinchGesture} enabled={isActive}>
           <Reanimated.View style={StyleSheet.absoluteFill}>
