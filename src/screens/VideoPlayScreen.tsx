@@ -1,10 +1,9 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {AndroidBackHandler} from 'react-navigation-backhandler';
-// import {Alert} from 'react-native';
 import {RootStackPlayScreenProps} from '../types/type';
-import VideoPlayer from 'react-native-video-player';
-import Orientation, {OrientationLocker} from 'react-native-orientation-locker';
+import VideoPlayer from 'react-native-video-controls';
+import Orientation from 'react-native-orientation-locker';
 
 //handle back button to home!
 
@@ -16,6 +15,7 @@ export default function VideoPlayScreen({
   navigation,
   route,
 }: RootStackPlayScreenProps) {
+  const videoPlayer = React.useRef<VideoPlayer>(null);
   // const player = useRef<Video>(null);
 
   // const checkGoBack = () => {
@@ -52,15 +52,22 @@ export default function VideoPlayScreen({
 
   return (
     <AndroidBackHandler onBackPress={onBackButtonPressAndroid}>
-      <OrientationLocker orientation={'LANDSCAPE'} />
       <View style={styles.body}>
         <VideoPlayer
-          video={{
-            uri: route.params.videoUri,
+          source={{uri: route.params.videoUri}}
+          ref={videoPlayer}
+          style={styles.videoPlayer}
+          disableFullscreen={true}
+          fullscreen={true}
+          disableBack={true}
+          paused={true}
+          onEnd={() => {
+            videoPlayer.current?.seekTo(0);
+            videoPlayer.current?.setSeekerPosition(0);
+            const previousState = videoPlayer?.current?.state;
+            const newState = {...previousState, paused: true};
+            videoPlayer.current?.setState(newState);
           }}
-          videoWidth={200}
-          videoHeight={100}
-          showDuration={true}
         />
       </View>
     </AndroidBackHandler>
@@ -75,5 +82,9 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
     right: 0,
+  },
+  videoPlayer: {
+    height: '100%',
+    width: '100%',
   },
 });

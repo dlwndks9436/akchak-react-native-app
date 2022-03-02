@@ -1,42 +1,47 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import {RootStackParamList} from './types/type';
-import BottomTab from './navigation/BottomTab';
-import CameraScreenPrev from './screens/CameraScreenPrev';
-import CameraScreen from './screens/CameraScreen';
-import CameraPermissionScreen from './screens/CameraPermissionScreen';
-// import CameraModalScreen from './screens/CameraModalScreen';
-import VideoPlayScreen from './screens/VideoPlayScreen';
-import {Provider} from 'react-redux';
-import {store} from './redux';
-import VideoTrimScreen from './screens/VideoTrimScreen';
-
-const RootStack = createStackNavigator<RootStackParamList>();
+import {Provider as StoreProvider} from 'react-redux';
+import {Provider as PaperProvider} from 'react-native-paper';
+import {store} from './redux/store';
+import RootStack from './navigation/RootStack';
+import {PreferencesContext} from './components/atoms/PreferencesContext';
+import FocusAwareStatusBar from './components/atoms/FocusAwareStatusBar';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {theme} from './styles/theme';
 
 const App = () => {
+  const [isThemeDark, setIsThemeDark] = React.useState(false);
+  // let theme = isThemeDark ? CombinedDarkTheme : CombinedDefaultTheme;
+
+  const toggleTheme = React.useCallback(() => {
+    return setIsThemeDark(!isThemeDark);
+  }, [isThemeDark]);
+
+  const preferences = React.useMemo(
+    () => ({
+      toggleTheme,
+      isThemeDark,
+    }),
+    [toggleTheme, isThemeDark],
+  );
+
   return (
-    <Provider store={store}>
-      <NavigationContainer>
-        <RootStack.Navigator
-          initialRouteName="Tab"
-          screenOptions={{headerShown: false, animationTypeForReplace: 'push'}}>
-          <RootStack.Group>
-            <RootStack.Screen name="Tab" component={BottomTab} />
-            <RootStack.Screen name="VideoPlay" component={VideoPlayScreen} />
-            <RootStack.Screen name="VideoTrim" component={VideoTrimScreen} />
-            <RootStack.Screen
-              name="CameraPermission"
-              component={CameraPermissionScreen}
-            />
-          </RootStack.Group>
-          <RootStack.Group screenOptions={{presentation: 'modal'}}>
-            <RootStack.Screen name="CameraPrev" component={CameraScreenPrev} />
-            <RootStack.Screen name="Camera" component={CameraScreen} />
-          </RootStack.Group>
-        </RootStack.Navigator>
-      </NavigationContainer>
-    </Provider>
+    <StoreProvider store={store}>
+      <PreferencesContext.Provider value={preferences}>
+        <SafeAreaProvider>
+          <PaperProvider theme={theme}>
+            <NavigationContainer theme={theme}>
+              <FocusAwareStatusBar
+                translucent={true}
+                barStyle={'dark-content'}
+                backgroundColor={'#ffffff00'}
+              />
+              <RootStack />
+            </NavigationContainer>
+          </PaperProvider>
+        </SafeAreaProvider>
+      </PreferencesContext.Provider>
+    </StoreProvider>
   );
 };
 

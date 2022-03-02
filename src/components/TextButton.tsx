@@ -1,15 +1,14 @@
 import React from 'react';
 import {TouchableOpacity, Text, StyleSheet} from 'react-native';
-import {gray} from '../styles/colors';
 
 const TextButton: React.FC<{
   colorDepth: number;
   text: string;
   onPressFunc?: Function;
-}> = ({colorDepth, text, onPressFunc}) => {
+}> = ({text, onPressFunc}) => {
   return (
     <TouchableOpacity
-      style={[styles.button, {backgroundColor: gray[colorDepth]}]}
+      style={[styles.button]}
       onPress={
         onPressFunc &&
         (() => {

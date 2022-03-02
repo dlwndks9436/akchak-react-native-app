@@ -1,12 +1,19 @@
 import {StackNavigationProp, StackScreenProps} from '@react-navigation/stack';
 
 export type RootStackParamList = {
-  CameraPrev: undefined;
   Camera: undefined;
   Tab: undefined;
   CameraPermission: undefined;
   VideoPlay: {videoUri: string};
   VideoTrim: {videoUri: string; duration: number; directory: string};
+  AuthStack: undefined;
+};
+
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+  ForgotPassword: undefined;
+  CreateNewPassword: undefined;
 };
 
 export type BottomTabParamList = {
@@ -40,30 +47,45 @@ export type RootStackCameraScreenProps = StackScreenProps<
   'Camera'
 >;
 
+export type AuthStackLoginScreenProps = StackScreenProps<
+  AuthStackParamList,
+  'Login'
+>;
+
+export type AuthStackRegisterScreenProps = StackScreenProps<
+  AuthStackParamList,
+  'Register'
+>;
+
+export type AuthStackForgotPasswordScreenProps = StackScreenProps<
+  AuthStackParamList,
+  'ForgotPassword'
+>;
+
+export type AuthStackCreateNewPasswordScreenProps = StackScreenProps<
+  AuthStackParamList,
+  'CreateNewPassword'
+>;
+
 export interface PracticeLogType {
-  id: number;
+  id: string;
   filePath: string;
   fileName: string;
   duration: number | undefined;
   directory: string;
   formattedDuration: string | undefined;
   formattedDurationWithoutMillisecond: string | undefined;
-  date: Date;
+  date: string;
 }
 
 export interface PracticeLogItemType {
-  id: number;
+  id: string;
   filePath: string;
   fileName: string;
   duration: number | undefined;
   directory: string;
   formattedDuration: string | undefined;
   formattedDurationWithoutMillisecond: string | undefined;
-  date: Date;
+  date: string;
   navigation: StackNavigationProp<RootStackParamList, 'Tab'>;
 }
-
-export type PracticeLogsType = {
-  datas: PracticeLogType[];
-  nextID: number;
-};

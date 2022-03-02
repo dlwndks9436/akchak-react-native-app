@@ -3,10 +3,14 @@ import React, {useEffect, useState} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
-import {gray} from '../styles/colors';
 import DummyScreen from '../screens/DummyScreen';
 import PracticeLogListScreen from '../screens/PracticeLogListScreen';
 import {Camera, CameraPermissionStatus} from 'react-native-vision-camera';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+import {RootStackParamList} from '../types/type';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {useAppSelector} from '../redux/hooks';
+import {checkUserLoggedIn} from '../features/user/userSlice';
 
 const Tab = createBottomTabNavigator();
 
@@ -16,6 +20,8 @@ export default function BottomTab() {
   const [microphonePermission, setMicrophonePermission] =
     useState<CameraPermissionStatus>();
 
+  const userLoggedIn = useAppSelector(checkUserLoggedIn);
+
   useEffect(() => {
     Camera.getCameraPermissionStatus().then(setCameraPermission);
     Camera.getMicrophonePermissionStatus().then(setMicrophonePermission);
@@ -24,13 +30,23 @@ export default function BottomTab() {
   const showPermissionsPage =
     cameraPermission !== 'authorized' || microphonePermission !== 'authorized';
 
+  const navigateToNextScreen = (
+    navigation: StackNavigationProp<RootStackParamList>,
+  ) => {
+    if (userLoggedIn) {
+      showPermissionsPage
+        ? navigation.navigate('CameraPermission')
+        : navigation.navigate('Camera');
+    } else {
+      navigation.navigate('AuthStack');
+    }
+  };
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
       backBehavior="initialRoute"
       screenOptions={() => ({
-        tabBarActiveTintColor: gray[8],
-        tabBarInactiveTintColor: gray[6],
         headerShown: false,
         tabBarShowLabel: false,
         tabBarIconStyle: {width: '100%', height: '100%'},
@@ -70,15 +86,11 @@ export default function BottomTab() {
               size={40}
             />
           ),
-          // tabBarStyle: {height: 0, backgroundColor: '#000000'},
-          tabBarStyle: {backgroundColor: '#000000'},
         })}
         listeners={({navigation}) => ({
           tabPress: event => {
             event.preventDefault();
-            showPermissionsPage
-              ? navigation.navigate('CameraPermission')
-              : navigation.navigate('Camera');
+            navigateToNextScreen(navigation);
           },
         })}
       />

@@ -9,19 +9,22 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  PracticeLogsType,
   PracticeLogType,
   PracticeLogItemType,
   RootStackTabScreenProps,
 } from '../types/type';
 import RNFS from 'react-native-fs';
-import {useSelector, useDispatch} from 'react-redux';
-import {ApplicationState, setPracticeLogs} from '../redux';
-import Orientation from 'react-native-orientation-locker';
-import FocusAwareStatusBar from '../components/atoms/FocusAwareStatusBar';
+import {useAppDispatch, useAppSelector} from '../redux/hooks';
+import {
+  practiceLogDeleted,
+  selectAllPracticeLogs,
+} from '../features/practiceLogs/practiceLogsSlice';
+// import {useSelector, useDispatch} from 'react-redux';
+// import {ApplicationState, setPracticeLogs} from '../redux';
+// import Orientation from 'react-native-orientation-locker';
 
 const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
@@ -34,7 +37,7 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
 }) => {
   duration = parseInt(duration!.toString(), 10);
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const deleteLog = () => {
     Alert.alert('Would you delete ' + fileName, undefined, [
@@ -47,19 +50,16 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
               const previousLogStr: string = (await AsyncStorage.getItem(
                 'practice_logs',
               )) as string;
-              const previousLogs: PracticeLogsType = JSON.parse(previousLogStr);
-              const newLogDatas: PracticeLogType[] = previousLogs.datas.filter(
+              const previousLogs: PracticeLogType[] =
+                JSON.parse(previousLogStr);
+              const newLogs: PracticeLogType[] = previousLogs.filter(
                 value => value.id !== id,
               );
-              const newLogs: PracticeLogsType = {
-                datas: newLogDatas,
-                nextID: previousLogs.nextID,
-              };
               await AsyncStorage.setItem(
                 'practice_logs',
                 JSON.stringify(newLogs),
               );
-              dispatch(setPracticeLogs(newLogDatas));
+              dispatch(practiceLogDeleted(id));
             })
             .catch(err => console.log(err));
         },
@@ -100,31 +100,31 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
 export default function PracticeLogListScreen({
   navigation,
 }: RootStackTabScreenProps) {
-  const [logDatas, setlogDatas] = useState<PracticeLogType[] | null>(null);
+  const practiceLogs = useAppSelector(selectAllPracticeLogs);
 
-  const {globalPracticeLogs} = useSelector(
-    (state: ApplicationState) => state.practiceLogReducer,
-  );
+  // const {globalPracticeLogs} = useSelector(
+  //   (state: ApplicationState) => state.practiceLogReducer,
+  // );
 
-  useEffect(() => {
-    Orientation.unlockAllOrientations();
-    const fetchLogDatas = async () => {
-      const savedLogs: string | null = await AsyncStorage.getItem(
-        'practice_logs',
-      );
-      console.log(savedLogs);
+  // useEffect(() => {
+  //   Orientation.unlockAllOrientations();
+  //   const fetchLogDatas = async () => {
+  //     const savedLogs: string | null = await AsyncStorage.getItem(
+  //       'practice_logs',
+  //     );
+  //     console.log(savedLogs);
 
-      if (savedLogs !== null) {
-        const practiceLogs: PracticeLogsType = JSON.parse(savedLogs);
-        setlogDatas(practiceLogs.datas);
-      }
-    };
-    fetchLogDatas();
-  }, []);
+  //     if (savedLogs !== null) {
+  //       const practiceLogs: PracticeLogsType = JSON.parse(savedLogs);
+  //       setlogDatas(practiceLogs.datas);
+  //     }
+  //   };
+  //   fetchLogDatas();
+  // }, []);
 
-  useEffect(() => {
-    setlogDatas(globalPracticeLogs);
-  }, [globalPracticeLogs]);
+  // useEffect(() => {
+  //   setlogDatas(globalPracticeLogs);
+  // }, [globalPracticeLogs]);
 
   const renderItem: ListRenderItem<PracticeLogType> = ({item}) => (
     <PracticeLog
@@ -144,16 +144,11 @@ export default function PracticeLogListScreen({
 
   return (
     <SafeAreaView style={styles.container}>
-      <FocusAwareStatusBar
-        translucent={true}
-        barStyle={'dark-content'}
-        backgroundColor={'#ffffff00'}
-      />
-      {logDatas ? (
+      {practiceLogs.length > 0 ? (
         <FlatList
-          data={logDatas}
+          data={practiceLogs}
           renderItem={renderItem}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={item => item.id}
         />
       ) : (
         <View style={styles.empty_container}>

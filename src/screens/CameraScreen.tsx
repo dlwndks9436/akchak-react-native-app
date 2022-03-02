@@ -33,16 +33,16 @@ import {CaptureButton} from '../components/atoms/CaptureButton';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
-import {
-  PracticeLogsType,
-  PracticeLogType,
-  RootStackCameraScreenProps,
-} from '../types/type';
+import {PracticeLogType, RootStackCameraScreenProps} from '../types/type';
 import {useIsFocused} from '@react-navigation/core';
 import {formatDuration, formatTime} from '../utils';
 import {useAndroidBackHandler} from 'react-navigation-backhandler';
 import RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useAppDispatch} from '../redux/hooks';
+import {nanoid} from '@reduxjs/toolkit';
+
+import {practiceLogAdded} from '../features/practiceLogs/practiceLogsSlice';
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({
@@ -52,7 +52,7 @@ Reanimated.addWhitelistedNativeProps({
 const SCALE_FULL_ZOOM = 3;
 const BUTTON_SIZE = 40;
 
-export default function CameraScreen2({
+export default function CameraScreen({
   navigation,
 }: RootStackCameraScreenProps): React.ReactElement {
   const camera = useRef<Camera>(null);
@@ -75,6 +75,8 @@ export default function CameraScreen2({
 
   const [isRecording, setIsRecording] = useState(false);
   const [timeRecording, setTimeRecording] = useState<number>(0);
+
+  const dispatch = useAppDispatch();
 
   // camera format settings
   const devices = useCameraDevices();
@@ -227,24 +229,39 @@ export default function CameraScreen2({
         currentHour +
         currentMin +
         currentSec;
-      RNFS.mkdir(RNFS.ExternalDirectoryPath + '/' + fileName);
+
+      await RNFS.mkdir(RNFS.ExternalDirectoryPath + '/' + fileName);
       const directory: string =
         'file://' + RNFS.ExternalDirectoryPath + '/' + fileName;
       const newFilePath: string = directory + '/practice.mp4';
-      RNFS.moveFile(media.path, newFilePath);
+      await RNFS.moveFile(media.path, newFilePath);
 
       const duration: number = media.duration as number;
       const formattedDuration = formatDuration(duration);
       const formattedDurationWithoutMillisecond =
         formattedDuration.split('.')[0];
 
-      let practiceLogs: PracticeLogsType;
+      const id = nanoid();
+
+      dispatch(
+        practiceLogAdded({
+          id,
+          filePath: newFilePath,
+          fileName,
+          directory,
+          duration,
+          formattedDuration,
+          formattedDurationWithoutMillisecond,
+          date: practiceDate.toUTCString(),
+        }),
+      );
+
       const savedPracticeLogs: string | null = await AsyncStorage.getItem(
         'practice_logs',
       );
 
       if (savedPracticeLogs !== null) {
-        practiceLogs = JSON.parse(savedPracticeLogs);
+        const practiceLogs = JSON.parse(savedPracticeLogs);
 
         const newLogData: PracticeLogType = {
           id: practiceLogs.nextID,
@@ -254,13 +271,14 @@ export default function CameraScreen2({
           duration,
           formattedDuration,
           formattedDurationWithoutMillisecond,
-          date: practiceDate,
+          date: practiceDate.toUTCString(),
         };
         // console.log('newLogData', newLogData);
-        const newPracticeLogs: PracticeLogsType = {
-          datas: [...practiceLogs.datas, newLogData],
-          nextID: practiceLogs.nextID + 1,
-        };
+        const newPracticeLogs: PracticeLogType[] = [
+          ...practiceLogs,
+          newLogData,
+        ];
+
         console.log('newPracticeLogs', newPracticeLogs);
         await AsyncStorage.setItem(
           'practice_logs',
@@ -268,27 +286,27 @@ export default function CameraScreen2({
         );
       } else {
         const newLogData: PracticeLogType = {
-          id: 1,
+          id,
           filePath: newFilePath,
           fileName,
           duration,
           directory,
           formattedDuration,
           formattedDurationWithoutMillisecond,
-          date: practiceDate,
+          date: practiceDate.toUTCString(),
         };
         console.log(newLogData);
 
         await AsyncStorage.setItem(
           'practice_logs',
-          JSON.stringify({datas: [newLogData], nextID: 2}),
+          JSON.stringify([newLogData]),
         );
       }
       navigation.navigate('VideoPlay', {
         videoUri: newFilePath,
       });
     },
-    [navigation],
+    [navigation, dispatch],
   );
   const onFlipCameraPressed = useCallback(() => {
     setCameraPosition(p => (p === 'back' ? 'front' : 'back'));

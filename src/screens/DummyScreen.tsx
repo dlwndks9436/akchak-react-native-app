@@ -2,7 +2,7 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
 export default function DummyScreen() {
-  return <View style={styles.container}></View>;
+  return <View style={styles.container} />;
 }
 
 const styles = StyleSheet.create({
