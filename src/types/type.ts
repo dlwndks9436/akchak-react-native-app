@@ -5,14 +5,37 @@ export type RootStackParamList = {
   Tab: undefined;
   CameraPermission: undefined;
   VideoPlay: {videoUri: string};
-  VideoTrim: {videoUri: string; duration: number; directory: string};
+  VideoTrim: {
+    videoUri: string;
+    duration: number;
+    directory: string;
+    id: string;
+    fileName: string;
+  };
+  Upload: {
+    trimmedVideoUri?: string;
+    thumbnailUri?: string;
+    duration?: number;
+    id: string;
+    practiceTime?: number;
+    fileName?: string;
+    thumbnailName?: string;
+    directory?: string;
+    title?: string;
+    description?: string;
+  };
   AuthStack: undefined;
+  'Validate E-mail': undefined;
+  Splash: undefined;
+  ViewPractice: {
+    practiceId: number;
+  };
 };
 
 export type AuthStackParamList = {
   Login: undefined;
-  Register: undefined;
-  ForgotPassword: undefined;
+  'Sign up': undefined;
+  'New password': undefined;
   CreateNewPassword: undefined;
 };
 
@@ -27,6 +50,11 @@ export type RootStackTabScreenProps = StackScreenProps<
   'Tab'
 >;
 
+export type RootStackViewPracticeScreenProps = StackScreenProps<
+  RootStackParamList,
+  'ViewPractice'
+>;
+
 export type RootStackPlayScreenProps = StackScreenProps<
   RootStackParamList,
   'VideoPlay'
@@ -35,6 +63,11 @@ export type RootStackPlayScreenProps = StackScreenProps<
 export type RootStackTrimScreenProps = StackScreenProps<
   RootStackParamList,
   'VideoTrim'
+>;
+
+export type RootStackUploadScreenProps = StackScreenProps<
+  RootStackParamList,
+  'Upload'
 >;
 
 export type RootStackPermissionScreenProps = StackScreenProps<
@@ -54,12 +87,12 @@ export type AuthStackLoginScreenProps = StackScreenProps<
 
 export type AuthStackRegisterScreenProps = StackScreenProps<
   AuthStackParamList,
-  'Register'
+  'Sign up'
 >;
 
 export type AuthStackForgotPasswordScreenProps = StackScreenProps<
   AuthStackParamList,
-  'ForgotPassword'
+  'New password'
 >;
 
 export type AuthStackCreateNewPasswordScreenProps = StackScreenProps<

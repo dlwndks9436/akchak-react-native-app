@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.content.Intent;
 import android.content.res.Configuration;
 
+import expo.modules.ReactActivityDelegateWrapper;
+import com.facebook.react.ReactActivityDelegate;
+
 public class MainActivity extends ReactActivity {
 
   /**
@@ -27,5 +30,12 @@ public class MainActivity extends ReactActivity {
     Intent intent = new Intent("onConfigurationChanged");
     intent.putExtra("newConfig", newConfig);
     this.sendBroadcast(intent);
+  }
+
+  @Override
+  protected ReactActivityDelegate createReactActivityDelegate() {
+    return new ReactActivityDelegateWrapper(this,
+      new ReactActivityDelegate(this, getMainComponentName())
+    );
   }
 }

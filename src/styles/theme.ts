@@ -24,5 +24,6 @@ export const theme = {
     text: '#0b3454',
     card: 'white',
     border: 'white',
+    background: 'white',
   },
 };

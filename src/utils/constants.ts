@@ -27,3 +27,6 @@ export const SCREEN_HEIGHT = Platform.select<number>({
 
 // Capture Button
 export const CAPTURE_BUTTON_SIZE = 78;
+
+export const API_URL =
+  'http://resonar-server-env.eba-ghznmhgu.ap-northeast-2.elasticbeanstalk.com:80/';

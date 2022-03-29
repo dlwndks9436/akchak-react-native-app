@@ -44,24 +44,24 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
       {
         text: 'OK',
         onPress: async () => {
-          RNFS.unlink(directory)
+          await RNFS.unlink(directory)
             .then(async () => {
               console.log('file deleted');
-              const previousLogStr: string = (await AsyncStorage.getItem(
-                'practice_logs',
-              )) as string;
-              const previousLogs: PracticeLogType[] =
-                JSON.parse(previousLogStr);
-              const newLogs: PracticeLogType[] = previousLogs.filter(
-                value => value.id !== id,
-              );
-              await AsyncStorage.setItem(
-                'practice_logs',
-                JSON.stringify(newLogs),
-              );
-              dispatch(practiceLogDeleted(id));
             })
             .catch(err => console.log(err));
+
+          const previousLogStr = await AsyncStorage.getItem('practice_logs');
+          if (previousLogStr) {
+            const previousLogs: PracticeLogType[] = JSON.parse(previousLogStr);
+            const newLogs: PracticeLogType[] = previousLogs.filter(
+              value => value.id !== id,
+            );
+            await AsyncStorage.setItem(
+              'practice_logs',
+              JSON.stringify(newLogs),
+            );
+          }
+          dispatch(practiceLogDeleted(id));
         },
       },
       {
@@ -89,6 +89,8 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
             videoUri: filePath,
             duration: duration as number,
             directory: directory,
+            fileName,
+            id,
           })
         }>
         <Text style={styles.upload_text}>Upload</Text>

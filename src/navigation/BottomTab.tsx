@@ -11,6 +11,7 @@ import {RootStackParamList} from '../types/type';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useAppSelector} from '../redux/hooks';
 import {checkUserLoggedIn} from '../features/user/userSlice';
+import ProfileScreen from '../screens/AccountScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -92,6 +93,15 @@ export default function BottomTab() {
             event.preventDefault();
             navigateToNextScreen(navigation);
           },
+        })}
+      />
+      <Tab.Screen
+        name="Account"
+        component={ProfileScreen}
+        options={() => ({
+          tabBarIcon: ({color}) => (
+            <MaterialCommunityIcon name="account" color={color} size={40} />
+          ),
         })}
       />
     </Tab.Navigator>

@@ -13,8 +13,9 @@ import axios, {AxiosResponse, AxiosError} from 'axios';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import validator from 'validator';
+import {API_URL} from '../utils/constants';
 
-export default function RegisterScreen({
+export default function SignupScreen({
   navigation,
 }: AuthStackRegisterScreenProps) {
   const [username, setUsername] = useState('');
@@ -111,7 +112,7 @@ export default function RegisterScreen({
   const signup = async () => {
     if (inputsAreValid()) {
       await axios
-        .post('http://192.168.35.202:30000/auth/signup', {
+        .post(API_URL + 'auth/signup', {
           username,
           email,
           password,
@@ -141,14 +142,7 @@ export default function RegisterScreen({
   return (
     <SafeAreaView style={{flex: 1}}>
       <KeyboardAwareScrollView>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: Dimensions.get('window').width,
-            marginTop: Dimensions.get('window').height / 10,
-          }}>
+        <View style={styles.container}>
           <Portal>
             <Dialog visible={visibleDialog}>
               <Dialog.Content>
@@ -237,6 +231,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width: Dimensions.get('window').width,
+    marginTop: Dimensions.get('window').height / 15,
   },
   textInput: {
     height: 50,

@@ -264,7 +264,7 @@ export default function CameraScreen({
         const practiceLogs = JSON.parse(savedPracticeLogs);
 
         const newLogData: PracticeLogType = {
-          id: practiceLogs.nextID,
+          id,
           filePath: newFilePath,
           fileName,
           directory,
@@ -411,7 +411,6 @@ export default function CameraScreen({
                 // photo={true}
                 video={true}
                 audio={hasMicrophonePermission}
-                orientation="portrait"
               />
             </TapGestureHandler>
           </Reanimated.View>

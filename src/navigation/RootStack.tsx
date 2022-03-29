@@ -12,9 +12,16 @@ import {
   checkPracticeLogsStatus,
   initializePracticeLogs,
 } from '../features/practiceLogs/practiceLogsSlice';
-import {checkUserStatus, initializeUser} from '../features/user/userSlice';
+import {
+  checkUserActive,
+  checkUserLoggedIn,
+  checkUserStatus,
+  initializeUser,
+} from '../features/user/userSlice';
 import SplashScreen from '../screens/SplashScreen';
-// import SecureStore from 'expo-secure-store';
+import AuthCodeScreen from '../screens/AuthCodeScreen';
+import UploadPracticeScreen from '../screens/UploadPracticeScreen';
+import ViewPracticeScreen from '../screens/ViewPracticeScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -22,6 +29,8 @@ const RootStack = () => {
   const dispatch = useAppDispatch();
   const practiceLogsStatus = useAppSelector(checkPracticeLogsStatus);
   const userStatus = useAppSelector(checkUserStatus);
+  const userLoggedin = useAppSelector(checkUserLoggedIn);
+  const userActive = useAppSelector(checkUserActive);
 
   useEffect(() => {
     if (practiceLogsStatus === 'idle') {
@@ -35,31 +44,43 @@ const RootStack = () => {
     }
   }, [userStatus, dispatch]);
 
-  // useEffect(() => {
-  //   const getToken = async()=>{
-  //     const savedAccessToken = await SecureStore.getItemAsync('accessToken');
-  //     const savedRefreshToken = await SecureStore.getItemAsync('refreshToken');
-  //     if(savedAccessToken && savedRefreshToken) {
-
-  //     }
-  //   }
-  // }, []);
-
   if (
-    practiceLogsStatus === ('idle' || 'loading') &&
-    userStatus === ('idle' || 'loading')
+    practiceLogsStatus === ('idle' || 'loading') ||
+    userStatus === ('idle' || 'loading') ||
+    userLoggedin === null
   ) {
-    return <SplashScreen />;
+    return (
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Splash" component={SplashScreen} />
+      </Stack.Navigator>
+    );
   }
 
+  if (!userLoggedin) {
+    return (
+      <Stack.Navigator screenOptions={{headerShown: false}}>
+        <Stack.Screen name="AuthStack" component={AuthStack} />
+      </Stack.Navigator>
+    );
+  }
+
+  if (!userActive) {
+    return (
+      <Stack.Navigator>
+        <Stack.Screen name="Validate E-mail" component={AuthCodeScreen} />
+      </Stack.Navigator>
+    );
+  }
   return (
     <Stack.Navigator
       initialRouteName="Tab"
       screenOptions={{headerShown: false, animationTypeForReplace: 'push'}}>
       <Stack.Group>
         <Stack.Screen name="Tab" component={BottomTab} />
+        <Stack.Screen name="ViewPractice" component={ViewPracticeScreen} />
         <Stack.Screen name="VideoPlay" component={VideoPlayScreen} />
         <Stack.Screen name="VideoTrim" component={VideoTrimScreen} />
+        <Stack.Screen name="Upload" component={UploadPracticeScreen} />
         <Stack.Screen
           name="CameraPermission"
           component={CameraPermissionScreen}
@@ -67,7 +88,6 @@ const RootStack = () => {
       </Stack.Group>
       <Stack.Group screenOptions={{presentation: 'modal'}}>
         <Stack.Screen name="Camera" component={CameraScreen} />
-        <Stack.Screen name="AuthStack" component={AuthStack} />
       </Stack.Group>
     </Stack.Navigator>
   );

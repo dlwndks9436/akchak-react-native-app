@@ -3,27 +3,27 @@ import React, {useState} from 'react';
 import {TextInput, Button} from 'react-native-paper';
 
 export default function CreateNewPasswordScreen() {
-  const [email, setEmail] = useState('');
-  const [secondEmail, setSecondEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   return (
     <View style={styles.container}>
       <TextInput
         label="Password"
-        value={email}
-        onChangeText={text => setEmail(text)}
+        value={password}
+        onChangeText={text => setPassword(text)}
         style={styles.textInput}
       />
       <TextInput
         label="Confirm Password"
-        value={secondEmail}
-        onChangeText={text => setSecondEmail(text)}
+        value={confirmPassword}
+        onChangeText={text => setConfirmPassword(text)}
         style={styles.textInput}
       />
       <Button
         mode="contained"
-        contentStyle={styles.loginButtonContent}
-        style={styles.loginButton}>
+        contentStyle={styles.continueButtonContent}
+        style={styles.continueButton}>
         Create
       </Button>
     </View>
@@ -41,19 +41,11 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width / 1.2,
     marginVertical: 10,
   },
-  askPassword: {
-    alignSelf: 'flex-end',
-    right: Dimensions.get('window').width / 20,
-  },
-  loginButton: {
+  continueButton: {
     marginVertical: 20,
   },
-  loginButtonContent: {
+  continueButtonContent: {
     width: Dimensions.get('window').width / 1.2,
     height: 60,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
 });

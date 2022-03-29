@@ -13,7 +13,7 @@ import {RootStackTrimScreenProps} from '../types/type';
 import Orientation, {OrientationLocker} from 'react-native-orientation-locker';
 import {AndroidBackHandler} from 'react-navigation-backhandler';
 import VideoPlayer from 'react-native-video-controls';
-import {FFmpegKit, ReturnCode} from 'ffmpeg-kit-react-native';
+import {FFmpegKit, FFprobeKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {formatDuration} from '../utils';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFS from 'react-native-fs';
@@ -27,6 +27,9 @@ export default function VideoTrimScreen({
   const [thumbnailUri, setThumbnailUri] = useState<string>();
   const [videoUri] = useState(route.params.videoUri);
   const [trimmedVideoUri, setTrimmedVideoUri] = useState<string>();
+  const [duration, setDuration] = useState<number>();
+  const [fileName, setFileName] = useState<string>('');
+  const [thumbnailName, setThumbnailName] = useState<string>('');
 
   const videoPlayer = React.useRef<VideoPlayer>(null);
   const imageRef = React.useRef<Image>(null);
@@ -41,6 +44,8 @@ export default function VideoTrimScreen({
         files.forEach(file => {
           if (file.name.includes('thumbnail')) {
             setThumbnailUri('file://' + file.path);
+            const jpgName = file.path.split('/').pop() as string;
+            setThumbnailName(jpgName);
             return false;
           }
         });
@@ -75,8 +80,9 @@ export default function VideoTrimScreen({
 
     const milsec = new Date().getMilliseconds();
     const sec = new Date().getSeconds();
-    const newUri =
-      route.params.directory + '/practice_editted' + sec + milsec + '.mp4';
+    const newFileName = 'practice_editted' + sec + milsec + '.mp4';
+    setFileName(newFileName);
+    const newUri = route.params.directory + '/' + newFileName;
     FFmpegKit.execute(
       '-i ' +
         route.params.videoUri +
@@ -91,6 +97,11 @@ export default function VideoTrimScreen({
         const returnCode = await session.getReturnCode();
         if (ReturnCode.isSuccess(returnCode)) {
           setTrimmedVideoUri(newUri);
+          const time = await FFprobeKit.execute(
+            `-i ${newUri} -show_entries format=duration -v quiet -of csv="p=0"`,
+          );
+          const durStr = await time.getOutput();
+          setDuration(Number.parseFloat(durStr));
           console.log(newUri);
           if (previousTrimmedVideosUri.length > 0) {
             previousTrimmedVideosUri.forEach(videoPath => {
@@ -127,10 +138,12 @@ export default function VideoTrimScreen({
     console.log(jpgUri);
 
     FFmpegKit.execute(
-      '-i ' + videoUri + ' -ss ' + seconds + ' -vframes 1 -q:v 2 -y ' + jpgUri,
+      '-ss ' + seconds + ' -i ' + videoUri + ' -frames:v 1 -q:v 2 ' + jpgUri,
     ).then(session => {
       console.log(session);
       setThumbnailUri('file://' + jpgUri);
+      const jpgName = jpgUri.split('/').pop() as string;
+      setThumbnailName(jpgName);
       if (previousThumbnailUri) {
         RNFS.unlink(previousThumbnailUri)
           .then(() => console.log('PREVIOUS THUMBNAIL DELETED'))
@@ -275,7 +288,22 @@ export default function VideoTrimScreen({
             />
             <Text style={styles.pageNavigatorText}>Back</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.nextButton}>
+          <TouchableOpacity
+            onPress={() => {
+              if (trimmedVideoUri && thumbnailUri && duration) {
+                navigation.navigate('Upload', {
+                  trimmedVideoUri,
+                  thumbnailUri,
+                  duration,
+                  practiceTime: route.params.duration,
+                  id: route.params.id,
+                  fileName,
+                  thumbnailName,
+                  directory: route.params.fileName,
+                });
+              }
+            }}
+            style={styles.nextButton}>
             <Text style={styles.pageNavigatorText}>Next</Text>
             <MaterialCommunityIcon
               name="chevron-right"
