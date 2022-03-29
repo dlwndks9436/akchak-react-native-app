@@ -43,6 +43,7 @@ import {useAppDispatch} from '../redux/hooks';
 import {nanoid} from '@reduxjs/toolkit';
 
 import {practiceLogAdded} from '../features/practiceLogs/practiceLogsSlice';
+import Orientation from 'react-native-orientation-locker';
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({
@@ -178,7 +179,6 @@ export default function CameraScreen({
       {
         text: 'OK',
         onPress: () => {
-          // Orientation.unlockAllOrientations();
           navigation.goBack();
         },
       },
@@ -189,7 +189,6 @@ export default function CameraScreen({
     if (isRecording) {
       checkGoBack();
     } else {
-      // Orientation.unlockAllOrientations();
       navigation.reset({index: 0, routes: [{name: 'Tab'}]});
     }
     return true;
@@ -333,6 +332,11 @@ export default function CameraScreen({
     Camera.getMicrophonePermissionStatus().then(status =>
       setHasMicrophonePermission(status === 'authorized'),
     );
+  }, []);
+
+  useEffect(() => {
+    Orientation.lockToLandscape();
+    return () => Orientation.unlockAllOrientations();
   }, []);
 
   useEffect(() => {
@@ -502,8 +506,9 @@ const styles = StyleSheet.create({
   },
   captureButton: {
     position: 'absolute',
-    alignSelf: 'center',
+    alignSelf: 'flex-end',
     bottom: SAFE_AREA_PADDING.paddingBottom,
+    right: SAFE_AREA_PADDING.paddingRight,
   },
   button: {
     marginBottom: CONTENT_SPACING,

@@ -7,7 +7,6 @@ import {
   ImageBackground,
 } from 'react-native';
 import {ActivityIndicator, Button, Text, Title} from 'react-native-paper';
-import Orientation from 'react-native-orientation-locker';
 import Api from '../libs/api';
 import {useAppSelector} from '../redux/hooks';
 import {selectAccessToken} from '../features/user/userSlice';
@@ -101,7 +100,6 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
       console.log('screen is focused');
       if (!startMount) {
         console.log('start mount function');
-        Orientation.unlockAllOrientations();
         componentDidMount();
       }
     } else {

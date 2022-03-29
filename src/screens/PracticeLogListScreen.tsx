@@ -22,9 +22,6 @@ import {
   practiceLogDeleted,
   selectAllPracticeLogs,
 } from '../features/practiceLogs/practiceLogsSlice';
-// import {useSelector, useDispatch} from 'react-redux';
-// import {ApplicationState, setPracticeLogs} from '../redux';
-// import Orientation from 'react-native-orientation-locker';
 
 const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
@@ -103,30 +100,6 @@ export default function PracticeLogListScreen({
   navigation,
 }: RootStackTabScreenProps) {
   const practiceLogs = useAppSelector(selectAllPracticeLogs);
-
-  // const {globalPracticeLogs} = useSelector(
-  //   (state: ApplicationState) => state.practiceLogReducer,
-  // );
-
-  // useEffect(() => {
-  //   Orientation.unlockAllOrientations();
-  //   const fetchLogDatas = async () => {
-  //     const savedLogs: string | null = await AsyncStorage.getItem(
-  //       'practice_logs',
-  //     );
-  //     console.log(savedLogs);
-
-  //     if (savedLogs !== null) {
-  //       const practiceLogs: PracticeLogsType = JSON.parse(savedLogs);
-  //       setlogDatas(practiceLogs.datas);
-  //     }
-  //   };
-  //   fetchLogDatas();
-  // }, []);
-
-  // useEffect(() => {
-  //   setlogDatas(globalPracticeLogs);
-  // }, [globalPracticeLogs]);
 
   const renderItem: ListRenderItem<PracticeLogType> = ({item}) => (
     <PracticeLog

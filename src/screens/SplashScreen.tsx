@@ -1,14 +1,10 @@
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
-import Orientation from 'react-native-orientation-locker';
+import React from 'react';
+import {View, StyleSheet, Image} from 'react-native';
 
 export default function SplashScreen() {
-  useEffect(() => {
-    Orientation.unlockAllOrientations();
-  }, []);
   return (
     <View style={styles.container}>
-      <Text style={{marginBottom: 20}}>This is Splash screen.</Text>
+      <Image source={require('../assets/images/logo_size.jpg')} />
     </View>
   );
 }
