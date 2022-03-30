@@ -1,5 +1,5 @@
-import React, {useCallback, useRef} from 'react';
-import {Alert, StyleSheet, View, ViewProps} from 'react-native';
+import React, {useCallback, useRef, useState} from 'react';
+import {StyleSheet, View, ViewProps} from 'react-native';
 import {
   PanGestureHandler,
   PanGestureHandlerGestureEvent,
@@ -7,6 +7,7 @@ import {
   TapGestureHandler,
   TapGestureHandlerStateChangeEvent,
 } from 'react-native-gesture-handler';
+import {Button, Dialog, Paragraph, Portal} from 'react-native-paper';
 import Reanimated, {
   cancelAnimation,
   Easing,
@@ -68,6 +69,11 @@ const _CaptureButton: React.FC<Props> = ({
   style,
   ...props
 }): React.ReactElement => {
+  const [visible, setVisible] = useState(false);
+
+  const showDialog = () => setVisible(true);
+  const hideDialog = () => setVisible(false);
+
   const pressDownDate = useRef<Date | undefined>(undefined);
   const isRecording = useRef(false);
   const recordingProgress = useSharedValue(0);
@@ -182,19 +188,7 @@ const _CaptureButton: React.FC<Props> = ({
               } else if (isRecording.current) {
                 // user has held the button for more than 200ms, so he has been recording this entire time.
 
-                Alert.alert('Did you finish your practice?', undefined, [
-                  {text: 'No', style: 'cancel'},
-                  {
-                    text: 'Yes',
-                    onPress: async () => {
-                      await stopRecording();
-                      isPressingButton.value = false;
-                      setTimeout(() => {
-                        setIsPressingButton(false);
-                      }, 500);
-                    },
-                  },
-                ]);
+                showDialog();
               }
             }
           } catch (err) {
@@ -207,13 +201,7 @@ const _CaptureButton: React.FC<Props> = ({
           break;
       }
     },
-    [
-      isPressingButton,
-      recordingProgress,
-      setIsPressingButton,
-      startRecording,
-      stopRecording,
-    ],
+    [isPressingButton, recordingProgress, setIsPressingButton, startRecording],
   );
   //#endregion
   //#region Pan handler
@@ -311,6 +299,27 @@ const _CaptureButton: React.FC<Props> = ({
       maxDurationMs={99999999} // <-- this prevents the TapGestureHandler from going to State.FAILED when the user moves his finger outside of the child view (to zoom)
       simultaneousHandlers={panHandler}>
       <Reanimated.View {...props} style={[buttonStyle, style]}>
+        <Portal>
+          <Dialog visible={visible} onDismiss={hideDialog}>
+            <Dialog.Content>
+              <Paragraph>Did you finish your practice?</Paragraph>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button
+                onPress={async () => {
+                  hideDialog();
+                  await stopRecording();
+                  isPressingButton.value = false;
+                  setTimeout(() => {
+                    setIsPressingButton(false);
+                  }, 500);
+                }}>
+                Yes
+              </Button>
+              <Button onPress={hideDialog}>No</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
         <PanGestureHandler
           enabled={enabled}
           ref={panHandler}

@@ -1,12 +1,10 @@
 import {
-  Text,
   ListRenderItem,
   StyleSheet,
   View,
   SafeAreaView,
   FlatList,
   TouchableOpacity,
-  Alert,
   StatusBar,
 } from 'react-native';
 import React from 'react';
@@ -22,6 +20,14 @@ import {
   practiceLogDeleted,
   selectAllPracticeLogs,
 } from '../features/practiceLogs/practiceLogsSlice';
+import {
+  Button,
+  Dialog,
+  Paragraph,
+  Portal,
+  Text,
+  Title,
+} from 'react-native-paper';
 
 const PracticeLog: React.FC<PracticeLogItemType> = ({
   duration,
@@ -34,50 +40,51 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
 }) => {
   duration = parseInt(duration!.toString(), 10);
 
+  const [visible, setVisible] = React.useState(false);
+
+  const showDialog = () => setVisible(true);
+  const hideDialog = () => setVisible(false);
+
   const dispatch = useAppDispatch();
 
-  const deleteLog = () => {
-    Alert.alert('Would you delete ' + fileName, undefined, [
-      {
-        text: 'OK',
-        onPress: async () => {
-          await RNFS.unlink(directory)
-            .then(async () => {
-              console.log('file deleted');
-            })
-            .catch(err => console.log(err));
+  const deleteLog = async () => {
+    hideDialog();
+    await RNFS.unlink(directory)
+      .then(async () => {
+        console.log('file deleted');
+      })
+      .catch(err => console.log(err));
 
-          const previousLogStr = await AsyncStorage.getItem('practice_logs');
-          if (previousLogStr) {
-            const previousLogs: PracticeLogType[] = JSON.parse(previousLogStr);
-            const newLogs: PracticeLogType[] = previousLogs.filter(
-              value => value.id !== id,
-            );
-            await AsyncStorage.setItem(
-              'practice_logs',
-              JSON.stringify(newLogs),
-            );
-          }
-          dispatch(practiceLogDeleted(id));
-        },
-      },
-      {
-        text: 'Cancel',
-        onPress: async () => {},
-        style: 'cancel',
-      },
-    ]);
+    const previousLogStr = await AsyncStorage.getItem('practice_logs');
+    if (previousLogStr) {
+      const previousLogs: PracticeLogType[] = JSON.parse(previousLogStr);
+      const newLogs: PracticeLogType[] = previousLogs.filter(
+        value => value.id !== id,
+      );
+      await AsyncStorage.setItem('practice_logs', JSON.stringify(newLogs));
+    }
+    dispatch(practiceLogDeleted(id));
   };
+
   return (
     <TouchableOpacity
       style={styles.practice_log}
-      onLongPress={() => deleteLog()}
+      onLongPress={() => showDialog()}
       onPress={() => navigation.navigate('VideoPlay', {videoUri: filePath})}>
       <View style={styles.content}>
-        <Text style={styles.title}>{fileName}</Text>
-        <Text style={styles.time_text}>
-          {formattedDurationWithoutMillisecond}
-        </Text>
+        <Portal>
+          <Dialog visible={visible} onDismiss={hideDialog}>
+            <Dialog.Content>
+              <Paragraph>{'Would you delete ' + fileName + '?'}</Paragraph>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={deleteLog}>OK</Button>
+              <Button onPress={hideDialog}>Cancel</Button>
+            </Dialog.Actions>
+          </Dialog>
+        </Portal>
+        <Title style={styles.titleText}>{fileName}</Title>
+        <Text>{formattedDurationWithoutMillisecond}</Text>
       </View>
       <TouchableOpacity
         style={styles.upload_button}
@@ -90,7 +97,7 @@ const PracticeLog: React.FC<PracticeLogItemType> = ({
             id,
           })
         }>
-        <Text style={styles.upload_text}>Upload</Text>
+        <Text>Upload</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -127,7 +134,7 @@ export default function PracticeLogListScreen({
         />
       ) : (
         <View style={styles.empty_container}>
-          <Text style={styles.title}>Practice logs not found</Text>
+          <Text>Practice logs not found</Text>
         </View>
       )}
     </SafeAreaView>
@@ -159,24 +166,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 10,
   },
-  title: {
-    fontSize: 20,
-    marginVertical: 5,
-    fontWeight: 'bold',
-    color: 'gray',
-  },
-  time_text: {
-    fontSize: 20,
-    marginVertical: 5,
-    color: 'gray',
-  },
   upload_button: {
     justifyContent: 'center',
     flex: 2,
     alignItems: 'center',
   },
-  upload_text: {
-    fontWeight: 'bold',
-    color: 'gray',
+  titleText: {
+    marginBottom: 10,
   },
 });

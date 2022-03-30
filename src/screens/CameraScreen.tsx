@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useRef, useState, useMemo, useCallback} from 'react';
-import {Alert, StatusBar, StyleSheet, Text, View} from 'react-native';
+import {StatusBar, StyleSheet, View} from 'react-native';
 import {
   PinchGestureHandler,
   PinchGestureHandlerGestureEvent,
@@ -44,6 +44,7 @@ import {nanoid} from '@reduxjs/toolkit';
 
 import {practiceLogAdded} from '../features/practiceLogs/practiceLogsSlice';
 import Orientation from 'react-native-orientation-locker';
+import {Button, Dialog, Paragraph, Portal, Text} from 'react-native-paper';
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({
@@ -76,6 +77,12 @@ export default function CameraScreen({
 
   const [isRecording, setIsRecording] = useState(false);
   const [timeRecording, setTimeRecording] = useState<number>(0);
+
+  const [visible, setVisible] = useState(false);
+
+  const showDialog = () => setVisible(true);
+
+  const hideDialog = () => setVisible(false);
 
   const dispatch = useAppDispatch();
 
@@ -173,21 +180,9 @@ export default function CameraScreen({
   }, [maxZoom, minZoom, zoom]);
   //#endregion
 
-  const checkGoBack = () => {
-    Alert.alert('Would you discard this practice?', undefined, [
-      {text: 'Cancel', style: 'cancel'},
-      {
-        text: 'OK',
-        onPress: () => {
-          navigation.goBack();
-        },
-      },
-    ]);
-  };
-
   useAndroidBackHandler(() => {
     if (isRecording) {
-      checkGoBack();
+      showDialog();
     } else {
       navigation.reset({index: 0, routes: [{name: 'Tab'}]});
     }
@@ -394,6 +389,23 @@ export default function CameraScreen({
 
   return (
     <View style={styles.container}>
+      <Portal>
+        <Dialog visible={visible} onDismiss={hideDialog}>
+          <Dialog.Content>
+            <Paragraph>Would you discard this practice?</Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              onPress={() => {
+                hideDialog();
+                navigation.goBack();
+              }}>
+              OK
+            </Button>
+            <Button onPress={hideDialog}>Cancel</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
       <StatusBar translucent={true} backgroundColor={'#00000000'} />
       {device != null && (
         <PinchGestureHandler onGestureEvent={onPinchGesture} enabled={isActive}>
@@ -532,7 +544,7 @@ const styles = StyleSheet.create({
   },
   timeRecording: {
     fontSize: 30,
-    color: '#e34077',
+    color: 'white',
     position: 'absolute',
     bottom: SAFE_AREA_PADDING.paddingBottom + 20,
     left: SAFE_AREA_PADDING.paddingLeft + 20,

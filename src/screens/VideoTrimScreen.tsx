@@ -1,13 +1,4 @@
-import {
-  StyleSheet,
-  View,
-  Dimensions,
-  Text,
-  TouchableOpacity,
-  Image,
-  StatusBar,
-  Alert,
-} from 'react-native';
+import {StyleSheet, View, Dimensions, Image, StatusBar} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {RootStackTrimScreenProps} from '../types/type';
 import Orientation, {OrientationLocker} from 'react-native-orientation-locker';
@@ -15,8 +6,8 @@ import {AndroidBackHandler} from 'react-navigation-backhandler';
 import VideoPlayer from 'react-native-video-controls';
 import {FFmpegKit, FFprobeKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {formatDuration} from '../utils';
-import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import RNFS from 'react-native-fs';
+import {Button, Dialog, Paragraph, Portal, Text} from 'react-native-paper';
 
 export default function VideoTrimScreen({
   navigation,
@@ -30,6 +21,8 @@ export default function VideoTrimScreen({
   const [duration, setDuration] = useState<number>();
   const [fileName, setFileName] = useState<string>('');
   const [thumbnailName, setThumbnailName] = useState<string>('');
+  const [visible, setVisible] = useState(false);
+  const [dialogText, setDialogText] = useState('');
 
   const videoPlayer = React.useRef<VideoPlayer>(null);
   const imageRef = React.useRef<Image>(null);
@@ -59,12 +52,34 @@ export default function VideoTrimScreen({
     return true;
   };
 
+  const setStart = () => {
+    if (!endTime || videoPlayer.current?.state.currentTime! < endTime) {
+      try {
+        setStartTime(videoPlayer.current?.state!.currentTime!);
+        console.log(videoPlayer.current?.state!.currentTime!);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  const setEnd = () => {
+    if (!startTime || videoPlayer.current?.state.currentTime! > startTime) {
+      try {
+        setEndTime(videoPlayer.current?.state!.currentTime!);
+        console.log(videoPlayer.current?.state!.currentTime!);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
   const trimVideo = () => {
     if (!startTime || !endTime) {
-      Alert.alert(
-        'Notice',
+      setDialogText(
         '"Start time" and "End time" needs to be set to proceed video trimming.',
       );
+      showDialog();
       return;
     }
     console.log('trimming start');
@@ -113,12 +128,27 @@ export default function VideoTrimScreen({
             });
           }
           console.log('trimming finish');
-          Alert.alert('Video trimming successfully done');
+          setDialogText('Video trimming successfully done');
+          showDialog();
         }
       })
       .catch(err => {
         console.log(err);
       });
+  };
+
+  const preview = () => {
+    if (trimmedVideoUri) {
+      navigation.navigate('VideoPlay', {
+        videoUri: trimmedVideoUri,
+      });
+    } else {
+      setDialogText(
+        'There is no video trimmed to preview. Trim video and try again.',
+      );
+      showDialog();
+      return;
+    }
   };
 
   const getThumbnailWithTime = (seconds: number) => {
@@ -154,12 +184,47 @@ export default function VideoTrimScreen({
     });
   };
 
+  const showDialog = () => setVisible(true);
+
+  const hideDialog = () => setVisible(false);
+
+  const navigateToUploadScreen = () => {
+    if (trimmedVideoUri && thumbnailUri && duration) {
+      navigation.navigate('Upload', {
+        trimmedVideoUri,
+        thumbnailUri,
+        duration,
+        practiceTime: route.params.duration,
+        id: route.params.id,
+        fileName,
+        thumbnailName,
+        directory: route.params.fileName,
+      });
+    } else if (!trimmedVideoUri) {
+      setDialogText('Please trim video to continue.');
+      showDialog();
+    } else if (!thumbnailUri) {
+      setDialogText('Please set thumbnail to continue');
+      showDialog();
+    }
+  };
+
   return (
     <AndroidBackHandler onBackPress={onBackButtonPressAndroid}>
       <OrientationLocker orientation={'PORTRAIT'} />
       <View style={styles.container}>
         <StatusBar backgroundColor={'black'} barStyle={'light-content'} />
         <View style={[{height: height / 3}, styles.videoContainer]}>
+          <Portal>
+            <Dialog visible={visible} onDismiss={hideDialog}>
+              <Dialog.Content>
+                <Paragraph>{dialogText}</Paragraph>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={hideDialog}>OK</Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
           <VideoPlayer
             source={{uri: videoUri}}
             ref={videoPlayer}
@@ -177,62 +242,35 @@ export default function VideoTrimScreen({
           />
         </View>
         <View style={styles.timeContainer}>
-          <Text style={styles.timeText}>
+          <Text>
             {startTime !== undefined && formatDuration(Math.floor(startTime))}
           </Text>
-          <Text style={styles.timeText}>
+          <Text>
             {endTime !== undefined && formatDuration(Math.floor(endTime))}
           </Text>
         </View>
         <View style={styles.setTimeContainer}>
-          <TouchableOpacity
-            style={styles.setButton}
-            onPress={() => {
-              if (
-                !endTime ||
-                videoPlayer.current?.state.currentTime! < endTime
-              ) {
-                try {
-                  setStartTime(videoPlayer.current?.state!.currentTime!);
-                  console.log(videoPlayer.current?.state!.currentTime!);
-                } catch (error) {
-                  console.log(error);
-                }
-              }
-            }}>
-            <MaterialCommunityIcon
-              name="contain-start"
-              size={40}
-              color={'gray'}
-            />
-            <Text style={styles.setButtonText}>Set Start</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.previewButton} onPress={trimVideo}>
-            <Text style={styles.previewText}>Trim video</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.setButton}
-            onPress={() => {
-              if (
-                !startTime ||
-                videoPlayer.current?.state.currentTime! > startTime
-              ) {
-                try {
-                  setEndTime(videoPlayer.current?.state!.currentTime!);
-                  console.log(videoPlayer.current?.state!.currentTime!);
-                } catch (error) {
-                  console.log(error);
-                }
-              }
-            }}>
-            <MaterialCommunityIcon
-              name="contain-end"
-              size={40}
-              color={'gray'}
-            />
-            <Text style={styles.setButtonText}>Set End</Text>
-          </TouchableOpacity>
+          <Button style={styles.smallButton} mode="outlined" onPress={setStart}>
+            Set Start
+          </Button>
+          <Button style={styles.smallButton} mode="outlined" onPress={setEnd}>
+            Set End
+          </Button>
         </View>
+        <Button style={styles.bigButton} mode="outlined" onPress={trimVideo}>
+          Trim video
+        </Button>
+        <Button
+          style={styles.bigButton}
+          mode="outlined"
+          onPress={() => {
+            getThumbnailWithTime(videoPlayer.current?.state.currentTime!);
+          }}>
+          Set thumbnail
+        </Button>
+        <Button style={styles.bigButton} mode="outlined" onPress={preview}>
+          Preview
+        </Button>
         <View style={styles.imageControl}>
           <View
             style={{
@@ -244,73 +282,22 @@ export default function VideoTrimScreen({
               style={styles.thumbnail}
               ref={imageRef}
             />
-            <TouchableOpacity
-              style={{
-                position: 'absolute',
-                alignSelf: 'center',
-                bottom: height / 8,
-                backgroundColor: '#ffffff99',
-                borderRadius: 5,
-                padding: 10,
-              }}
-              onPress={() => {
-                getThumbnailWithTime(videoPlayer.current?.state.currentTime!);
-              }}>
-              <Text style={styles.setThumbnailText}>Set thumbnail</Text>
-            </TouchableOpacity>
           </View>
         </View>
-        <TouchableOpacity
-          style={styles.previewButton}
-          onPress={() => {
-            if (trimmedVideoUri) {
-              navigation.navigate('VideoPlay', {
-                videoUri: trimmedVideoUri,
-              });
-            } else {
-              Alert.alert(
-                'Notice',
-                'There is no video trimmed to preview. Trim video and try again. ',
-              );
-              return;
-            }
-          }}>
-          <Text style={styles.previewText}>Preview</Text>
-        </TouchableOpacity>
         <View style={styles.pageNavigator}>
-          <TouchableOpacity
+          <Button
+            icon="chevron-left"
             onPress={() => navigation.goBack()}
             style={styles.backButton}>
-            <MaterialCommunityIcon
-              name="chevron-left"
-              size={30}
-              color={'gray'}
-            />
-            <Text style={styles.pageNavigatorText}>Back</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              if (trimmedVideoUri && thumbnailUri && duration) {
-                navigation.navigate('Upload', {
-                  trimmedVideoUri,
-                  thumbnailUri,
-                  duration,
-                  practiceTime: route.params.duration,
-                  id: route.params.id,
-                  fileName,
-                  thumbnailName,
-                  directory: route.params.fileName,
-                });
-              }
-            }}
-            style={styles.nextButton}>
-            <Text style={styles.pageNavigatorText}>Next</Text>
-            <MaterialCommunityIcon
-              name="chevron-right"
-              size={30}
-              color={'gray'}
-            />
-          </TouchableOpacity>
+            Back
+          </Button>
+          <Button
+            icon="chevron-right"
+            onPress={navigateToUploadScreen}
+            style={styles.nextButton}
+            contentStyle={styles.nextButtonContent}>
+            Next
+          </Button>
         </View>
       </View>
     </AndroidBackHandler>
@@ -337,30 +324,14 @@ const styles = StyleSheet.create({
   },
   timeContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 30,
-    alignItems: 'center',
+    justifyContent: 'space-around',
   },
   setTimeContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#d3d3d3',
-    borderTopWidth: 1,
-    borderTopColor: '#d3d3d3',
+    justifyContent: 'space-between',
   },
   imageControl: {
     alignItems: 'center',
-  },
-  setButton: {
-    flex: 2,
-    alignItems: 'center',
-  },
-  setThumbnailText: {
-    fontSize: 20,
-    fontFamily: 'Orbitron-VariableFont_wght',
-    color: 'gray',
   },
   thumbnail: {
     height: '100%',
@@ -369,39 +340,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 10,
   },
-  timeText: {
-    fontSize: 15,
-    color: 'gray',
-  },
-  previewButton: {
-    flex: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 40,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderLeftColor: '#d3d3d3',
-    borderRightColor: '#d3d3d3',
-  },
-  previewText: {
-    fontSize: 20,
-    fontFamily: 'Orbitron-VariableFont_wght',
-    color: 'gray',
-  },
   pageNavigator: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 20,
   },
-  pageNavigatorText: {
-    fontFamily: 'Orbitron-VariableFont_wght',
-    fontSize: 20,
-    color: 'gray',
-  },
-  trimText: {
-    fontFamily: 'Orbitron-VariableFont_wght',
-    color: 'gray',
-  },
+  smallButton: {flex: 1, borderRadius: 0},
+  bigButton: {borderRadius: 0},
   backButton: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -412,5 +357,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginRight: 20,
   },
-  setButtonText: {color: 'gray', fontFamily: 'Orbitron-VariableFont_wght'},
+  nextButtonContent: {flexDirection: 'row-reverse'},
 });
