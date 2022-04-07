@@ -15,7 +15,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
 import {RootStackTabScreenProps} from '../types/type';
 import {PressableOpacity} from 'react-native-pressable-opacity';
-import {useIsFocused} from '@react-navigation/native';
 
 export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   interface Practice {
@@ -52,8 +51,6 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   // const [username] = useState();
   const [search] = useState('');
   const [searchType] = useState<'title' | 'username'>();
-
-  const isFocused = useIsFocused();
 
   const componentDidMount = useCallback(async () => {
     setStartMount(true);
@@ -96,16 +93,11 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
 
   useEffect(() => {
     console.log('start use effect');
-    if (isFocused) {
-      console.log('screen is focused');
-      if (!startMount) {
-        console.log('start mount function');
-        componentDidMount();
-      }
-    } else {
-      setStartMount(false);
+    if (!startMount) {
+      console.log('start mount function');
+      componentDidMount();
     }
-  }, [componentDidMount, startMount, isFocused]);
+  }, [componentDidMount, startMount]);
 
   useEffect(() => {
     console.log('server data: ', serverData);

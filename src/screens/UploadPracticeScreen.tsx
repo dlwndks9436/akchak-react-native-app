@@ -220,7 +220,7 @@ export default function UploadPracticeScreen({
             value={description}
             onChangeText={text => setDescription(text)}
             multiline={true}
-            numberOfLines={6}
+            numberOfLines={15}
             style={styles.textInput}
           />
           <View style={styles.buttonContainer}>
@@ -253,11 +253,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textInput: {
-    width: Dimensions.get('window').width / 1.5,
+    width: Dimensions.get('window').width / 1.3,
     marginBottom: 30,
   },
   button: {
     marginHorizontal: 20,
-    width: 90,
+    width: Dimensions.get('window').width / 3,
   },
 });

@@ -236,11 +236,11 @@ export const userSlice = createSlice({
           state.tokens = action.payload.tokens;
           state.lastTimeAuthenticated = action.payload.lastTimeAuthenticated;
           state.active = action.payload.active;
-          state.loggedIn = true;
           state.initializeError = null;
           state.email = action.payload.email;
           state.username = action.payload.username;
           state.id = action.payload.id;
+          state.loggedIn = true;
         } else {
           state.loggedIn = false;
         }
@@ -248,7 +248,6 @@ export const userSlice = createSlice({
       })
       .addCase(initializeUser.rejected, (state, action) => {
         console.log('rejected');
-
         state.status = 'failed';
         state.loggedIn = false;
         if (action.error.message !== undefined) {

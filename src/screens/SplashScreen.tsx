@@ -1,10 +1,14 @@
 import React from 'react';
-import {View, StyleSheet, Image} from 'react-native';
+import {View, StyleSheet, Dimensions} from 'react-native';
+import Logo from '../assets/images/resonar_logo_square_invert.svg';
 
 export default function SplashScreen() {
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/images/logo_size.jpg')} />
+      <Logo
+        height={Dimensions.get('window').width}
+        width={Dimensions.get('window').width}
+      />
     </View>
   );
 }
@@ -14,6 +18,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'white',
+    backgroundColor: '#0b3454',
   },
 });

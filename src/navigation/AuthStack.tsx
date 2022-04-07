@@ -12,7 +12,12 @@ const AuthStack = () => {
   return (
     <Stack.Navigator
       initialRouteName="Login"
-      screenOptions={{headerTitleStyle: {fontSize: 30}}}>
+      screenOptions={{
+        headerTitleStyle: {
+          fontSize: 30,
+          fontFamily: 'Orbitron-VariableFont_wght',
+        },
+      }}>
       <Stack.Group>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Sign up" component={SignupScreen} />

@@ -48,7 +48,7 @@ const RootStack = () => {
   useEffect(() => {
     const timeoutID = setTimeout(() => {
       setIsReady(true);
-    }, 1000);
+    }, 2000);
     return () => clearTimeout(timeoutID);
   }, []);
 

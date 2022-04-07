@@ -47,6 +47,7 @@ export default function ViewPracticeScreen({
   interface PracticeQueryResult {
     practice: Practice;
     signedUrl: string;
+    isOwner: boolean;
   }
 
   const isFocused = useIsFocused();
@@ -237,7 +238,7 @@ export default function ViewPracticeScreen({
             <ActivityIndicator size="large" />
           </View>
         ) : !practice ? (
-          <View style={styles.container}>
+          <View style={styles.loadingContainer}>
             <Text>{errorText}</Text>
           </View>
         ) : (
@@ -271,27 +272,30 @@ export default function ViewPracticeScreen({
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    height: 40,
                   }}>
                   <Title>{practice.practice.title}</Title>
-                  <Menu
-                    visible={visible}
-                    onDismiss={closeMenu}
-                    anchor={
-                      <IconButton icon="dots-vertical" onPress={openMenu} />
-                    }>
-                    <Menu.Item
-                      title="edit"
-                      onPress={() => {
-                        closeMenu();
-                        navigation.navigate('Upload', {
-                          id: practiceId.toString(),
-                          title: practice.practice.title,
-                          description: practice.practice.description,
-                        });
-                      }}
-                    />
-                    <Menu.Item title="delete" onPress={deletePractice} />
-                  </Menu>
+                  {practice.isOwner && (
+                    <Menu
+                      visible={visible}
+                      onDismiss={closeMenu}
+                      anchor={
+                        <IconButton icon="dots-vertical" onPress={openMenu} />
+                      }>
+                      <Menu.Item
+                        title="edit"
+                        onPress={() => {
+                          closeMenu();
+                          navigation.navigate('Upload', {
+                            id: practiceId.toString(),
+                            title: practice.practice.title,
+                            description: practice.practice.description,
+                          });
+                        }}
+                      />
+                      <Menu.Item title="delete" onPress={deletePractice} />
+                    </Menu>
+                  )}
                 </View>
                 <View
                   style={{
