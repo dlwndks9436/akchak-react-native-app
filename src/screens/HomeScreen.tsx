@@ -47,6 +47,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   const [isRefreshing] = useState(false);
   const [page, setPage] = useState(0);
   const accessToken = useAppSelector(selectAccessToken);
+  const [intervalID, setIntervalID] = useState<NodeJS.Timer>();
   // const [title] = useState();
   // const [username] = useState();
   const [search] = useState('');
@@ -69,7 +70,6 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     }
 
     console.log('componentDidMount start');
-
     await Api.get('practice', {
       headers: {Authorization: 'Bearer ' + accessToken},
       params,
@@ -83,25 +83,39 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
         setPage(currentPage => currentPage + 1);
         setServerData(data.practices);
         setThumbnailUrls(data.thumbnailURLs);
-        setLoading(false);
+        if (data.practices) {
+          setLoading(false);
+          if (intervalID) {
+            clearInterval(intervalID);
+            setIntervalID(undefined);
+          }
+        }
       })
       .catch((err: AxiosError) => {
         console.error('componentDidMount api error: ', err.response?.data);
-        setLoading(false);
       });
-  }, [accessToken, search, searchType]);
+  }, [accessToken, search, searchType, intervalID]);
 
   useEffect(() => {
     console.log('start use effect');
+    let id: NodeJS.Timer | undefined;
     if (!startMount) {
       console.log('start mount function');
-      componentDidMount();
+      id = setInterval(async () => {
+        await componentDidMount();
+        setIntervalID(id);
+      }, 2000);
     }
-  }, [componentDidMount, startMount]);
+    return () => {
+      if (id) {
+        clearInterval(id);
+      }
+    };
+  }, [componentDidMount, startMount, serverData]);
 
-  useEffect(() => {
-    console.log('server data: ', serverData);
-  }, [serverData]);
+  // useEffect(() => {
+  //   console.log('server data: ', serverData);
+  // }, [serverData]);
 
   const loadMoreData = async () => {
     setFetching(true);
@@ -206,7 +220,9 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   return (
     <SafeAreaView style={styles.container}>
       {loading ? (
-        <ActivityIndicator size="large" />
+        <View style={styles.indicatorContainer}>
+          <ActivityIndicator size="large" />
+        </View>
       ) : serverData.length === 0 ? (
         <Button onPress={componentDidMount}>Load practice</Button>
       ) : (
@@ -230,6 +246,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  indicatorContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   itemContainer: {
     padding: 20,
   },

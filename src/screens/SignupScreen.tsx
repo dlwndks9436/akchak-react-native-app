@@ -7,6 +7,7 @@ import {
   Portal,
   Dialog,
   Title,
+  ActivityIndicator,
 } from 'react-native-paper';
 import {AuthStackRegisterScreenProps} from '../types/type';
 import axios, {AxiosResponse, AxiosError} from 'axios';
@@ -27,6 +28,7 @@ export default function SignupScreen({
   const [passwordErrorText, setPasswordErrorText] = useState('');
   const [secondPasswordErrorText, setSecondPasswordErrorText] = useState('');
   const [visibleDialog, setVisibleDialog] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   const usernameErrorProps =
     usernameErrorText.length > 0
@@ -67,7 +69,7 @@ export default function SignupScreen({
       hasNoError = false;
     } else if (!usernameIsValid()) {
       setUsernameErrorText(
-        'Username must contain only alpabets and numbers. Length must be between 8~20',
+        '1. Username must contain only alpabets and numbers.\n2. Length must be between 8~20 characters',
       );
       hasNoError = false;
     } else {
@@ -87,7 +89,7 @@ export default function SignupScreen({
       hasNoError = false;
     } else if (!validator.isStrongPassword(password, {minSymbols: 0})) {
       setPasswordErrorText(
-        'At least one uppercase, one lowercase, one number. Must be longer than 8',
+        '1. At least one uppercase, one lowercase, one number must be included.\n2. Must be longer than 7 characters',
       );
       hasNoError = false;
     } else {
@@ -111,6 +113,7 @@ export default function SignupScreen({
 
   const signup = async () => {
     if (inputsAreValid()) {
+      setIsSigningUp(true);
       await axios
         .post(API_URL + 'auth/signup', {
           username,
@@ -118,11 +121,13 @@ export default function SignupScreen({
           password,
         })
         .then((response: AxiosResponse) => {
+          setIsSigningUp(false);
           if (response.status === 201) {
             setVisibleDialog(true);
           }
         })
         .catch((err: AxiosError) => {
+          setIsSigningUp(false);
           if (err.response?.data?.param) {
             if (err.response.data.param === 'username') {
               setUsernameErrorText(err.response.data.msg);
@@ -159,67 +164,76 @@ export default function SignupScreen({
               </Dialog.Actions>
             </Dialog>
           </Portal>
-          <TextInput
-            label="Username"
-            value={username}
-            autoCapitalize={'none'}
-            onChangeText={text => {
-              setUsername(text);
-            }}
-            style={styles.textInput}
-            {...usernameErrorProps}
-          />
-          <HelperText type="error" style={styles.helperText}>
-            {usernameErrorText}
-          </HelperText>
-          <TextInput
-            label="E-mail"
-            value={email}
-            autoCapitalize={'none'}
-            onChangeText={text => setEmail(text)}
-            keyboardType={'email-address'}
-            style={styles.textInput}
-            {...emailErrorProps}
-          />
-          <HelperText type="error" style={styles.helperText}>
-            {emailErrorText}
-          </HelperText>
-          <TextInput
-            label="Password"
-            value={password}
-            autoCapitalize={'none'}
-            onChangeText={text => setPassword(text)}
-            secureTextEntry={true}
-            style={styles.textInput}
-            {...passwordErrorProps}
-          />
-          <HelperText type="error" style={styles.helperText}>
-            {passwordErrorText}
-          </HelperText>
-          <TextInput
-            label="Confirm Password"
-            value={secondPassword}
-            autoCapitalize={'none'}
-            onChangeText={text => setSecondPassword(text)}
-            secureTextEntry={true}
-            style={styles.textInput}
-            {...passwordErrorProps}
-          />
-          <HelperText type="error" style={styles.helperText}>
-            {secondPasswordErrorText}
-          </HelperText>
-          <Button
-            mode="contained"
-            contentStyle={styles.signupButtonContent}
-            style={styles.signupButton}
-            onPress={signup}>
-            Sign up
-          </Button>
-          <View style={styles.footer}>
-            <Button uppercase={false} onPress={() => navigation.goBack()}>
-              Back to login
-            </Button>
-          </View>
+          {isSigningUp ? (
+            <View style={styles.container}>
+              <Title>Signing up...</Title>
+              <ActivityIndicator animating={true} size={'large'} />
+            </View>
+          ) : (
+            <View>
+              <TextInput
+                label="Username"
+                value={username}
+                autoCapitalize={'none'}
+                onChangeText={text => {
+                  setUsername(text);
+                }}
+                style={styles.textInput}
+                {...usernameErrorProps}
+              />
+              <HelperText type="error" style={styles.helperText}>
+                {usernameErrorText}
+              </HelperText>
+              <TextInput
+                label="E-mail"
+                value={email}
+                autoCapitalize={'none'}
+                onChangeText={text => setEmail(text)}
+                keyboardType={'email-address'}
+                style={styles.textInput}
+                {...emailErrorProps}
+              />
+              <HelperText type="error" style={styles.helperText}>
+                {emailErrorText}
+              </HelperText>
+              <TextInput
+                label="Password"
+                value={password}
+                autoCapitalize={'none'}
+                onChangeText={text => setPassword(text)}
+                secureTextEntry={true}
+                style={styles.textInput}
+                {...passwordErrorProps}
+              />
+              <HelperText type="error" style={styles.helperText}>
+                {passwordErrorText}
+              </HelperText>
+              <TextInput
+                label="Confirm Password"
+                value={secondPassword}
+                autoCapitalize={'none'}
+                onChangeText={text => setSecondPassword(text)}
+                secureTextEntry={true}
+                style={styles.textInput}
+                {...passwordErrorProps}
+              />
+              <HelperText type="error" style={styles.helperText}>
+                {secondPasswordErrorText}
+              </HelperText>
+              <Button
+                mode="contained"
+                contentStyle={styles.signupButtonContent}
+                style={styles.signupButton}
+                onPress={signup}>
+                Sign up
+              </Button>
+              <View style={styles.footer}>
+                <Button uppercase={false} onPress={() => navigation.goBack()}>
+                  Back to login
+                </Button>
+              </View>
+            </View>
+          )}
         </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>
@@ -241,7 +255,6 @@ const styles = StyleSheet.create({
   },
   helperText: {
     width: Dimensions.get('window').width / 1.5,
-    height: 30,
   },
   signupButton: {
     marginVertical: 20,

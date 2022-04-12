@@ -7,6 +7,8 @@ import {
   Portal,
   Dialog,
   Paragraph,
+  ActivityIndicator,
+  Title,
 } from 'react-native-paper';
 import {AuthStackLoginScreenProps} from '../types/type';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -22,11 +24,13 @@ export default function LoginScreen({navigation}: AuthStackLoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [visible, setVisible] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const dispatch = useAppDispatch();
   const loginError = useAppSelector(checkLoginError);
 
   const loginUser = () => {
+    setIsLoggingIn(true);
     dispatch(login({email, password}));
   };
 
@@ -38,6 +42,7 @@ export default function LoginScreen({navigation}: AuthStackLoginScreenProps) {
   useEffect(() => {
     if (loginError) {
       setVisible(true);
+      setIsLoggingIn(false);
     }
   }, [loginError]);
 
@@ -55,45 +60,54 @@ export default function LoginScreen({navigation}: AuthStackLoginScreenProps) {
               </Dialog.Actions>
             </Dialog>
           </Portal>
-          <TextInput
-            label="E-mail"
-            value={email}
-            onChangeText={text => setEmail(text)}
-            autoCapitalize={'none'}
-            keyboardType={'email-address'}
-            style={styles.textInput}
-          />
-          <TextInput
-            label="Password"
-            value={password}
-            onChangeText={text => setPassword(text)}
-            autoCapitalize={'none'}
-            secureTextEntry={true}
-            style={styles.textInput}
-          />
-          <Button
-            style={styles.askPasswordButton}
-            uppercase={false}
-            onPress={() => navigation.navigate('New password')}>
-            Forgot password?
-          </Button>
-          <Button
-            mode="contained"
-            contentStyle={styles.loginButtonContent}
-            style={styles.loginButton}
-            onPress={loginUser}>
-            Login
-          </Button>
-          <View style={styles.footer}>
-            <Text>Don't have an account?</Text>
-            <Button
-              uppercase={false}
-              onPress={() => {
-                navigation.navigate('Sign up');
-              }}>
-              Sign up here
-            </Button>
-          </View>
+          {isLoggingIn ? (
+            <View style={styles.container}>
+              <Title>Logging in...</Title>
+              <ActivityIndicator animating={true} size={'large'} />
+            </View>
+          ) : (
+            <View>
+              <TextInput
+                label="E-mail"
+                value={email}
+                onChangeText={text => setEmail(text)}
+                autoCapitalize={'none'}
+                keyboardType={'email-address'}
+                style={styles.textInput}
+              />
+              <TextInput
+                label="Password"
+                value={password}
+                onChangeText={text => setPassword(text)}
+                autoCapitalize={'none'}
+                secureTextEntry={true}
+                style={styles.textInput}
+              />
+              <Button
+                style={styles.askPasswordButton}
+                uppercase={false}
+                onPress={() => navigation.navigate('New password')}>
+                Forgot password?
+              </Button>
+              <Button
+                mode="contained"
+                contentStyle={styles.loginButtonContent}
+                style={styles.loginButton}
+                onPress={loginUser}>
+                Login
+              </Button>
+              <View style={styles.footer}>
+                <Text>Don't have an account?</Text>
+                <Button
+                  uppercase={false}
+                  onPress={() => {
+                    navigation.navigate('Sign up');
+                  }}>
+                  Sign up here
+                </Button>
+              </View>
+            </View>
+          )}
         </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>

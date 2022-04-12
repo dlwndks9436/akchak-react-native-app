@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import {RootStackParamList} from '../types/type';
 import BottomTab from './BottomTab';
@@ -31,7 +31,6 @@ const RootStack = () => {
   const userStatus = useAppSelector(checkUserStatus);
   const userLoggedin = useAppSelector(checkUserLoggedIn);
   const userActive = useAppSelector(checkUserActive);
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (practiceLogsStatus === 'idle') {
@@ -45,18 +44,10 @@ const RootStack = () => {
     }
   }, [userStatus, dispatch]);
 
-  useEffect(() => {
-    const timeoutID = setTimeout(() => {
-      setIsReady(true);
-    }, 2000);
-    return () => clearTimeout(timeoutID);
-  }, []);
-
   if (
     practiceLogsStatus === ('idle' || 'loading') ||
     userStatus === ('idle' || 'loading') ||
-    userLoggedin === null ||
-    !isReady
+    userLoggedin === null
   ) {
     return (
       <Stack.Navigator screenOptions={{headerShown: false}}>
