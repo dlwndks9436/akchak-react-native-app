@@ -31,7 +31,6 @@ import {useIsForeground} from '../hooks/useIsForeground';
 import {StatusBarBlurBackground} from '../components/atoms/StatusBarBlurBackground';
 import {CaptureButton} from '../components/atoms/CaptureButton';
 import {PressableOpacity} from 'react-native-pressable-opacity';
-import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {PracticeLogType, RootStackCameraScreenProps} from '../types/type';
 import {useIsFocused} from '@react-navigation/core';
@@ -71,14 +70,15 @@ export default function CameraScreen({
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>(
     'back',
   );
-  const [enableHdr, setEnableHdr] = useState(false);
-  const [flash, setFlash] = useState<'off' | 'on'>('off');
+  const [enableHdr] = useState(false);
+  const [flash] = useState<'off' | 'on'>('off');
   const [enableNightMode] = useState(false);
 
   const [isRecording, setIsRecording] = useState(false);
   const [timeRecording, setTimeRecording] = useState<number>(0);
 
   const [visible, setVisible] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
 
   const showDialog = () => setVisible(true);
 
@@ -136,10 +136,10 @@ export default function CameraScreen({
     [devices.back, devices.front],
   );
   const supportsFlash = device?.hasFlash ?? false;
-  const supportsHdr = useMemo(
-    () => formats.some(f => f.supportsVideoHDR || f.supportsPhotoHDR),
-    [formats],
-  );
+  // const supportsHdr = useMemo(
+  //   () => formats.some(f => f.supportsVideoHDR || f.supportsPhotoHDR),
+  //   [formats],
+  // );
   // const supports60Fps = useMemo(
   //   () =>
   //     formats.some(f =>
@@ -305,9 +305,9 @@ export default function CameraScreen({
   const onFlipCameraPressed = useCallback(() => {
     setCameraPosition(p => (p === 'back' ? 'front' : 'back'));
   }, []);
-  const onFlashPressed = useCallback(() => {
-    setFlash(f => (f === 'off' ? 'on' : 'off'));
-  }, []);
+  // const onFlashPressed = useCallback(() => {
+  //   setFlash(f => (f === 'off' ? 'on' : 'off'));
+  // }, []);
   //#endregion
 
   //#region Tap Gesture
@@ -461,7 +461,7 @@ export default function CameraScreen({
             <IonIcon name="camera-reverse" color="white" size={24} />
           </PressableOpacity>
         )}
-        {supportsFlash && !isRecording && (
+        {/* {supportsFlash && !isRecording && (
           <PressableOpacity
             style={styles.button}
             onPress={onFlashPressed}
@@ -472,7 +472,7 @@ export default function CameraScreen({
               size={24}
             />
           </PressableOpacity>
-        )}
+        )} */}
         {/* {supports60Fps && !isRecording && (
           <PressableOpacity
             style={styles.button}
@@ -483,7 +483,7 @@ export default function CameraScreen({
             </Text>
           </PressableOpacity>
         )} */}
-        {supportsHdr && !isRecording && (
+        {/* {supportsHdr && !isRecording && (
           <PressableOpacity
             style={styles.button}
             onPress={() => setEnableHdr(h => !h)}>
@@ -493,7 +493,7 @@ export default function CameraScreen({
               size={24}
             />
           </PressableOpacity>
-        )}
+        )} */}
         {/* {canToggleNightMode && !isRecording && (
           <PressableOpacity
             style={styles.button}
