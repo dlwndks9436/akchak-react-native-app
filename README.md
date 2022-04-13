@@ -48,4 +48,17 @@ https://play.google.com/store/apps/details?id=com.juann.resonar
 
 ## 구현한 기능
 
+* ffmpegkit 패키지를 이용해서 영상 편집 및 섬네일 제작 기능
+* redux 이용해서 현재 user의 접속 정보를 모든 화면에서 접근 가능하도록 하기
+* axios interceptor를 이용해서 refresh token을 자동으로 재발급 받도록 하기
 
+## Todo
+
+* expo camera 모듈 검토해보기
+* 덧글 기능 추가
+* practice 검색할 수 있는 기능 추가
+* ui 수정
+
+## resonar 서버 구경하기
+
+https://github.com/dlwndks9436/resonar-nodejs-server
