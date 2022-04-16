@@ -1,12 +1,10 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
 import DummyScreen from '../screens/DummyScreen';
 import PracticeLogListScreen from '../screens/PracticeLogListScreen';
-import {Camera, CameraPermissionStatus} from 'react-native-vision-camera';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
 import {RootStackParamList} from '../types/type';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useAppSelector} from '../redux/hooks';
@@ -16,28 +14,16 @@ import ProfileScreen from '../screens/AccountScreen';
 const Tab = createBottomTabNavigator();
 
 export default function BottomTab() {
-  const [cameraPermission, setCameraPermission] =
-    useState<CameraPermissionStatus>();
-  const [microphonePermission, setMicrophonePermission] =
-    useState<CameraPermissionStatus>();
-
   const userLoggedIn = useAppSelector(checkUserLoggedIn);
-
-  useEffect(() => {
-    Camera.getCameraPermissionStatus().then(setCameraPermission);
-    Camera.getMicrophonePermissionStatus().then(setMicrophonePermission);
-  }, []);
-
-  const showPermissionsPage =
-    cameraPermission !== 'authorized' || microphonePermission !== 'authorized';
 
   const navigateToNextScreen = (
     navigation: StackNavigationProp<RootStackParamList>,
   ) => {
     if (userLoggedIn) {
-      showPermissionsPage
-        ? navigation.navigate('CameraPermission')
-        : navigation.navigate('Camera');
+      // showPermissionsPage
+      //   ? navigation.navigate('CameraPermission')
+      //   : navigation.navigate('Camera');
+      navigation.navigate('StartPractice');
     } else {
       navigation.navigate('AuthStack');
     }

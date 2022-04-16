@@ -22,6 +22,8 @@ import SplashScreen from '../screens/SplashScreen';
 import AuthCodeScreen from '../screens/AuthCodeScreen';
 import UploadPracticeScreen from '../screens/UploadPracticeScreen';
 import ViewPracticeScreen from '../screens/ViewPracticeScreen';
+import StartPracticeScreen from '../screens/StartPracticeScreen';
+import CreatePracticeScreen from '../screens/CreatePracticeScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -77,6 +79,7 @@ const RootStack = () => {
       screenOptions={{headerShown: false, animationTypeForReplace: 'push'}}>
       <Stack.Group>
         <Stack.Screen name="Tab" component={BottomTab} />
+        <Stack.Screen name="CreatePractice" component={CreatePracticeScreen} />
         <Stack.Screen name="ViewPractice" component={ViewPracticeScreen} />
         <Stack.Screen name="VideoPlay" component={VideoPlayScreen} />
         <Stack.Screen name="VideoTrim" component={VideoTrimScreen} />
@@ -85,9 +88,16 @@ const RootStack = () => {
           name="CameraPermission"
           component={CameraPermissionScreen}
         />
-      </Stack.Group>
-      <Stack.Group screenOptions={{presentation: 'modal'}}>
         <Stack.Screen name="Camera" component={CameraScreen} />
+      </Stack.Group>
+      <Stack.Group
+        screenOptions={{
+          presentation: 'modal',
+          cardStyle: {backgroundColor: 'transparent'},
+          cardOverlayEnabled: true,
+          detachPreviousScreen: false,
+        }}>
+        <Stack.Screen name="StartPractice" component={StartPracticeScreen} />
       </Stack.Group>
     </Stack.Navigator>
   );

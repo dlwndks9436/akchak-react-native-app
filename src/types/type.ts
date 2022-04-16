@@ -12,6 +12,8 @@ export type RootStackParamList = {
     id: string;
     fileName: string;
   };
+  StartPractice: undefined;
+  CreatePractice: undefined;
   Upload: {
     trimmedVideoUri?: string;
     thumbnailUri?: string;
@@ -53,6 +55,11 @@ export type RootStackTabScreenProps = StackScreenProps<
 export type RootStackViewPracticeScreenProps = StackScreenProps<
   RootStackParamList,
   'ViewPractice'
+>;
+
+export type RootStackStartPracticeScreenProps = StackScreenProps<
+  RootStackParamList,
+  'StartPractice'
 >;
 
 export type RootStackPlayScreenProps = StackScreenProps<
