@@ -1,4 +1,8 @@
-import {StackNavigationProp, StackScreenProps} from '@react-navigation/stack';
+import {
+  StackHeaderProps,
+  StackNavigationProp,
+  StackScreenProps,
+} from '@react-navigation/stack';
 
 export type RootStackParamList = {
   Camera: undefined;
@@ -13,7 +17,7 @@ export type RootStackParamList = {
     fileName: string;
   };
   StartPractice: undefined;
-  CreateObjective: undefined;
+  '새 목표 설정': undefined;
   Upload: {
     trimmedVideoUri?: string;
     thumbnailUri?: string;
@@ -106,6 +110,8 @@ export type AuthStackCreateNewPasswordScreenProps = StackScreenProps<
   AuthStackParamList,
   'CreateNewPassword'
 >;
+
+export type CustomAppBarProps = StackHeaderProps;
 
 export interface PracticeLogType {
   id: string;

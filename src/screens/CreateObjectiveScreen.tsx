@@ -9,7 +9,9 @@ export default function CreatePracticeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Title style={styles.title}>새로운 목표 만들기</Title>
-      <Text style={{fontSize: 25}}>무엇을 연습하실 건가요?</Text>
+      <Text style={{fontSize: 25, alignSelf: 'center'}}>
+        무엇을 연습하실 건가요?
+      </Text>
       <View style={styles.checkTypeContainer}>
         <View style={styles.radioButtonContainer}>
           <RadioButton

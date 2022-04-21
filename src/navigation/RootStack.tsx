@@ -24,6 +24,7 @@ import UploadPracticeScreen from '../screens/UploadPracticeScreen';
 import ViewPracticeScreen from '../screens/ViewPracticeScreen';
 import StartPracticeScreen from '../screens/StartPracticeScreen';
 import CreateObjectiveScreen from '../screens/CreateObjectiveScreen';
+import CustomAppBar from '../components/atoms/CustomAppBar';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -79,10 +80,6 @@ const RootStack = () => {
       screenOptions={{headerShown: false, animationTypeForReplace: 'push'}}>
       <Stack.Group>
         <Stack.Screen name="Tab" component={BottomTab} />
-        <Stack.Screen
-          name="CreateObjective"
-          component={CreateObjectiveScreen}
-        />
         <Stack.Screen name="ViewPractice" component={ViewPracticeScreen} />
         <Stack.Screen name="VideoPlay" component={VideoPlayScreen} />
         <Stack.Screen name="VideoTrim" component={VideoTrimScreen} />
@@ -92,6 +89,13 @@ const RootStack = () => {
           component={CameraPermissionScreen}
         />
         <Stack.Screen name="Camera" component={CameraScreen} />
+      </Stack.Group>
+      <Stack.Group
+        screenOptions={{
+          headerShown: true,
+          header: props => <CustomAppBar {...props} />,
+        }}>
+        <Stack.Screen name="새 목표 설정" component={CreateObjectiveScreen} />
       </Stack.Group>
       <Stack.Group
         screenOptions={{

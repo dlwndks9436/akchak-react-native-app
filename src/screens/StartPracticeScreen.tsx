@@ -8,12 +8,13 @@ import React from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Button} from 'react-native-paper';
 import {RootStackStartPracticeScreenProps} from '../types/type';
+import {theme} from '../styles/theme';
 
 export default function StartPracticeScreen({
   navigation,
 }: RootStackStartPracticeScreenProps): React.ReactElement {
   const navigateToCreatePractice = () => {
-    navigation.replace('CreateObjective');
+    navigation.replace('새 목표 설정');
   };
   return (
     <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     position: 'absolute',
     bottom: 50,
-    backgroundColor: 'white',
+    backgroundColor: '#f3f3f3',
     borderRadius: 20,
     justifyContent: 'space-evenly',
   },
@@ -64,5 +65,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlignVertical: 'center',
     height: 50,
+    color: theme.colors.text,
   },
 });

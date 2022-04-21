@@ -14,15 +14,15 @@ const CombinedDefaultTheme = merge(PaperDefaultTheme, NavigationDefaultTheme);
 
 const customColors = {
   ...CombinedDefaultTheme.colors,
-  primary: '#64e9ee',
-  accent: '#e66e22',
-  notification: '#e66e22',
+  primary: '#e66e22',
+  accent: '#64e9ee',
+  notification: '#64e9ee',
   backdrop: '#f2f2f200',
-  placeholder: '#64e9ee',
+  placeholder: '#e66e22',
   error: '#eb4d43',
   text: '#333333',
   card: '#f3f3f3',
-  border: '#eoeoeo',
+  border: '#f3f3f3',
   background: '#f3f3f3',
 };
 
