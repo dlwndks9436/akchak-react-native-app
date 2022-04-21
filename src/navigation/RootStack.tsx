@@ -23,7 +23,7 @@ import AuthCodeScreen from '../screens/AuthCodeScreen';
 import UploadPracticeScreen from '../screens/UploadPracticeScreen';
 import ViewPracticeScreen from '../screens/ViewPracticeScreen';
 import StartPracticeScreen from '../screens/StartPracticeScreen';
-import CreatePracticeScreen from '../screens/CreatePracticeScreen';
+import CreateObjectiveScreen from '../screens/CreateObjectiveScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -79,7 +79,10 @@ const RootStack = () => {
       screenOptions={{headerShown: false, animationTypeForReplace: 'push'}}>
       <Stack.Group>
         <Stack.Screen name="Tab" component={BottomTab} />
-        <Stack.Screen name="CreatePractice" component={CreatePracticeScreen} />
+        <Stack.Screen
+          name="CreateObjective"
+          component={CreateObjectiveScreen}
+        />
         <Stack.Screen name="ViewPractice" component={ViewPracticeScreen} />
         <Stack.Screen name="VideoPlay" component={VideoPlayScreen} />
         <Stack.Screen name="VideoTrim" component={VideoTrimScreen} />

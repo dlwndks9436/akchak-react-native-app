@@ -11,8 +11,8 @@ interface LoginForm {
 }
 
 export interface Tokens {
-  accessToken: string;
-  refreshToken: string;
+  accessToken: string | null;
+  refreshToken: string | null;
 }
 
 interface LoginResult {
@@ -42,7 +42,7 @@ const initialState: UserState = {
   id: null,
   email: null,
   username: null,
-  tokens: {accessToken: '', refreshToken: ''},
+  tokens: {accessToken: null, refreshToken: null},
   loggedIn: null,
   active: false,
   lastTimeAuthenticated: null,
@@ -95,7 +95,7 @@ export const login = createAsyncThunk(
     console.log('start login');
 
     const result = {
-      tokens: {accessToken: '', refreshToken: ''},
+      tokens: {accessToken: '', refreshToken: ''} as Tokens,
       id: 0,
       active: false,
       email: '',
@@ -233,7 +233,9 @@ export const userSlice = createSlice({
         console.log('fullfilled');
 
         if (action.payload) {
-          state.tokens = action.payload.tokens;
+          if (!state.tokens.accessToken && !state.tokens.refreshToken) {
+            state.tokens = action.payload.tokens;
+          }
           state.lastTimeAuthenticated = action.payload.lastTimeAuthenticated;
           state.active = action.payload.active;
           state.initializeError = null;

@@ -14,16 +14,16 @@ const CombinedDefaultTheme = merge(PaperDefaultTheme, NavigationDefaultTheme);
 
 const customColors = {
   ...CombinedDefaultTheme.colors,
-  primary: '#0b3454',
-  accent: '#e0ff4f',
-  notification: '#bfd7ea',
+  primary: '#64e9ee',
+  accent: '#e66e22',
+  notification: '#e66e22',
   backdrop: '#f2f2f200',
-  placeholder: '#0b3454',
-  error: '#ff6663',
-  text: '#0b3454',
-  card: 'white',
-  border: 'white',
-  background: 'white',
+  placeholder: '#64e9ee',
+  error: '#eb4d43',
+  text: '#333333',
+  card: '#f3f3f3',
+  border: '#eoeoeo',
+  background: '#f3f3f3',
 };
 
 type FontWeight =
@@ -43,55 +43,55 @@ type FontWeight =
 const fontConfig = {
   web: {
     regular: {
-      fontFamily: 'Orbitron-SemiBold',
+      fontFamily: 'NotoSansKR-Regular',
       fontWeight: 'normal' as FontWeight,
     },
     medium: {
-      fontFamily: 'Orbitron-Bold',
+      fontFamily: 'NotoSansKR-Medium',
       fontWeight: 'normal' as FontWeight,
     },
     light: {
-      fontFamily: 'Orbitron-Medium',
+      fontFamily: 'NotoSansKR-Light',
       fontWeight: 'normal' as FontWeight,
     },
     thin: {
-      fontFamily: 'Orbitron-Regular',
+      fontFamily: 'NotoSansKR-Thin',
       fontWeight: 'normal' as FontWeight,
     },
   },
   ios: {
     regular: {
-      fontFamily: 'Orbitron-SemiBold',
+      fontFamily: 'NotoSansKR-Regular',
       fontWeight: 'normal' as FontWeight,
     },
     medium: {
-      fontFamily: 'Orbitron-Bold',
+      fontFamily: 'NotoSansKR-Medium',
       fontWeight: 'normal' as FontWeight,
     },
     light: {
-      fontFamily: 'Orbitron-Medium',
+      fontFamily: 'NotoSansKR-Light',
       fontWeight: 'normal' as FontWeight,
     },
     thin: {
-      fontFamily: 'Orbitron-Regular',
+      fontFamily: 'NotoSansKR-Thin',
       fontWeight: 'normal' as FontWeight,
     },
   },
   android: {
     regular: {
-      fontFamily: 'Orbitron-SemiBold',
+      fontFamily: 'NotoSansKR-Regular',
       fontWeight: 'normal' as FontWeight,
     },
     medium: {
-      fontFamily: 'Orbitron-Bold',
+      fontFamily: 'NotoSansKR-Medium',
       fontWeight: 'normal' as FontWeight,
     },
     light: {
-      fontFamily: 'Orbitron-Medium',
+      fontFamily: 'NotoSansKR-Light',
       fontWeight: 'normal' as FontWeight,
     },
     thin: {
-      fontFamily: 'Orbitron-Regular',
+      fontFamily: 'NotoSansKR-Thin',
       fontWeight: 'normal' as FontWeight,
     },
   },

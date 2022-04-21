@@ -13,7 +13,7 @@ export default function StartPracticeScreen({
   navigation,
 }: RootStackStartPracticeScreenProps): React.ReactElement {
   const navigateToCreatePractice = () => {
-    navigation.replace('CreatePractice');
+    navigation.replace('CreateObjective');
   };
   return (
     <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
@@ -24,13 +24,13 @@ export default function StartPracticeScreen({
             contentStyle={styles.buttonTop}
             labelStyle={styles.buttonText}
             onPress={navigateToCreatePractice}>
-            연습 새로 시작하기
+            새로운 목표 설정하기
           </Button>
           <Button
             style={styles.buttonBottom}
             labelStyle={styles.buttonText}
             onPress={() => {}}>
-            연습 이어서 하기
+            연습 시작하기
           </Button>
         </View>
       </SafeAreaView>

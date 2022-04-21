@@ -13,7 +13,7 @@ export type RootStackParamList = {
     fileName: string;
   };
   StartPractice: undefined;
-  CreatePractice: undefined;
+  CreateObjective: undefined;
   Upload: {
     trimmedVideoUri?: string;
     thumbnailUri?: string;
