@@ -14,11 +14,11 @@ const CombinedDefaultTheme = merge(PaperDefaultTheme, NavigationDefaultTheme);
 
 const customColors = {
   ...CombinedDefaultTheme.colors,
-  primary: '#e66e22',
-  accent: '#64e9ee',
-  notification: '#64e9ee',
+  primary: '#333333',
+  accent: '#EE8434',
+  notification: '#EE8434',
   backdrop: '#f2f2f200',
-  placeholder: '#e66e22',
+  placeholder: '#333333',
   error: '#eb4d43',
   text: '#333333',
   card: '#f3f3f3',

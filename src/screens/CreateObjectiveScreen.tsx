@@ -1,43 +1,46 @@
-import {StyleSheet, View} from 'react-native';
+import {Dimensions, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
-import {RadioButton, Text, Title} from 'react-native-paper';
+import {Button, RadioButton, Title} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 export default function CreatePracticeScreen() {
-  const [type, setType] = useState<'음악' | '교본' | '이외'>();
+  type ObjectiveType = '음악' | '교본' | '이외';
+  const [type, setType] = useState<ObjectiveType>('음악');
 
   return (
     <SafeAreaView style={styles.container}>
-      <Title style={styles.title}>새로운 목표 만들기</Title>
-      <Text style={{fontSize: 25, alignSelf: 'center'}}>
-        무엇을 연습하실 건가요?
-      </Text>
-      <View style={styles.checkTypeContainer}>
-        <View style={styles.radioButtonContainer}>
-          <RadioButton
-            value="음악"
-            status={type === '음악' ? 'checked' : 'unchecked'}
-            onPress={() => setType('음악')}
-          />
-          <Text style={styles.radioText}>음악</Text>
-        </View>
-        <View style={styles.radioButtonContainer}>
-          <RadioButton
-            value="교본"
-            status={type === '교본' ? 'checked' : 'unchecked'}
-            onPress={() => setType('교본')}
-          />
-          <Text style={styles.radioText}>교본</Text>
-        </View>
-        <View style={styles.radioButtonContainer}>
-          <RadioButton
-            value="이외"
-            status={type === '이외' ? 'checked' : 'unchecked'}
-            onPress={() => setType('이외')}
-          />
-          <Text style={styles.radioText}>이외</Text>
-        </View>
-      </View>
+      <Title style={styles.title}>무엇을 연습하실건가요?</Title>
+      <RadioButton.Group
+        onValueChange={value => setType(value as ObjectiveType)}
+        value={type}>
+        <RadioButton.Item
+          label="음악"
+          value="음악"
+          position="leading"
+          style={styles.radioButtonContainer}
+          labelStyle={styles.radioText}
+        />
+        <RadioButton.Item
+          label="교본"
+          value="교본"
+          position="leading"
+          style={styles.radioButtonContainer}
+          labelStyle={styles.radioText}
+        />
+        <RadioButton.Item
+          label="이외"
+          value="이외"
+          position="leading"
+          style={styles.radioButtonContainer}
+          labelStyle={styles.radioText}
+        />
+      </RadioButton.Group>
+      <Button
+        style={styles.nextButton}
+        labelStyle={styles.buttonText}
+        onPress={() => {}}>
+        다음
+      </Button>
     </SafeAreaView>
   );
 }
@@ -46,17 +49,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 10,
+    alignItems: 'center',
   },
-  checkTypeContainer: {flexDirection: 'row', justifyContent: 'space-evenly'},
-  title: {fontSize: 40, paddingTop: 30, marginBottom: 50},
-  radioButtonContainer: {flexDirection: 'row', alignItems: 'center'},
-  radioText: {fontSize: 20},
-  autocompleteContainer: {
-    flex: 1,
-    left: 0,
+  checkTypeContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+  },
+  title: {paddingTop: 30, marginBottom: 50},
+  radioButtonContainer: {
+    alignItems: 'center',
+    width: Dimensions.get('window').width / 1.2,
+    height: 50,
+    borderWidth: 0.2,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 10,
+  },
+  radioText: {
+    textAlign: 'left',
+    paddingHorizontal: 10,
+  },
+  nextButton: {
     position: 'absolute',
-    right: 0,
-    top: 0,
-    zIndex: 1,
+    bottom: 0,
+    width: Dimensions.get('window').width,
+    justifyContent: 'center',
+  },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: '900',
+    height: 70,
+    textAlignVertical: 'center',
   },
 });

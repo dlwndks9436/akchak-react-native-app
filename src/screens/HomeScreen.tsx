@@ -15,6 +15,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
 import {RootStackTabScreenProps} from '../types/type';
 import {PressableOpacity} from 'react-native-pressable-opacity';
+import {useIsFocused} from '@react-navigation/native';
 
 export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   interface Practice {
@@ -48,10 +49,9 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   const [page, setPage] = useState(0);
   const accessToken = useAppSelector(selectAccessToken);
   const [intervalID, setIntervalID] = useState<NodeJS.Timer>();
-  // const [title] = useState();
-  // const [username] = useState();
   const [search] = useState('');
   const [searchType] = useState<'title' | 'username'>();
+  const isFocused = useIsFocused();
 
   const componentDidMount = useCallback(async () => {
     setStartMount(true);
@@ -118,6 +118,9 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   // }, [serverData]);
 
   const loadMoreData = async () => {
+    if (serverData.length < 3) return;
+    console.log('loading more data');
+
     setFetching(true);
     const params: {
       page: number;
@@ -138,10 +141,12 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     })
       .then((response: AxiosResponse) => response.data)
       .then((data: PracticeQueryResult) => {
-        setPage(currentPage => currentPage + 1);
-        setServerData(serverData.concat(data.practices));
-        setThumbnailUrls(thumbnailUrls.concat(data.thumbnailURLs));
-        setFetching(false);
+        if (isFocused === true) {
+          setPage(currentPage => currentPage + 1);
+          setServerData(serverData.concat(data.practices));
+          setThumbnailUrls(thumbnailUrls.concat(data.thumbnailURLs));
+          setFetching(false);
+        }
       })
       .catch(err => console.log(err));
     setFetching(false);
@@ -205,13 +210,8 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   const renderFooter = () => {
     return (
       <View style={styles.footer}>
-        <Button
-          onPress={loadMoreData}
-          style={styles.loadMoreBtn}
-          labelStyle={styles.btnText}
-          loading={fetching}
-          disabled={fetching}>
-          {fetching ? null : 'Load more'}
+        <Button style={styles.loadMoreBtn} loading={fetching} disabled={true}>
+          {null}
         </Button>
       </View>
     );
@@ -277,10 +277,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 40,
-  },
-  btnText: {
-    fontSize: 15,
-    textAlign: 'center',
   },
   footer: {
     justifyContent: 'center',
