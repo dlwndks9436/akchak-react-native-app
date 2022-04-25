@@ -65,45 +65,41 @@ export default function SignupScreen({
   const inputsAreValid = (): boolean => {
     let hasNoError = true;
     if (validator.isEmpty(username)) {
-      setUsernameErrorText('Username is empty. Please fill it in...');
+      setUsernameErrorText('빈 칸입니다');
       hasNoError = false;
     } else if (!usernameIsValid()) {
       setUsernameErrorText(
-        '1. Username must contain only alpabets and numbers.\n2. Length must be between 8~20 characters',
+        '알파벳과 숫자로 이루어져있어야하며, 길이는 8~20자 이내로 만들어주세요',
       );
       hasNoError = false;
     } else {
       setUsernameErrorText('');
     }
     if (validator.isEmpty(email)) {
-      setEmailErrorText('Email is empty. Please fill it in...');
+      setEmailErrorText('빈 칸입니다');
       hasNoError = false;
     } else if (!validator.isEmail(email)) {
-      setEmailErrorText('Not a valid email address form');
+      setEmailErrorText('유효하지 않는 이메일 형식입니다');
       hasNoError = false;
     } else {
       setEmailErrorText('');
     }
     if (validator.isEmpty(password)) {
-      setPasswordErrorText('Password is empty. Please fill it in...');
+      setPasswordErrorText('빈 칸입니다');
       hasNoError = false;
     } else if (!validator.isStrongPassword(password, {minSymbols: 0})) {
       setPasswordErrorText(
-        '1. At least one uppercase, one lowercase, one number must be included.\n2. Must be longer than 7 characters',
+        '대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
       );
       hasNoError = false;
     } else {
       setPasswordErrorText('');
     }
     if (validator.isEmpty(secondPassword)) {
-      setSecondPasswordErrorText(
-        'Confirm password is empty. Please fill it in...',
-      );
+      setSecondPasswordErrorText('빈 칸입니다');
       hasNoError = false;
     } else if (!password || password.localeCompare(secondPassword) !== 0) {
-      setSecondPasswordErrorText(
-        'Password and Confirm password does not match.',
-      );
+      setSecondPasswordErrorText('비밀번호가 일치하지 않습니다');
       hasNoError = false;
     } else {
       setSecondPasswordErrorText('');
@@ -115,7 +111,7 @@ export default function SignupScreen({
     if (inputsAreValid()) {
       setIsSigningUp(true);
       await axios
-        .post(API_URL + 'auth/signup', {
+        .post(API_URL + 'player/signup', {
           username,
           email,
           password,
@@ -139,6 +135,8 @@ export default function SignupScreen({
               setPasswordErrorText(err.response.data.msg);
             }
             console.log(err.response.status);
+          } else {
+            console.log(err);
           }
         });
     }
@@ -151,7 +149,7 @@ export default function SignupScreen({
           <Portal>
             <Dialog visible={visibleDialog}>
               <Dialog.Content>
-                <Title>User account created.</Title>
+                <Title>회원가입 완료</Title>
               </Dialog.Content>
               <Dialog.Actions>
                 <Button
@@ -166,13 +164,13 @@ export default function SignupScreen({
           </Portal>
           {isSigningUp ? (
             <View style={styles.container}>
-              <Title>Signing up...</Title>
+              <Title>회원가입 진행 중...</Title>
               <ActivityIndicator animating={true} size={'large'} />
             </View>
           ) : (
             <View>
               <TextInput
-                label="Username"
+                label="별명"
                 value={username}
                 autoCapitalize={'none'}
                 onChangeText={text => {
@@ -185,7 +183,7 @@ export default function SignupScreen({
                 {usernameErrorText}
               </HelperText>
               <TextInput
-                label="E-mail"
+                label="이메일"
                 value={email}
                 autoCapitalize={'none'}
                 onChangeText={text => setEmail(text)}
@@ -197,7 +195,7 @@ export default function SignupScreen({
                 {emailErrorText}
               </HelperText>
               <TextInput
-                label="Password"
+                label="비밀번호"
                 value={password}
                 autoCapitalize={'none'}
                 onChangeText={text => setPassword(text)}
@@ -209,7 +207,7 @@ export default function SignupScreen({
                 {passwordErrorText}
               </HelperText>
               <TextInput
-                label="Confirm Password"
+                label="비밀번호 재확인"
                 value={secondPassword}
                 autoCapitalize={'none'}
                 onChangeText={text => setSecondPassword(text)}
@@ -225,13 +223,8 @@ export default function SignupScreen({
                 contentStyle={styles.signupButtonContent}
                 style={styles.signupButton}
                 onPress={signup}>
-                Sign up
+                회원가입하기
               </Button>
-              <View style={styles.footer}>
-                <Button uppercase={false} onPress={() => navigation.goBack()}>
-                  Back to login
-                </Button>
-              </View>
             </View>
           )}
         </View>
@@ -262,9 +255,5 @@ const styles = StyleSheet.create({
   signupButtonContent: {
     width: Dimensions.get('window').width / 1.5,
     height: 60,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
 });

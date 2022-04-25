@@ -13,18 +13,21 @@ import {
   initializePracticeLogs,
 } from '../features/practiceLogs/practiceLogsSlice';
 import {
-  checkUserActive,
+  checkUserIsAuthorized,
   checkUserLoggedIn,
   checkUserStatus,
   initializeUser,
 } from '../features/user/userSlice';
 import SplashScreen from '../screens/SplashScreen';
-import AuthCodeScreen from '../screens/AuthCodeScreen';
 import UploadPracticeScreen from '../screens/UploadPracticeScreen';
 import ViewPracticeScreen from '../screens/ViewPracticeScreen';
 import StartPracticeScreen from '../screens/StartPracticeScreen';
 import CreateObjectiveScreen from '../screens/CreateObjectiveScreen';
 import CustomAppBar from '../components/atoms/CustomAppBar';
+import SelectBookScreen from '../screens/SelectBookScreen';
+import SelectMusicScreen from '../screens/SelectMusicScreen';
+import StartOwnObjectiveScreen from '../screens/StartOwnObjectiveScreen';
+import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -33,7 +36,7 @@ const RootStack = () => {
   const practiceLogsStatus = useAppSelector(checkPracticeLogsStatus);
   const userStatus = useAppSelector(checkUserStatus);
   const userLoggedin = useAppSelector(checkUserLoggedIn);
-  const userActive = useAppSelector(checkUserActive);
+  const userIsAuthorized = useAppSelector(checkUserIsAuthorized);
 
   useEffect(() => {
     if (practiceLogsStatus === 'idle') {
@@ -67,10 +70,14 @@ const RootStack = () => {
     );
   }
 
-  if (!userActive) {
+  if (!userIsAuthorized) {
     return (
-      <Stack.Navigator>
-        <Stack.Screen name="Validate E-mail" component={AuthCodeScreen} />
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: true,
+          header: props => <CustomAppBar {...props} />,
+        }}>
+        <Stack.Screen name="이메일 인증" component={VerifyEmailScreen} />
       </Stack.Navigator>
     );
   }
@@ -96,6 +103,12 @@ const RootStack = () => {
           header: props => <CustomAppBar {...props} />,
         }}>
         <Stack.Screen name="새 목표 설정" component={CreateObjectiveScreen} />
+        <Stack.Screen name="교본 선택" component={SelectBookScreen} />
+        <Stack.Screen name="음악 선택" component={SelectMusicScreen} />
+        <Stack.Screen
+          name="나만의 목표 설정"
+          component={StartOwnObjectiveScreen}
+        />
       </Stack.Group>
       <Stack.Group
         screenOptions={{

@@ -28,4 +28,4 @@ export const SCREEN_HEIGHT = Platform.select<number>({
 // Capture Button
 export const CAPTURE_BUTTON_SIZE = 78;
 
-export const API_URL = 'https://resonar.link/';
+export const API_URL = 'http://192.168.35.4:30000/';

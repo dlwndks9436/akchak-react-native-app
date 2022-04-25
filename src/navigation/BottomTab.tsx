@@ -8,7 +8,7 @@ import {RootStackParamList} from '../types/type';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useAppSelector} from '../redux/hooks';
 import {checkUserLoggedIn} from '../features/user/userSlice';
-import ProfileScreen from '../screens/AccountScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
 import {theme} from '../styles/theme';
 
@@ -33,10 +33,8 @@ export default function BottomTab() {
   return (
     <Tab.Navigator
       initialRouteName="Home"
-      activeColor="#333333"
+      activeColor={theme.colors.primary}
       backBehavior="none"
-      inactiveColor="#999999"
-      sceneAnimationEnabled={false}
       barStyle={{backgroundColor: theme.colors.background}}>
       <Tab.Screen
         name="Home"
@@ -80,7 +78,7 @@ export default function BottomTab() {
         })}
       />
       <Tab.Screen
-        name="Account"
+        name="내 정보"
         component={ProfileScreen}
         options={() => ({
           tabBarIcon: ({color}) => (

@@ -56,19 +56,19 @@ export default function LoginScreen({navigation}: AuthStackLoginScreenProps) {
                 <Paragraph style={{fontSize: 20}}>{loginError}</Paragraph>
               </Dialog.Content>
               <Dialog.Actions>
-                <Button onPress={hideDialog}>OK</Button>
+                <Button onPress={hideDialog}>확인</Button>
               </Dialog.Actions>
             </Dialog>
           </Portal>
           {isLoggingIn ? (
             <View style={styles.container}>
-              <Title>Logging in...</Title>
+              <Title>로그인 중..</Title>
               <ActivityIndicator animating={true} size={'large'} />
             </View>
           ) : (
-            <View>
+            <View style={styles.container}>
               <TextInput
-                label="E-mail"
+                label="이메일"
                 value={email}
                 onChangeText={text => setEmail(text)}
                 autoCapitalize={'none'}
@@ -76,7 +76,7 @@ export default function LoginScreen({navigation}: AuthStackLoginScreenProps) {
                 style={styles.textInput}
               />
               <TextInput
-                label="Password"
+                label="비밀번호"
                 value={password}
                 onChangeText={text => setPassword(text)}
                 autoCapitalize={'none'}
@@ -86,24 +86,26 @@ export default function LoginScreen({navigation}: AuthStackLoginScreenProps) {
               <Button
                 style={styles.askPasswordButton}
                 uppercase={false}
-                onPress={() => navigation.navigate('New password')}>
-                Forgot password?
+                compact={true}
+                onPress={() => navigation.navigate('새 비밀번호')}>
+                비밀번호를 잊으셨나요?
               </Button>
               <Button
                 mode="contained"
                 contentStyle={styles.loginButtonContent}
                 style={styles.loginButton}
                 onPress={loginUser}>
-                Login
+                로그인
               </Button>
               <View style={styles.footer}>
-                <Text>Don't have an account?</Text>
+                <Text>아직 계정이 없으신가요?</Text>
                 <Button
                   uppercase={false}
+                  compact={true}
                   onPress={() => {
-                    navigation.navigate('Sign up');
+                    navigation.navigate('회원가입');
                   }}>
-                  Sign up here
+                  회원가입하기
                 </Button>
               </View>
             </View>
@@ -119,7 +121,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: Dimensions.get('window').height / 10,
+    paddingTop: Dimensions.get('window').height / 20,
   },
   textInput: {
     height: 50,
@@ -129,7 +131,6 @@ const styles = StyleSheet.create({
   },
   askPasswordButton: {
     alignSelf: 'flex-end',
-    right: Dimensions.get('window').width / 8,
   },
   loginButton: {
     marginVertical: 20,
@@ -141,5 +142,6 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
 });

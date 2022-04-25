@@ -2,10 +2,23 @@ import {Dimensions, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
 import {Button, RadioButton, Title} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {RootStackCreateObjectiveScreenProps} from '../types/type';
 
-export default function CreatePracticeScreen() {
+export default function CreatePracticeScreen({
+  navigation,
+}: RootStackCreateObjectiveScreenProps): React.ReactElement {
   type ObjectiveType = '음악' | '교본' | '이외';
   const [type, setType] = useState<ObjectiveType>('음악');
+
+  const navigateToNextScreen = () => {
+    if (type === '음악') {
+      navigation.navigate('음악 선택');
+    } else if (type === '교본') {
+      navigation.navigate('교본 선택');
+    } else {
+      navigation.navigate('나만의 목표 설정');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,7 +51,7 @@ export default function CreatePracticeScreen() {
       <Button
         style={styles.nextButton}
         labelStyle={styles.buttonText}
-        onPress={() => {}}>
+        onPress={navigateToNextScreen}>
         다음
       </Button>
     </SafeAreaView>

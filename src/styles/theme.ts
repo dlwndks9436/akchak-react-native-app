@@ -14,9 +14,9 @@ const CombinedDefaultTheme = merge(PaperDefaultTheme, NavigationDefaultTheme);
 
 const customColors = {
   ...CombinedDefaultTheme.colors,
-  primary: '#333333',
-  accent: '#EE8434',
-  notification: '#EE8434',
+  primary: '#EE8434',
+  accent: '#333333',
+  notification: '#333333',
   backdrop: '#f2f2f200',
   placeholder: '#333333',
   error: '#eb4d43',

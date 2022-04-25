@@ -4,28 +4,26 @@ import LoginScreen from '../screens/LoginScreen';
 import {AuthStackParamList} from '../types/type';
 import SignupScreen from '../screens/SignupScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import CreateNewPasswordScreen from '../screens/CreateNewPasswordScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import CustomAppBar from '../components/atoms/CustomAppBar';
+import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 
 const Stack = createStackNavigator<AuthStackParamList>();
 
 const AuthStack = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Login"
+      initialRouteName="로그인"
       screenOptions={{
-        headerTitleStyle: {
-          fontSize: 30,
-          fontFamily: 'Orbitron-VariableFont_wght',
-        },
+        headerShown: true,
+        header: props => <CustomAppBar {...props} />,
       }}>
       <Stack.Group>
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Sign up" component={SignupScreen} />
-        <Stack.Screen name="New password" component={ForgotPasswordScreen} />
-        <Stack.Screen
-          name="CreateNewPassword"
-          component={CreateNewPasswordScreen}
-        />
+        <Stack.Screen name="로그인" component={LoginScreen} />
+        <Stack.Screen name="회원가입" component={SignupScreen} />
+        <Stack.Screen name="새 비밀번호" component={ForgotPasswordScreen} />
+        <Stack.Screen name="이메일 인증" component={VerifyEmailScreen} />
+        <Stack.Screen name="비밀번호 변경" component={ChangePasswordScreen} />
       </Stack.Group>
     </Stack.Navigator>
   );

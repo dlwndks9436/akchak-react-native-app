@@ -18,6 +18,9 @@ export type RootStackParamList = {
   };
   StartPractice: undefined;
   '새 목표 설정': undefined;
+  '음악 선택': undefined;
+  '교본 선택': undefined;
+  '나만의 목표 설정': undefined;
   Upload: {
     trimmedVideoUri?: string;
     thumbnailUri?: string;
@@ -36,13 +39,15 @@ export type RootStackParamList = {
   ViewPractice: {
     practiceId: number;
   };
+  '이메일 인증': undefined;
 };
 
 export type AuthStackParamList = {
-  Login: undefined;
-  'Sign up': undefined;
-  'New password': undefined;
-  CreateNewPassword: undefined;
+  로그인: undefined;
+  회원가입: undefined;
+  '새 비밀번호': undefined;
+  '비밀번호 변경': {email: string; code: string};
+  '이메일 인증': {email: string};
 };
 
 export type BottomTabParamList = {
@@ -93,22 +98,47 @@ export type RootStackCameraScreenProps = StackScreenProps<
 
 export type AuthStackLoginScreenProps = StackScreenProps<
   AuthStackParamList,
-  'Login'
+  '로그인'
 >;
 
 export type AuthStackRegisterScreenProps = StackScreenProps<
   AuthStackParamList,
-  'Sign up'
+  '회원가입'
+>;
+
+export type AuthStackChangePasswordScreenProps = StackScreenProps<
+  AuthStackParamList,
+  '비밀번호 변경'
 >;
 
 export type AuthStackForgotPasswordScreenProps = StackScreenProps<
   AuthStackParamList,
-  'New password'
+  '새 비밀번호'
 >;
 
-export type AuthStackCreateNewPasswordScreenProps = StackScreenProps<
+export type AuthStackVerifyEmailScreenProps = StackScreenProps<
   AuthStackParamList,
-  'CreateNewPassword'
+  '이메일 인증'
+>;
+
+export type RootStackCreateObjectiveScreenProps = StackScreenProps<
+  RootStackParamList,
+  '새 목표 설정'
+>;
+
+export type RootStackSelectBookScreenProps = StackScreenProps<
+  RootStackParamList,
+  '교본 선택'
+>;
+
+export type RootStackSelectMusicScreenProps = StackScreenProps<
+  RootStackParamList,
+  '음악 선택'
+>;
+
+export type RootStackStartOwnObjectiveScreenProps = StackScreenProps<
+  RootStackParamList,
+  '나만의 목표 설정'
 >;
 
 export type CustomAppBarProps = StackHeaderProps;

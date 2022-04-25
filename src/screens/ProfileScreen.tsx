@@ -23,7 +23,7 @@ export default function ProfileScreen() {
         style={styles.logoutButton}
         contentStyle={styles.logoutButtonContent}
         onPress={logoutUser}>
-        Logout
+        로그아웃
       </Button>
     </View>
   );

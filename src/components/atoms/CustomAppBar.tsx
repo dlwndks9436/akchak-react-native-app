@@ -12,7 +12,16 @@ export default function CustomAppBar({
     <Appbar.Header style={styles.Header}>
       {back ? <Appbar.BackAction onPress={navigation.goBack} /> : null}
       <Appbar.Content title={route.name} style={styles.title} />
-      <Appbar.Action icon="close" onPress={navigation.popToTop} />
+      {back ? (
+        <Appbar.Action
+          icon="close"
+          onPress={navigation.popToTop}
+          disabled={navigation.getState().routes.length < 3}
+          color={
+            navigation.getState().routes.length < 3 ? 'transparent' : undefined
+          }
+        />
+      ) : null}
     </Appbar.Header>
   );
 }
