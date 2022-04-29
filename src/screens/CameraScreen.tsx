@@ -3,7 +3,7 @@ import {Dimensions, Platform, StatusBar, StyleSheet, View} from 'react-native';
 import {Camera} from 'expo-camera';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Button, IconButton, Text} from 'react-native-paper';
-import {RootStackCameraScreenProps} from '../types/type';
+import {RootStackCameraScreenProps} from '../types';
 
 export default function CameraScreen({
   navigation,

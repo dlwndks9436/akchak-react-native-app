@@ -2,12 +2,14 @@ import {Dimensions, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
 import {Button, RadioButton, Title} from 'react-native-paper';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {RootStackCreateObjectiveScreenProps} from '../types/type';
+import {RootStackCreateObjectiveScreenProps} from '../types';
+import MusicCircle from '../assets/images/music-circle-outline.svg';
+import BookOpen from '../assets/images/book-open-variant.svg';
 
 export default function CreatePracticeScreen({
   navigation,
 }: RootStackCreateObjectiveScreenProps): React.ReactElement {
-  type ObjectiveType = '음악' | '교본' | '이외';
+  type ObjectiveType = '음악' | '교본';
   const [type, setType] = useState<ObjectiveType>('음악');
 
   const navigateToNextScreen = () => {
@@ -15,8 +17,6 @@ export default function CreatePracticeScreen({
       navigation.navigate('음악 선택');
     } else if (type === '교본') {
       navigation.navigate('교본 선택');
-    } else {
-      navigation.navigate('나만의 목표 설정');
     }
   };
 
@@ -40,14 +40,12 @@ export default function CreatePracticeScreen({
           style={styles.radioButtonContainer}
           labelStyle={styles.radioText}
         />
-        <RadioButton.Item
-          label="이외"
-          value="이외"
-          position="leading"
-          style={styles.radioButtonContainer}
-          labelStyle={styles.radioText}
-        />
       </RadioButton.Group>
+      {type === '음악' ? (
+        <MusicCircle height={300} width={300} fill={'#333333'} />
+      ) : (
+        <BookOpen height={300} width={300} fill={'#333333'} />
+      )}
       <Button
         style={styles.nextButton}
         labelStyle={styles.buttonText}

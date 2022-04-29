@@ -13,7 +13,7 @@ import {
   PracticeLogType,
   PracticeLogItemType,
   RootStackTabScreenProps,
-} from '../types/type';
+} from '../types';
 import RNFS from 'react-native-fs';
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
 import {

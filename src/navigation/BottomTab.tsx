@@ -4,7 +4,7 @@ import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIc
 import HomeScreen from '../screens/HomeScreen';
 import DummyScreen from '../screens/DummyScreen';
 import PracticeLogListScreen from '../screens/PracticeLogListScreen';
-import {RootStackParamList} from '../types/type';
+import {RootStackParamList} from '../types';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useAppSelector} from '../redux/hooks';
 import {checkUserLoggedIn} from '../features/user/userSlice';

@@ -9,7 +9,7 @@ import {
   Paragraph,
 } from 'react-native-paper';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {AuthStackChangePasswordScreenProps} from '../types/type';
+import {AuthStackChangePasswordScreenProps} from '../types';
 import validator from 'validator';
 import axios, {AxiosError} from 'axios';
 import {API_URL} from '../utils/constants';

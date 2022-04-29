@@ -20,7 +20,13 @@ export type RootStackParamList = {
   '새 목표 설정': undefined;
   '음악 선택': undefined;
   '교본 선택': undefined;
-  '나만의 목표 설정': undefined;
+  '프레이즈 선택': {
+    book: Book;
+  };
+  '프레이즈 추가': {
+    book: Book;
+  };
+  '교본 추가': undefined;
   Upload: {
     trimmedVideoUri?: string;
     thumbnailUri?: string;
@@ -131,14 +137,24 @@ export type RootStackSelectBookScreenProps = StackScreenProps<
   '교본 선택'
 >;
 
+export type RootStackSelectPhraseScreenProps = StackScreenProps<
+  RootStackParamList,
+  '프레이즈 선택'
+>;
+
+export type RootStackAddPhraseScreenProps = StackScreenProps<
+  RootStackParamList,
+  '프레이즈 추가'
+>;
+
+export type RootStackAddBookScreenProps = StackScreenProps<
+  RootStackParamList,
+  '교본 추가'
+>;
+
 export type RootStackSelectMusicScreenProps = StackScreenProps<
   RootStackParamList,
   '음악 선택'
->;
-
-export type RootStackStartOwnObjectiveScreenProps = StackScreenProps<
-  RootStackParamList,
-  '나만의 목표 설정'
 >;
 
 export type CustomAppBarProps = StackHeaderProps;
@@ -164,4 +180,17 @@ export interface PracticeLogItemType {
   formattedDurationWithoutMillisecond: string | undefined;
   date: string;
   navigation: StackNavigationProp<RootStackParamList, 'Tab'>;
+}
+
+export interface Book {
+  id: number;
+  title: string;
+  author: string;
+}
+
+export interface Phrase {
+  id: number;
+  title: string;
+  subheading: string;
+  page: number;
 }

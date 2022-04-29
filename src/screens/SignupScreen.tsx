@@ -9,7 +9,7 @@ import {
   Title,
   ActivityIndicator,
 } from 'react-native-paper';
-import {AuthStackRegisterScreenProps} from '../types/type';
+import {AuthStackRegisterScreenProps} from '../types';
 import axios, {AxiosResponse, AxiosError} from 'axios';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';

@@ -16,7 +16,7 @@ import {formatDuration} from '../utils';
 import axios, {AxiosError} from 'axios';
 import {API_URL} from '../utils/constants';
 import validator from 'validator';
-import {AuthStackVerifyEmailScreenProps} from '../types/type';
+import {AuthStackVerifyEmailScreenProps} from '../types';
 import {authorizeUser, checkEmail, logout} from '../features/user/userSlice';
 
 export default function VerifyEmailScreen({

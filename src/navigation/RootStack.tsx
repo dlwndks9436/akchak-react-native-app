@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import {RootStackParamList} from '../types/type';
+import {RootStackParamList} from '../types';
 import BottomTab from './BottomTab';
 import VideoPlayScreen from '../screens/VideoPlayScreen';
 import VideoTrimScreen from '../screens/VideoTrimScreen';
@@ -28,6 +28,9 @@ import SelectBookScreen from '../screens/SelectBookScreen';
 import SelectMusicScreen from '../screens/SelectMusicScreen';
 import StartOwnObjectiveScreen from '../screens/StartOwnObjectiveScreen';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
+import AddBookScreen from '../screens/AddBookScreen';
+import SelectPhraseScreen from '../screens/SelectPhraseScreen';
+import AddPhraseScreen from '../screens/AddPhraseScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -104,6 +107,9 @@ const RootStack = () => {
         }}>
         <Stack.Screen name="새 목표 설정" component={CreateObjectiveScreen} />
         <Stack.Screen name="교본 선택" component={SelectBookScreen} />
+        <Stack.Screen name="프레이즈 선택" component={SelectPhraseScreen} />
+        <Stack.Screen name="프레이즈 추가" component={AddPhraseScreen} />
+        <Stack.Screen name="교본 추가" component={AddBookScreen} />
         <Stack.Screen name="음악 선택" component={SelectMusicScreen} />
         <Stack.Screen
           name="나만의 목표 설정"

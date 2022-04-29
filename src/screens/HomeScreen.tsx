@@ -13,7 +13,7 @@ import {selectAccessToken} from '../features/user/userSlice';
 import {AxiosError, AxiosResponse} from 'axios';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
-import {RootStackTabScreenProps} from '../types/type';
+import {RootStackTabScreenProps} from '../types';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import {useIsFocused} from '@react-navigation/native';
 

@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {RootState} from '../../redux/store';
-import {PracticeLogType} from '../../types/type';
+import {PracticeLogType} from '../../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface PracticeLogState {

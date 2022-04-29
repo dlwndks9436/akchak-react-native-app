@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Appbar} from 'react-native-paper';
-import {CustomAppBarProps} from '../../types/type';
+import {CustomAppBarProps} from '../../types';
 
 export default function CustomAppBar({
   navigation,

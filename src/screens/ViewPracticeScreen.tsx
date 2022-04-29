@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import VideoPlayer from 'react-native-video-controls';
-import {RootStackViewPracticeScreenProps} from '../types/type';
+import {RootStackViewPracticeScreenProps} from '../types';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {
   ActivityIndicator,

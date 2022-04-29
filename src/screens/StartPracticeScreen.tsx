@@ -7,7 +7,7 @@ import {
 import React from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Button} from 'react-native-paper';
-import {RootStackStartPracticeScreenProps} from '../types/type';
+import {RootStackStartPracticeScreenProps} from '../types';
 import {theme} from '../styles/theme';
 
 export default function StartPracticeScreen({

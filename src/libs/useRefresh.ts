@@ -16,7 +16,7 @@ const refresh = async (
     'lastTimeAuthenticated',
   );
   if (lastTimeAuthenticated) {
-    console.log('사용자가 접속한 적이 있음');
+    console.log('access token 체크');
 
     const now = new Date(Date.now()).getTime();
 
@@ -41,6 +41,8 @@ const refresh = async (
           console.log('새로운 access token 발급됨');
         }
       }
+    } else {
+      console.log('access token 유효함');
     }
   }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {AndroidBackHandler} from 'react-navigation-backhandler';
-import {RootStackPlayScreenProps} from '../types/type';
+import {RootStackPlayScreenProps} from '../types';
 import VideoPlayer from 'react-native-video-controls';
 import Orientation from 'react-native-orientation-locker';
 

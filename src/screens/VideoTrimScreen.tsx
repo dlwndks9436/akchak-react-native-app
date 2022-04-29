@@ -1,6 +1,6 @@
 import {StyleSheet, View, Dimensions, Image, StatusBar} from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {RootStackTrimScreenProps} from '../types/type';
+import {RootStackTrimScreenProps} from '../types';
 import Orientation, {OrientationLocker} from 'react-native-orientation-locker';
 import {AndroidBackHandler} from 'react-navigation-backhandler';
 import VideoPlayer from 'react-native-video-controls';

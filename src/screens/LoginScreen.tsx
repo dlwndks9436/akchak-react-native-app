@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Title,
 } from 'react-native-paper';
-import {AuthStackLoginScreenProps} from '../types/type';
+import {AuthStackLoginScreenProps} from '../types';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {useAppDispatch, useAppSelector} from '../redux/hooks';

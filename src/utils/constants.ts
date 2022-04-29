@@ -28,4 +28,4 @@ export const SCREEN_HEIGHT = Platform.select<number>({
 // Capture Button
 export const CAPTURE_BUTTON_SIZE = 78;
 
-export const API_URL = 'http://192.168.35.4:30000/';
+export const API_URL = 'http://172.30.1.51:30000/';

@@ -5,7 +5,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import validator from 'validator';
 import {theme} from '../styles/theme';
-import {AuthStackForgotPasswordScreenProps} from '../types/type';
+import {AuthStackForgotPasswordScreenProps} from '../types';
 
 export default function ForgotPasswordScreen({
   navigation,

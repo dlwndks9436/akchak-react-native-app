@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet, View, Linking, Text, TouchableOpacity} from 'react-native';
 import {Camera} from 'react-native-vision-camera';
-import {RootStackPermissionScreenProps} from '../types/type';
+import {RootStackPermissionScreenProps} from '../types';
 import {CameraPermissionStatus} from 'react-native-vision-camera';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 

@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Button, Dialog, Paragraph, Portal, TextInput} from 'react-native-paper';
-import {RootStackUploadScreenProps} from '../types/type';
+import {RootStackUploadScreenProps} from '../types';
 import RNFS from 'react-native-fs';
 import {API_ENDPOINT} from 'react-native-dotenv';
 import axios, {AxiosError} from 'axios';
