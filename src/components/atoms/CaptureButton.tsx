@@ -302,7 +302,7 @@ const _CaptureButton: React.FC<Props> = ({
         <Portal>
           <Dialog visible={visible} onDismiss={hideDialog}>
             <Dialog.Content>
-              <Paragraph>Did you finish your practice?</Paragraph>
+              <Paragraph>연습을 마무리하시겠습니까?</Paragraph>
             </Dialog.Content>
             <Dialog.Actions>
               <Button
@@ -314,9 +314,9 @@ const _CaptureButton: React.FC<Props> = ({
                     setIsPressingButton(false);
                   }, 500);
                 }}>
-                Yes
+                네
               </Button>
-              <Button onPress={hideDialog}>No</Button>
+              <Button onPress={hideDialog}>아니요</Button>
             </Dialog.Actions>
           </Dialog>
         </Portal>

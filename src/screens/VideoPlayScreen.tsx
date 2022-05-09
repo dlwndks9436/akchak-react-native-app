@@ -3,7 +3,7 @@ import {View, StyleSheet} from 'react-native';
 import {AndroidBackHandler} from 'react-navigation-backhandler';
 import {RootStackPlayScreenProps} from '../types';
 import VideoPlayer from 'react-native-video-controls';
-import Orientation from 'react-native-orientation-locker';
+import {Button} from 'react-native-paper';
 
 export default function VideoPlayScreen({
   navigation,
@@ -18,27 +18,26 @@ export default function VideoPlayScreen({
      *
      *   Returning `false` will cause the event to bubble up and react-navigation's listener will pop the screen.
      * */
+    return false;
+  };
 
-    Orientation.unlockAllOrientations();
-    const fileName = route.params.videoUri.split('/').pop();
-    if (fileName === 'practice.mp4') {
-      navigation.reset({index: 0, routes: [{name: 'Tab'}]});
-      return true;
-    } else {
-      navigation.goBack();
-      return true;
-    }
+  const navigateToNextScreen = () => {
+    navigation.navigate('섬네일 추가', {
+      goal: route.params.goal,
+      video: route.params.video,
+      creationTime: route.params.creationTime,
+      practiceTime: route.params.practiceTime,
+    });
   };
 
   return (
     <AndroidBackHandler onBackPress={onBackButtonPressAndroid}>
       <View style={styles.body}>
         <VideoPlayer
-          source={{uri: route.params.videoUri}}
+          source={{uri: route.params.video.path}}
           ref={videoPlayer}
           style={styles.videoPlayer}
           disableFullscreen={true}
-          fullscreen={true}
           disableBack={true}
           paused={true}
           onEnd={() => {
@@ -49,22 +48,27 @@ export default function VideoPlayScreen({
             videoPlayer.current?.setState(newState);
           }}
         />
+        <Button
+          icon="chevron-right"
+          style={styles.nextButton}
+          onPress={navigateToNextScreen}
+          contentStyle={{flexDirection: 'row-reverse'}}>
+          다음
+        </Button>
       </View>
     </AndroidBackHandler>
   );
 }
 
 const styles = StyleSheet.create({
-  body: {flex: 1, justifyContent: 'center', backgroundColor: '#000000'},
-  backgroundVideo: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0,
-  },
+  body: {flex: 1, backgroundColor: '#000000'},
   videoPlayer: {
     height: '100%',
     width: '100%',
+  },
+  nextButton: {
+    alignSelf: 'flex-end',
+    marginRight: 20,
+    marginBottom: 10,
   },
 });

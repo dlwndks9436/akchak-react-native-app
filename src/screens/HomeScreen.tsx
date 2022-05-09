@@ -6,7 +6,15 @@ import {
   ListRenderItem,
   ImageBackground,
 } from 'react-native';
-import {ActivityIndicator, Button, Text, Title} from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Button,
+  Dialog,
+  Paragraph,
+  Portal,
+  Text,
+  Title,
+} from 'react-native-paper';
 import Api from '../libs/api';
 import {useAppSelector} from '../redux/hooks';
 import {selectAccessToken} from '../features/user/userSlice';
@@ -15,141 +23,144 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
 import {RootStackTabScreenProps} from '../types';
 import {PressableOpacity} from 'react-native-pressable-opacity';
-import {useIsFocused} from '@react-navigation/native';
+import NetInfo from '@react-native-community/netinfo';
 
 export default function HomeScreen({navigation}: RootStackTabScreenProps) {
-  interface Practice {
+  interface PracticeLog {
     _id?: number;
-    user_id?: number;
-    title?: string;
-    description?: string;
-    duration?: number;
-    from_directory?: string;
-    practice_time?: number;
-    s3_key?: string;
-    user: {username: string};
+    player_id?: number;
+    goal_id?: number;
+    memo?: string;
+    time?: string;
+    view?: string | number;
+    created_at?: string;
+    updated_at?: string;
     thumbnailUri?: string;
-    views?: string | number;
-    createdAt?: string;
   }
   interface PracticeQueryResult {
-    totalItems: number;
-    practices: Practice[];
+    practiceLogs: PracticeLog[];
     totalPages: number;
-    currentPage: number;
     thumbnailURLs: string[];
   }
 
-  const [loading, setLoading] = useState(true);
-  const [startMount, setStartMount] = useState(false);
-  const [serverData, setServerData] = useState<Practice[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [practiceLogs, setPracticeLogs] = useState<PracticeLog[]>([]);
   const [thumbnailUrls, setThumbnailUrls] = useState<string[]>([]);
-  const [fetching, setFetching] = useState(false);
   const [isRefreshing] = useState(false);
-  const [page, setPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(0);
   const accessToken = useAppSelector(selectAccessToken);
-  const [intervalID, setIntervalID] = useState<NodeJS.Timer>();
   const [search] = useState('');
   const [searchType] = useState<'title' | 'username'>();
-  const isFocused = useIsFocused();
+  const [isError, setIsError] = useState(false);
+  const [errorText, setErrorText] = useState('');
 
   const componentDidMount = useCallback(async () => {
-    setStartMount(true);
-    const params: {
-      page: number;
-      size: number;
-      title?: string;
-      username?: string;
-    } = {page: 0, size: 10};
-    if (search) {
-      if (searchType === 'title') {
-        params.title = search;
-      } else if (searchType === 'username') {
-        params.username = search;
-      }
-    }
-
-    console.log('componentDidMount start');
-    await Api.get('practice', {
-      headers: {Authorization: 'Bearer ' + accessToken},
-      params,
-    })
-      .then((response: AxiosResponse) => response.data)
-      .then((data: PracticeQueryResult) => {
-        console.log('initial loading successfully done');
-        console.log('loaded practices: ', data.practices);
-        console.log('loaded thumbnails: ', data.thumbnailURLs);
-
-        setPage(currentPage => currentPage + 1);
-        setServerData(data.practices);
-        setThumbnailUrls(data.thumbnailURLs);
-        if (data.practices) {
-          setLoading(false);
-          if (intervalID) {
-            clearInterval(intervalID);
-            setIntervalID(undefined);
+    setIsLoading(true);
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params: {
+            page: number;
+            size: number;
+            title?: string;
+            username?: string;
+          } = {page: 1, size: 10};
+          if (search) {
+            if (searchType === 'title') {
+              params.title = search;
+            } else if (searchType === 'username') {
+              params.username = search;
+            }
           }
+          console.log('componentDidMount start');
+          await Api.get('/practicelog', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          })
+            .then((response: AxiosResponse) => response.data)
+            .then((data: PracticeQueryResult) => {
+              if (data) {
+                setIsLoading(false);
+                console.log('initial isLoading successfully done');
+                console.log('loaded practices: ', data.practiceLogs);
+                console.log('loaded thumbnails: ', data.thumbnailURLs);
+                setPracticeLogs(data.practiceLogs);
+                setThumbnailUrls(data.thumbnailURLs);
+                setLastPage(data.totalPages);
+              } else {
+                setPracticeLogs([]);
+              }
+            })
+            .catch((err: AxiosError) => {
+              console.error(
+                'componentDidMount api error: ',
+                err.response?.data,
+              );
+            });
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
         }
-      })
-      .catch((err: AxiosError) => {
-        console.error('componentDidMount api error: ', err.response?.data);
       });
-  }, [accessToken, search, searchType, intervalID]);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [accessToken, search, searchType]);
 
   useEffect(() => {
-    console.log('start use effect');
-    let id: NodeJS.Timer | undefined;
-    if (!startMount) {
-      console.log('start mount function');
-      id = setInterval(async () => {
-        await componentDidMount();
-        setIntervalID(id);
-      }, 2000);
-    }
-    return () => {
-      if (id) {
-        clearInterval(id);
-      }
-    };
-  }, [componentDidMount, startMount, serverData]);
+    componentDidMount();
+  }, [componentDidMount]);
 
   // useEffect(() => {
-  //   console.log('server data: ', serverData);
-  // }, [serverData]);
+  //   console.log('server data: ', practiceLogs);
+  // }, [practiceLogs]);
 
   const loadMoreData = async () => {
-    if (serverData.length < 3) return;
-    console.log('loading more data');
-
-    setFetching(true);
-    const params: {
-      page: number;
-      size: number;
-      title?: string;
-      username?: string;
-    } = {page, size: 10};
-    if (search) {
-      if (searchType === 'title') {
-        params.title = search;
-      } else if (searchType === 'username') {
-        params.username = search;
-      }
+    if (isLoading || currentPage >= lastPage) {
+      return;
     }
-    await Api.get('practice', {
-      headers: {Authorization: 'Bearer ' + accessToken},
-      params,
-    })
-      .then((response: AxiosResponse) => response.data)
-      .then((data: PracticeQueryResult) => {
-        if (isFocused === true) {
-          setPage(currentPage => currentPage + 1);
-          setServerData(serverData.concat(data.practices));
-          setThumbnailUrls(thumbnailUrls.concat(data.thumbnailURLs));
-          setFetching(false);
+    const nextPage = currentPage + 1;
+    setIsLoading(true);
+
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params = {
+            page: nextPage,
+            size: 10,
+          };
+          const result = await Api.get('/practicelog', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          });
+          setIsLoading(false);
+          if (result.status === 200) {
+            if (result.data && result.data.goals.length > 0) {
+              setPracticeLogs([...practiceLogs, ...result.data.practiceLogs]);
+              setThumbnailUrls([
+                ...thumbnailUrls,
+                ...result.data.thumbnailURLs,
+              ]);
+              setCurrentPage(nextPage);
+            }
+          } else {
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            setIsError(true);
+          }
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
         }
-      })
-      .catch(err => console.log(err));
-    setFetching(false);
+      });
+    } catch (err) {
+      setPracticeLogs([]);
+      setIsLoading(false);
+    }
+  };
+
+  const hideError = () => {
+    setIsError(false);
   };
 
   const navigateToPracticeScreen = (id: number) => {
@@ -164,7 +175,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     user,
     createdAt,
     views,
-  }: Practice) => (
+  }: PracticeLog) => (
     <PressableOpacity
       style={styles.itemContainer}
       onPress={() => {
@@ -182,58 +193,65 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
       </ImageBackground>
       <Title style={styles.title}>{title}</Title>
       <View style={styles.textContainer}>
-        <Text style={styles.itemText}>{user.username}</Text>
         <Text style={styles.itemText}>{views} views</Text>
         <Text style={styles.itemText}>{createdAt}</Text>
       </View>
     </PressableOpacity>
   );
 
-  const renderItem: ListRenderItem<Practice> = ({item, index}) => {
-    const date = Date.parse(item.createdAt!);
+  const renderItem: ListRenderItem<PracticeLog> = ({item, index}) => {
+    const date = Date.parse(item.created_at!);
     const createdAt = getElapsedTime(date);
-    const views = convertUnit(item.views as number) || '0';
+    const views = convertUnit(item.view as number) || '0';
     return (
       <Item
         _id={item._id}
-        title={item.title}
         key={item._id}
-        duration={item.duration}
         thumbnailUri={thumbnailUrls[index]}
-        user={item.user}
-        views={views}
-        createdAt={createdAt}
+        view={item.view}
+        created_at={item.created_at}
       />
     );
   };
 
-  const renderFooter = () => {
-    return (
-      <View style={styles.footer}>
-        <Button style={styles.loadMoreBtn} loading={fetching} disabled={true}>
-          {null}
-        </Button>
-      </View>
-    );
-  };
+  const LoadingIndicator = () => (
+    <View style={styles.loadingIndicator}>
+      <ActivityIndicator size="large" color={'white'} />
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      {loading ? (
+      <Portal>
+        <Dialog visible={isError} onDismiss={hideError}>
+          <Dialog.Content>
+            <Paragraph>{errorText}</Paragraph>
+          </Dialog.Content>
+          <View style={styles.actionContainer}>
+            <Dialog.Actions>
+              <Button onPress={hideError}>확인</Button>
+            </Dialog.Actions>
+          </View>
+        </Dialog>
+      </Portal>
+      {isLoading ? (
         <View style={styles.indicatorContainer}>
           <ActivityIndicator size="large" />
         </View>
-      ) : serverData.length === 0 ? (
-        <Button onPress={componentDidMount}>Load practice</Button>
+      ) : practiceLogs.length === 0 ? (
+        <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
       ) : (
         <FlatList
           style={{width: '100%'}}
-          data={serverData}
+          data={practiceLogs}
+          extraData={practiceLogs}
           renderItem={renderItem}
-          keyExtractor={(_item, index) => index.toString()}
+          keyExtractor={(_, index) => index.toString()}
           onEndReached={loadMoreData}
           onEndReachedThreshold={0.1}
-          ListFooterComponent={renderFooter}
+          ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps={'never'}
           onRefresh={componentDidMount}
           refreshing={isRefreshing}
         />
@@ -293,5 +311,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     paddingRight: 10,
     marginBottom: 5,
+  },
+  loadingIndicator: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
 });

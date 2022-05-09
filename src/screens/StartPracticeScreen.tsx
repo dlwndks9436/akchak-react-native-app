@@ -16,6 +16,10 @@ export default function StartPracticeScreen({
   const navigateToCreatePractice = () => {
     navigation.replace('새 목표 설정');
   };
+
+  const navigateToSelectGoal = () => {
+    navigation.replace('목표 선택');
+  };
   return (
     <TouchableWithoutFeedback onPress={() => navigation.goBack()}>
       <SafeAreaView style={styles.container}>
@@ -30,7 +34,7 @@ export default function StartPracticeScreen({
           <Button
             style={styles.buttonBottom}
             labelStyle={styles.buttonText}
-            onPress={() => {}}>
+            onPress={navigateToSelectGoal}>
             연습 시작하기
           </Button>
         </View>

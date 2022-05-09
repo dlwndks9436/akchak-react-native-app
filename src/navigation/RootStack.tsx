@@ -26,11 +26,14 @@ import CreateObjectiveScreen from '../screens/CreateObjectiveScreen';
 import CustomAppBar from '../components/atoms/CustomAppBar';
 import SelectBookScreen from '../screens/SelectBookScreen';
 import SelectMusicScreen from '../screens/SelectMusicScreen';
-import StartOwnObjectiveScreen from '../screens/StartOwnObjectiveScreen';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 import AddBookScreen from '../screens/AddBookScreen';
 import SelectPhraseScreen from '../screens/SelectPhraseScreen';
 import AddPhraseScreen from '../screens/AddPhraseScreen';
+import AddMusicScreen from '../screens/AddMusicScreen';
+import SelectGoalScreen from '../screens/SelectGoalScreen';
+import CreateThumbnailScreen from '../screens/CreateThumbnailScreen';
+import CheckThumbnailScreen from '../screens/CheckThumbnailScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -91,9 +94,8 @@ const RootStack = () => {
       <Stack.Group>
         <Stack.Screen name="Tab" component={BottomTab} />
         <Stack.Screen name="ViewPractice" component={ViewPracticeScreen} />
+        <Stack.Screen name="업로드" component={UploadPracticeScreen} />
         <Stack.Screen name="VideoPlay" component={VideoPlayScreen} />
-        <Stack.Screen name="VideoTrim" component={VideoTrimScreen} />
-        <Stack.Screen name="Upload" component={UploadPracticeScreen} />
         <Stack.Screen
           name="CameraPermission"
           component={CameraPermissionScreen}
@@ -106,15 +108,16 @@ const RootStack = () => {
           header: props => <CustomAppBar {...props} />,
         }}>
         <Stack.Screen name="새 목표 설정" component={CreateObjectiveScreen} />
+        <Stack.Screen name="목표 선택" component={SelectGoalScreen} />
         <Stack.Screen name="교본 선택" component={SelectBookScreen} />
         <Stack.Screen name="프레이즈 선택" component={SelectPhraseScreen} />
         <Stack.Screen name="프레이즈 추가" component={AddPhraseScreen} />
         <Stack.Screen name="교본 추가" component={AddBookScreen} />
         <Stack.Screen name="음악 선택" component={SelectMusicScreen} />
-        <Stack.Screen
-          name="나만의 목표 설정"
-          component={StartOwnObjectiveScreen}
-        />
+        <Stack.Screen name="음악 추가" component={AddMusicScreen} />
+        <Stack.Screen name="영상 편집" component={VideoTrimScreen} />
+        <Stack.Screen name="섬네일 추가" component={CreateThumbnailScreen} />
+        <Stack.Screen name="섬네일 확인" component={CheckThumbnailScreen} />
       </Stack.Group>
       <Stack.Group
         screenOptions={{

@@ -7,6 +7,7 @@ import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIc
 
 export default function CameraPermissionScreen({
   navigation,
+  route,
 }: RootStackPermissionScreenProps) {
   const [cameraPermissionStatus, setCameraPermissionStatus] =
     useState<CameraPermissionStatus>('not-determined');
@@ -39,7 +40,7 @@ export default function CameraPermissionScreen({
       cameraPermissionStatus === 'authorized' &&
       microphonePermissionStatus === 'authorized'
     ) {
-      navigation.replace('Camera');
+      navigation.replace('Camera', {goal: route.params.goal});
     }
     if (
       cameraPermissionStatus === 'not-determined' &&
@@ -60,7 +61,7 @@ export default function CameraPermissionScreen({
         });
       });
     }
-  }, [cameraPermissionStatus, microphonePermissionStatus, navigation]);
+  }, [cameraPermissionStatus, microphonePermissionStatus, navigation, route]);
 
   return (
     <View style={styles.container}>

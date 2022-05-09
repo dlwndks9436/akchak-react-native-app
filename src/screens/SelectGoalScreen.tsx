@@ -16,24 +16,21 @@ import {
   Portal,
   Searchbar,
   Subheading,
-  Text,
-  Title,
   TouchableRipple,
 } from 'react-native-paper';
-import {Phrase, RootStackSelectPhraseScreenProps} from '../types';
+import {Goal, RootStackSelectGoalScreenProps} from '../types';
 import Api from '../libs/api';
 import {useAppSelector} from '../redux/hooks';
 import {selectAccessToken} from '../features/user/userSlice';
-import {AxiosError} from 'axios';
 import NetInfo from '@react-native-community/netinfo';
 import {theme} from '../styles/theme';
+import {Camera, CameraPermissionStatus} from 'react-native-vision-camera';
 
-export default function SelectPhraseScreen({
+export default function SelectGoalScreen({
   navigation,
-  route,
-}: RootStackSelectPhraseScreenProps): React.ReactElement {
-  const [phrases, setPhrases] = useState<Phrase[]>([]);
-  const [phrase, setPhrase] = useState<Phrase>();
+}: RootStackSelectGoalScreenProps): React.ReactElement {
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [goal, setGoal] = useState<Goal>();
   const [title, setTitle] = useState<string>('');
   const [visible, setVisible] = useState(false);
   const [created, setCreated] = useState(false);
@@ -44,6 +41,19 @@ export default function SelectPhraseScreen({
   const [isLoading, setIsLoading] = useState(false);
   const [minVisibleIndex, setMinVisibleIndex] = useState(0);
   const [isRefreshing] = useState(false);
+  const [type, setType] = useState<'음악' | '교본'>('음악');
+  const [cameraPermission, setCameraPermission] =
+    useState<CameraPermissionStatus>();
+  const [microphonePermission, setMicrophonePermission] =
+    useState<CameraPermissionStatus>();
+
+  useEffect(() => {
+    Camera.getCameraPermissionStatus().then(setCameraPermission);
+    Camera.getMicrophonePermissionStatus().then(setMicrophonePermission);
+  }, []);
+
+  const showPermissionsPage =
+    cameraPermission !== 'authorized' || microphonePermission !== 'authorized';
 
   const flatListRef = useRef<FlatList>(null);
   const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
@@ -61,36 +71,42 @@ export default function SelectPhraseScreen({
 
   const componentDidMount = useCallback(async () => {
     setIsLoading(true);
-    NetInfo.fetch().then(async state => {
-      if (state.isConnected) {
-        const params = {
-          page: 1,
-          size: 20,
-          bookId: route.params.book.id,
-          title,
-        };
-        const result = await Api.get('phrase', {
-          headers: {Authorization: 'Bearer ' + accessToken},
-          params,
-        });
-        setIsLoading(false);
-        if (result.status === 200) {
-          if (result.data && result.data.phrases.length > 0) {
-            setPhrases(result.data.phrases);
-            setLastPage(result.data.total_pages);
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params = {
+            page: 1,
+            size: 20,
+            title,
+            type,
+          };
+          const result = await Api.get('goal', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          });
+          console.log(result.data);
+
+          setIsLoading(false);
+          if (result.status === 200) {
+            if (result.data) {
+              setGoals(result.data.goals);
+              setLastPage(result.data.total_pages);
+            } else {
+              setGoals([]);
+            }
           } else {
-            setPhrases([]);
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            setIsError(true);
           }
         } else {
-          setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
           setIsError(true);
         }
-      } else {
-        setErrorText('인터넷이 연결되었는지 확인해주세요');
-        setIsError(true);
-      }
-    });
-  }, [accessToken, title, route]);
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }, [accessToken, title, type]);
 
   useEffect(() => {
     componentDidMount();
@@ -108,17 +124,16 @@ export default function SelectPhraseScreen({
           const params = {
             page: nextPage,
             size: 20,
-            bookId: route.params.book.id,
             title,
           };
-          const result = await Api.get('phrase', {
+          const result = await Api.get('goal', {
             headers: {Authorization: 'Bearer ' + accessToken},
             params,
           });
           setIsLoading(false);
           if (result.status === 200) {
-            if (result.data && result.data.phrases.length > 0) {
-              setPhrases([...phrases, ...result.data.phrases]);
+            if (result.data && result.data.goals.length > 0) {
+              setGoals([...goals, ...result.data.goals]);
               setCurrentPage(nextPage);
             }
           } else {
@@ -131,44 +146,23 @@ export default function SelectPhraseScreen({
         }
       });
     } catch (err) {
-      console.log(err);
-      setPhrases([]);
+      setGoals([]);
       setIsLoading(false);
     }
   };
 
-  const onItemTouch = (item: Phrase) => {
-    setPhrase(item);
+  const onItemTouch = (item: Goal) => {
+    setGoal(item);
     showDialog();
   };
 
-  const selectPhrase = async () => {
+  const selectGoal = async () => {
     hideDialog();
-    if (phrase) {
-      await Api.post(
-        'goal',
-        {phraseId: phrase.id},
-        {
-          headers: {Authorization: 'Bearer ' + accessToken},
-        },
-      )
-        .then(() => {
-          setCreated(true);
-        })
-        .catch((err: AxiosError) => {
-          console.log(err);
-          if (err.response?.status === 409) {
-            setErrorText('이미 해당 목표를 생성하신 적이 있습니다.');
-          } else {
-            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
-          }
-          setIsError(true);
-        });
+    if (goal) {
+      showPermissionsPage
+        ? navigation.replace('CameraPermission', {goal})
+        : navigation.replace('Camera', {goal});
     }
-  };
-
-  const navigateToAddPhraseScreen = () => {
-    navigation.navigate('프레이즈 추가', {book: route.params.book});
   };
 
   const backToHomeScreen = () => {
@@ -198,33 +192,20 @@ export default function SelectPhraseScreen({
     </View>
   );
 
-  const Footer = () => (
-    <View style={styles.container}>
-      <Button
-        style={styles.smallButton}
-        labelStyle={styles.smallButtonText}
-        compact={true}
-        onPress={navigateToAddPhraseScreen}>
-        찾으시는 프레이즈가 없나요?
-      </Button>
-    </View>
-  );
-
-  const renderItem: ListRenderItem<Phrase> = ({item}) => (
+  const renderItem: ListRenderItem<Goal> = ({item}) => (
     <TouchableRipple
       style={styles.listItemContainer}
       rippleColor={theme.colors.primary}
       onPress={() => {
         onItemTouch(item);
       }}>
-      <View style={styles.rowContainer}>
-        <View>
-          <Subheading style={{color: '#333333'}}>{item.title}</Subheading>
-          {item.subheading.length > 0 && (
-            <Paragraph style={{color: '#999999'}}>{item.subheading}</Paragraph>
-          )}
-        </View>
-        <Text>{item.page}</Text>
+      <View>
+        <Subheading style={{color: '#333333'}}>
+          {item.music ? item.music.title : item.phrase?.title}
+        </Subheading>
+        <Paragraph style={{color: '#999999'}}>
+          {item.music ? item.music.artist : item.phrase?.subheading}
+        </Paragraph>
       </View>
     </TouchableRipple>
   );
@@ -234,11 +215,14 @@ export default function SelectPhraseScreen({
       <Portal>
         <Dialog visible={visible} onDismiss={hideDialog}>
           <Dialog.Content>
-            <Paragraph>{phrase?.title}을 연습하시겠습니까?</Paragraph>
+            <Paragraph>
+              {goal?.music ? goal.music.title : goal?.phrase?.title}을
+              연습하시겠습니까?
+            </Paragraph>
           </Dialog.Content>
           <View style={styles.actionContainer}>
             <Dialog.Actions>
-              <Button onPress={selectPhrase}>네</Button>
+              <Button onPress={selectGoal}>네</Button>
             </Dialog.Actions>
             <Dialog.Actions>
               <Button onPress={hideDialog}>아니요</Button>
@@ -268,8 +252,8 @@ export default function SelectPhraseScreen({
       </Portal>
       <FlatList
         ref={flatListRef}
-        data={phrases}
-        extraData={phrases}
+        data={goals}
+        extraData={goals}
         renderItem={renderItem}
         keyExtractor={(_, index) => index.toString()}
         onEndReached={loadMoreData}
@@ -285,25 +269,34 @@ export default function SelectPhraseScreen({
         }}
         ListHeaderComponent={
           <View style={styles.container}>
-            <Title style={styles.title}>{route.params.book.title}</Title>
             <Searchbar
               style={styles.inputContainer}
               value={title}
               onChangeText={setTitle}
             />
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                width: Dimensions.get('window').width / 1.2,
-                paddingHorizontal: 10,
-              }}>
-              <Text>프레이즈 제목</Text>
-              <Text>페이지</Text>
+            <View style={styles.typeButtonContainer}>
+              <Button
+                style={styles.typeButton}
+                labelStyle={
+                  type === '음악' ? {fontWeight: 'bold'} : {color: '#333333'}
+                }
+                onPress={() => setType('음악')}
+                mode="outlined">
+                음악
+              </Button>
+              <Button
+                style={styles.typeButton}
+                labelStyle={
+                  type === '교본' ? {fontWeight: 'bold'} : {color: '#333333'}
+                }
+                onPress={() => setType('교본')}
+                mode="outlined">
+                교본
+              </Button>
             </View>
           </View>
         }
-        ListFooterComponent={isLoading ? <LoadingIndicator /> : <Footer />}
+        ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
       />
       <FAB
         icon="chevron-up"
@@ -381,5 +374,16 @@ const styles = StyleSheet.create({
     right: 40,
     opacity: 0.7,
     backgroundColor: theme.colors.primary,
+  },
+  typeButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: Dimensions.get('window').width / 1.2,
+    paddingHorizontal: 10,
+  },
+  typeButton: {
+    flex: 1,
+    justifyContent: 'center',
+    borderRadius: 0,
   },
 });

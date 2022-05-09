@@ -2774,7 +2774,7 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
-base-64@^0.1.0:
+base-64@0.1.0, base-64@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/base-64/-/base-64-0.1.0.tgz#780a99c84e7d600260361511c4877613bf24f6bb"
   integrity sha1-eAqZyE59YAJgNhURxId2E78k9rs=
@@ -2784,7 +2784,7 @@ base64-arraybuffer@^1.0.2:
   resolved "https://registry.yarnpkg.com/base64-arraybuffer/-/base64-arraybuffer-1.0.2.tgz#1c37589a7c4b0746e34bd1feb951da2df01c1bdc"
   integrity sha512-I3yl4r9QB5ZRY3XuJVEPfc2XhZO6YweFPI+UovAzn+8/hb3oJ6lnysaFcjVpkCPfVWFUDvoZ8kmVDP7WyRtYtQ==
 
-base64-js@^1.1.2, base64-js@^1.2.3, base64-js@^1.5.1:
+base64-js@^1.1.2, base64-js@^1.2.3, base64-js@^1.3.1, base64-js@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
@@ -2907,6 +2907,14 @@ buffer-from@^1.0.0:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.2.tgz#2b146a6fd72e80b4f55d255f35ed59a3a9a41bd5"
   integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
+
+buffer@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/buffer/-/buffer-6.0.3.tgz#2ace578459cc8fbe2a70aaa8f52ee63b6a74c6c6"
+  integrity sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==
+  dependencies:
+    base64-js "^1.3.1"
+    ieee754 "^1.2.1"
 
 bytes@3.0.0:
   version "3.0.0"
@@ -3993,6 +4001,13 @@ expo-asset@~8.4.6:
     path-browserify "^1.0.0"
     url-parse "^1.4.4"
 
+expo-av@^10.2.1:
+  version "10.2.1"
+  resolved "https://registry.yarnpkg.com/expo-av/-/expo-av-10.2.1.tgz#c08bce464d673d0e90c68cac082bfb75a9437f25"
+  integrity sha512-thrkHVg4HVn8L+jHKVnXYd4TLkJQblFE8QXd3d1hwrYG63gehQT2nK4DM0Frl50EcdV8YN9XjhwHobtK5oMc9A==
+  dependencies:
+    "@expo/config-plugins" "^4.0.2"
+
 expo-camera@~12.1.2:
   version "12.1.2"
   resolved "https://registry.yarnpkg.com/expo-camera/-/expo-camera-12.1.2.tgz#b549a8054ce5778fbf37a45b5d41003f36f5bb3c"
@@ -4661,6 +4676,11 @@ iconv-lite@^0.6.2:
   integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
   dependencies:
     safer-buffer ">= 2.1.2 < 3.0.0"
+
+ieee754@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
+  integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
 ignore@^4.0.6:
   version "4.0.6"
@@ -6978,6 +6998,19 @@ react-native-autocomplete-input@^5.1.0:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/react-native-autocomplete-input/-/react-native-autocomplete-input-5.1.0.tgz#01bb16873a4b2589ad47cda4ad69ae67dcf3c793"
   integrity sha512-y6gIBm189hcsJO+6a4Hn8lNdy1qmY7yw1NAA6Bgvg8rznZk0r+35xXd1tu81aOZYJo9/LxGNlNL6Zblo3N1kGw==
+
+react-native-background-upload@^6.5.1:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/react-native-background-upload/-/react-native-background-upload-6.5.1.tgz#862e1d783e608bdca073ca2d7aeae79503e0507c"
+  integrity sha512-cKVCrpQ7xIePL9rh+TBFQw69Z2eG3tL5/R732+I7lfpq6F9xwrwkYDgxqKfGzTtY3V6JZ3ZENCO8MOMEh6O0jw==
+
+react-native-blob-util@^0.16.0:
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/react-native-blob-util/-/react-native-blob-util-0.16.0.tgz#175299992d4db3b788bd6cf8545fc42a2917b544"
+  integrity sha512-Ouyvw3ObMikEK5c2BW5WvcAsLmED7GuSm6CDmTPse0qTn43H3O8XL3kZEmrf2A4w1QoSvhy8v0IuADm/kaLTcg==
+  dependencies:
+    base-64 "0.1.0"
+    glob "^7.1.6"
 
 react-native-codegen@^0.0.7:
   version "0.0.7"

@@ -3,23 +3,47 @@ import {
   StackNavigationProp,
   StackScreenProps,
 } from '@react-navigation/stack';
+import {VideoFile} from 'react-native-vision-camera';
 
 export type RootStackParamList = {
-  Camera: undefined;
+  Camera: {
+    goal: Goal;
+  };
   Tab: undefined;
-  CameraPermission: undefined;
-  VideoPlay: {videoUri: string};
-  VideoTrim: {
-    videoUri: string;
-    duration: number;
-    directory: string;
-    id: string;
-    fileName: string;
+  CameraPermission: {
+    goal: Goal;
+  };
+  VideoPlay: {
+    goal: Goal;
+    video: Video;
+    creationTime: string;
+    practiceTime: number;
+  };
+  '영상 편집': {
+    goal: Goal;
+    media: VideoFile;
+    creationTime: string;
+    practiceTime: number;
   };
   StartPractice: undefined;
   '새 목표 설정': undefined;
+  '목표 선택': undefined;
   '음악 선택': undefined;
+  '음악 추가': undefined;
   '교본 선택': undefined;
+  '섬네일 추가': {
+    goal: Goal;
+    video: Video;
+    creationTime: string;
+    practiceTime: number;
+  };
+  '섬네일 확인': {
+    goal: Goal;
+    video: Video;
+    creationTime: string;
+    practiceTime: number;
+    thumbnailPath: string;
+  };
   '프레이즈 선택': {
     book: Book;
   };
@@ -27,17 +51,12 @@ export type RootStackParamList = {
     book: Book;
   };
   '교본 추가': undefined;
-  Upload: {
-    trimmedVideoUri?: string;
-    thumbnailUri?: string;
-    duration?: number;
-    id: string;
-    practiceTime?: number;
-    fileName?: string;
-    thumbnailName?: string;
-    directory?: string;
-    title?: string;
-    description?: string;
+  업로드: {
+    goal: Goal;
+    video: Video;
+    creationTime: string;
+    practiceTime: number;
+    thumbnailPath: string;
   };
   AuthStack: undefined;
   'Validate E-mail': undefined;
@@ -84,12 +103,22 @@ export type RootStackPlayScreenProps = StackScreenProps<
 
 export type RootStackTrimScreenProps = StackScreenProps<
   RootStackParamList,
-  'VideoTrim'
+  '영상 편집'
+>;
+
+export type RootStackCreateThumbnailScreenProps = StackScreenProps<
+  RootStackParamList,
+  '섬네일 추가'
+>;
+
+export type RootStackCheckThumbnailScreenProps = StackScreenProps<
+  RootStackParamList,
+  '섬네일 확인'
 >;
 
 export type RootStackUploadScreenProps = StackScreenProps<
   RootStackParamList,
-  'Upload'
+  '업로드'
 >;
 
 export type RootStackPermissionScreenProps = StackScreenProps<
@@ -132,6 +161,11 @@ export type RootStackCreateObjectiveScreenProps = StackScreenProps<
   '새 목표 설정'
 >;
 
+export type RootStackSelectGoalScreenProps = StackScreenProps<
+  RootStackParamList,
+  '목표 선택'
+>;
+
 export type RootStackSelectBookScreenProps = StackScreenProps<
   RootStackParamList,
   '교본 선택'
@@ -155,6 +189,11 @@ export type RootStackAddBookScreenProps = StackScreenProps<
 export type RootStackSelectMusicScreenProps = StackScreenProps<
   RootStackParamList,
   '음악 선택'
+>;
+
+export type RootStackAddMusicScreenProps = StackScreenProps<
+  RootStackParamList,
+  '음악 추가'
 >;
 
 export type CustomAppBarProps = StackHeaderProps;
@@ -193,4 +232,27 @@ export interface Phrase {
   title: string;
   subheading: string;
   page: number;
+}
+
+export interface Music {
+  id: number;
+  title: string;
+  artist: string;
+}
+
+export interface Goal {
+  id: number;
+  player_id: number;
+  phrase_id?: number;
+  music_id?: number;
+  music?: Music;
+  phrase?: Phrase;
+}
+
+interface Video {
+  duration: number;
+  path: string;
+  fileName: string;
+  fileNameWithExt: string;
+  fileSize: number;
 }
