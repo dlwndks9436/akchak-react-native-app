@@ -62,9 +62,14 @@ export type RootStackParamList = {
   'Validate E-mail': undefined;
   Splash: undefined;
   ViewPractice: {
-    practiceId: number;
+    practiceLogId: number;
   };
   '이메일 인증': undefined;
+  '연습기록 검색': undefined;
+  '검색 결과': {
+    type: QueryType;
+    query: string;
+  };
 };
 
 export type AuthStackParamList = {
@@ -196,6 +201,16 @@ export type RootStackAddMusicScreenProps = StackScreenProps<
   '음악 추가'
 >;
 
+export type RootStackSearchPracticeScreenProps = StackScreenProps<
+  RootStackParamList,
+  '연습기록 검색'
+>;
+
+export type RootStackSearchResultScreenProps = StackScreenProps<
+  RootStackParamList,
+  '검색 결과'
+>;
+
 export type CustomAppBarProps = StackHeaderProps;
 
 export interface PracticeLogType {
@@ -256,3 +271,5 @@ interface Video {
   fileNameWithExt: string;
   fileSize: number;
 }
+
+export type QueryType = '책 제목' | '제목' | '닉네임' | '아티스트';

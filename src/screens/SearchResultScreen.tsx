@@ -6,13 +6,11 @@ import {
   ListRenderItem,
   ImageBackground,
   Dimensions,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   ActivityIndicator,
   Button,
   Dialog,
-  IconButton,
   Paragraph,
   Portal,
   Text,
@@ -24,11 +22,14 @@ import {selectAccessToken} from '../features/user/userSlice';
 import {AxiosError, AxiosResponse} from 'axios';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
-import {RootStackTabScreenProps} from '../types';
+import {RootStackSearchResultScreenProps} from '../types';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import NetInfo from '@react-native-community/netinfo';
 
-export default function HomeScreen({navigation}: RootStackTabScreenProps) {
+export default function SearchResultScreen({
+  navigation,
+  route,
+}: RootStackSearchResultScreenProps) {
   interface Item {
     id: number;
     playerName: string;
@@ -61,10 +62,12 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     try {
       NetInfo.fetch().then(async state => {
         if (state.isConnected) {
-          const params: {
-            page: number;
-            size: number;
-          } = {page: 1, size: 10};
+          const params = {
+            page: 1,
+            size: 10,
+            type: route.params.type,
+            query: route.params.query,
+          };
           console.log('componentDidMount start');
           await Api.get('/practicelog', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -96,7 +99,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     } catch (err) {
       console.log(err);
     }
-  }, [accessToken]);
+  }, [accessToken, route]);
 
   useEffect(() => {
     componentDidMount();
@@ -115,6 +118,8 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
           const params = {
             page: nextPage,
             size: 10,
+            type: route.params.type,
+            query: route.params.query,
           };
           const result = await Api.get('/practicelog', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -147,10 +152,6 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
 
   const navigateToPracticeScreen = (id: number) => {
     navigation.navigate('ViewPractice', {practiceLogId: id});
-  };
-
-  const navigateToSearchScreen = () => {
-    navigation.navigate('연습기록 검색');
   };
 
   const Item = ({
@@ -217,18 +218,18 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     );
   };
 
+  const Header = () => (
+    <View>
+      <Title style={styles.header}>
+        검색 결과 - {route.params.query} ({route.params.type})
+      </Title>
+    </View>
+  );
+
   const LoadingIndicator = () => (
     <View style={styles.loadingIndicator}>
       <ActivityIndicator size="large" color={'white'} />
     </View>
-  );
-
-  const SearchBar = () => (
-    <TouchableWithoutFeedback onPress={navigateToSearchScreen}>
-      <View style={styles.searchBar}>
-        <IconButton icon="magnify" />
-      </View>
-    </TouchableWithoutFeedback>
   );
 
   return (
@@ -260,7 +261,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
           keyExtractor={(_, index) => index.toString()}
           onEndReached={loadMoreData}
           onEndReachedThreshold={0.1}
-          ListHeaderComponent={<SearchBar />}
+          ListHeaderComponent={<Header />}
           ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps={'never'}
@@ -275,6 +276,10 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  header: {
+    padding: 20,
+    fontSize: 30,
   },
   indicatorContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   itemContainer: {

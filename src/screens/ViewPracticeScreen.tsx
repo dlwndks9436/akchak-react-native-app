@@ -30,28 +30,22 @@ export default function ViewPracticeScreen({
   navigation,
   route,
 }: RootStackViewPracticeScreenProps) {
-  interface Practice {
-    _id?: number;
-    user_id?: number;
-    title?: string;
-    description?: string;
-    duration?: number;
-    from_directory?: string;
-    practice_time?: number;
-    s3_key?: string;
-    user: {username: string};
-    thumbnailUri?: string;
-    views?: string | number;
-    createdAt?: string;
-  }
   interface PracticeQueryResult {
-    practice: Practice;
-    signedUrl: string;
+    playerName: string;
+    phraseTitle?: string;
+    phraseSubheading?: string;
+    bookTitle?: string;
+    musicTitle?: string;
+    musicArtist?: string;
+    view: number;
+    memo: string;
+    createdAt: string;
+    videoUrl: string;
     isOwner: boolean;
   }
 
   const isFocused = useIsFocused();
-  const [practiceId] = useState(route.params.practiceId);
+  const [practiceLogId] = useState(route.params.practiceLogId);
   const [isLoading, setIsLoading] = useState(true);
   const [practice, setPractice] = useState<PracticeQueryResult>();
   const [errorText, setErrorText] = useState<string>();
@@ -63,14 +57,15 @@ export default function ViewPracticeScreen({
   const accessToken = useAppSelector(selectAccessToken);
 
   const componentDidMount = useCallback(async () => {
-    await Api.get('practice/' + practiceId, {
+    Api.get('/practicelog/' + practiceLogId, {
       headers: {Authorization: 'Bearer ' + accessToken},
     })
       .then(res => {
         console.log('practice: ', res.data);
         setPractice(res.data);
-        const dateString = res.data.practice.createdAt;
+        const dateString = res.data.createdAt;
         const miliSec = Date.parse(dateString);
+        console.log(miliSec);
         setDate(new Date(miliSec));
       })
       .catch((err: AxiosError) => {
@@ -78,7 +73,7 @@ export default function ViewPracticeScreen({
           setErrorText('Practice not found');
         }
       });
-    await Api.get('rating/' + practiceId, {
+    Api.get('/like/' + practiceLogId, {
       headers: {Authorization: 'Bearer ' + accessToken},
     })
       .then(res => {
@@ -90,9 +85,9 @@ export default function ViewPracticeScreen({
           setErrorText('Problem occurred during fetching data');
         }
       });
-    await Api.get('rating/number', {
+    Api.get('like/number', {
       headers: {Authorization: 'Bearer ' + accessToken},
-      params: {practiceId},
+      params: {practiceLogId},
     })
       .then(res => {
         console.log('likes: ', res.data.count);
@@ -102,7 +97,7 @@ export default function ViewPracticeScreen({
         console.log(err);
       });
     setIsLoading(false);
-  }, [accessToken, practiceId]);
+  }, [accessToken, practiceLogId]);
 
   useEffect(() => {
     if (isFocused) {
@@ -155,22 +150,19 @@ export default function ViewPracticeScreen({
   const enterFullScreen = () => {
     console.log('enter full screen');
     let state = videoPlayer?.current?.state;
-    if (state) {
-      state.isFullscreen = true;
-      videoPlayer?.current?.setState(state);
-    }
-    Orientation.lockToLandscape();
+    console.log(state);
+    const newState = {...state, isFullScreen: true};
+
+    videoPlayer?.current?.setState(newState);
     setIsFullScreen(true);
   };
 
   const exitFullScreen = () => {
     console.log('exit full screen');
     let state = videoPlayer?.current?.state;
-    if (state) {
-      state.isFullscreen = false;
-      videoPlayer?.current?.setState(state);
-    }
-    Orientation.lockToPortrait();
+    console.log(state);
+    const newState = {...state, isFullScreen: false};
+    videoPlayer?.current?.setState(newState);
     setIsFullScreen(false);
   };
 
@@ -192,13 +184,13 @@ export default function ViewPracticeScreen({
     console.log('like: ', like);
 
     const response = await Api.patch(
-      'rating/' + practiceId,
+      'like/' + practiceLogId,
       {isLike: !like},
       {headers: {Authorization: 'Bearer ' + accessToken}},
     );
-    await Api.get('rating/number', {
+    await Api.get('like/number', {
       headers: {Authorization: 'Bearer ' + accessToken},
-      params: {practiceId},
+      params: {practiceLogId},
     })
       .then(res => {
         console.log('likes: ', res.data.count);
@@ -214,7 +206,7 @@ export default function ViewPracticeScreen({
 
   const deletePractice = async () => {
     closeMenu();
-    await Api.delete('practice/' + practiceId, {
+    await Api.delete('practicelog/' + practiceLogId, {
       headers: {Authorization: 'Bearer ' + accessToken},
     })
       .then(() => {
@@ -246,16 +238,16 @@ export default function ViewPracticeScreen({
             <StatusBar backgroundColor={'black'} barStyle={'light-content'} />
             <View style={isFullScreen ? styles.fullscreen : styles.embedded}>
               <VideoPlayer
-                source={{uri: practice.signedUrl}}
+                source={{uri: practice.videoUrl}}
                 ref={videoPlayer}
                 disableBack={true}
                 disableVolume={true}
-                paused={true}
+                paused={false}
                 fullscreen={isFullScreen}
                 toggleResizeModeOnFullscreen={false}
                 onEnterFullscreen={enterFullScreen}
                 onExitFullscreen={exitFullScreen}
-                fullscreenOrientation={'landscape'}
+                fullscreenOrientation={'portrait'}
                 onEnd={() => {
                   videoPlayer.current?.seekTo(0);
                   videoPlayer.current?.setSeekerPosition(0);
@@ -274,7 +266,10 @@ export default function ViewPracticeScreen({
                     justifyContent: 'space-between',
                     height: 40,
                   }}>
-                  <Title>{practice.practice.title}</Title>
+                  <Title>
+                    {practice.phraseTitle || practice.musicTitle} -{' '}
+                    {practice.phraseSubheading || practice.musicArtist}
+                  </Title>
                   {practice.isOwner && (
                     <Menu
                       visible={visible}
@@ -282,34 +277,23 @@ export default function ViewPracticeScreen({
                       anchor={
                         <IconButton icon="dots-vertical" onPress={openMenu} />
                       }>
-                      <Menu.Item
-                        title="edit"
-                        onPress={() => {
-                          closeMenu();
-                          navigation.navigate('Upload', {
-                            id: practiceId.toString(),
-                            title: practice.practice.title,
-                            description: practice.practice.description,
-                          });
-                        }}
-                      />
-                      <Menu.Item title="delete" onPress={deletePractice} />
+                      <Menu.Item title="삭제" onPress={deletePractice} />
                     </Menu>
                   )}
                 </View>
+                {practice.bookTitle && <Text>{practice.bookTitle}</Text>}
                 <View
                   style={{
                     flexDirection: 'row',
                     justifyContent: 'space-evenly',
                     alignItems: 'center',
-                    marginVertical: 10,
-                    paddingBottom: 20,
+                    paddingVertical: 20,
                     borderBottomWidth: 0.5,
                   }}>
                   <View
                     style={{justifyContent: 'center', alignItems: 'center'}}>
                     <Text style={{fontSize: 25}}>
-                      {convertUnit(practice.practice.views as number)}
+                      {convertUnit(practice.view as number)}
                     </Text>
                     <Text>views</Text>
                   </View>
@@ -333,17 +317,15 @@ export default function ViewPracticeScreen({
                     <Text>{hasLike}</Text>
                   </PressableOpacity>
                 </View>
-                <Text style={{borderBottomWidth: 0.5, paddingBottom: 20}}>
-                  {practice.practice.description}
-                </Text>
                 <View
                   style={{
                     borderBottomWidth: 0.5,
                     height: 40,
                     justifyContent: 'center',
                   }}>
-                  <Title>{practice.practice.user.username}</Title>
+                  <Title>{practice.playerName}</Title>
                 </View>
+                <Text style={styles.memo}>{practice.memo}</Text>
               </ScrollView>
             )}
           </View>
@@ -373,6 +355,9 @@ const styles = StyleSheet.create({
   },
   embedded: {
     position: 'relative',
-    height: Dimensions.get('window').height / 3,
+    height: Dimensions.get('window').height / 2,
+  },
+  memo: {
+    paddingTop: 5,
   },
 });

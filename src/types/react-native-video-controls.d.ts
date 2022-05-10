@@ -52,6 +52,7 @@ declare module 'react-native-video-controls' {
     currentTime: number;
     error: boolean;
     duration: number;
+    paused?: boolean;
   }
 
   export interface VideoPlayerOptions {

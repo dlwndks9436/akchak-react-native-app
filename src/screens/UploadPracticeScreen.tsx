@@ -19,6 +19,7 @@ import axios, {AxiosError} from 'axios';
 import {useAppSelector} from '../redux/hooks';
 import {checkUserId, selectAccessToken} from '../features/user/userSlice';
 import Api from '../libs/api';
+import {theme} from '../styles/theme';
 // import {theme} from '../styles/theme';
 // import {decode} from 'base64-arraybuffer';
 // import {Buffer, Blob} from 'buffer';
@@ -248,5 +249,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
+    backgroundColor: theme.colors.background,
+    borderWidth: 1,
+    borderRadius: 50,
   },
 });

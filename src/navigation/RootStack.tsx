@@ -34,6 +34,8 @@ import AddMusicScreen from '../screens/AddMusicScreen';
 import SelectGoalScreen from '../screens/SelectGoalScreen';
 import CreateThumbnailScreen from '../screens/CreateThumbnailScreen';
 import CheckThumbnailScreen from '../screens/CheckThumbnailScreen';
+import SearchPracticeScreen from '../screens/SearchPracticeScreen';
+import SearchResultScreen from '../screens/SearchResultScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -96,6 +98,8 @@ const RootStack = () => {
         <Stack.Screen name="ViewPractice" component={ViewPracticeScreen} />
         <Stack.Screen name="업로드" component={UploadPracticeScreen} />
         <Stack.Screen name="VideoPlay" component={VideoPlayScreen} />
+        <Stack.Screen name="연습기록 검색" component={SearchPracticeScreen} />
+        <Stack.Screen name="검색 결과" component={SearchResultScreen} />
         <Stack.Screen
           name="CameraPermission"
           component={CameraPermissionScreen}
