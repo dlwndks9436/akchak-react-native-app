@@ -3,7 +3,6 @@ import React from 'react';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
 import DummyScreen from '../screens/DummyScreen';
-import PracticeLogListScreen from '../screens/PracticeLogListScreen';
 import {RootStackParamList} from '../types';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useAppSelector} from '../redux/hooks';
@@ -32,29 +31,17 @@ export default function BottomTab() {
 
   return (
     <Tab.Navigator
-      initialRouteName="Home"
+      initialRouteName="홈"
+      shifting={true}
       activeColor={theme.colors.primary}
       backBehavior="none"
       barStyle={{backgroundColor: theme.colors.background}}>
       <Tab.Screen
-        name="Home"
+        name="홈"
         component={HomeScreen}
         options={{
           tabBarIcon: ({color}) => (
             <MaterialCommunityIcon name="home" color={color} size={26} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="PracticeLog"
-        component={PracticeLogListScreen}
-        options={{
-          tabBarIcon: ({color}) => (
-            <MaterialCommunityIcon
-              name="filmstrip-box-multiple"
-              color={color}
-              size={26}
-            />
           ),
         }}
       />
