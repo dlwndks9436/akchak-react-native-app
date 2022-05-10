@@ -7,7 +7,6 @@ import {
   ImageBackground,
   Dimensions,
   TouchableWithoutFeedback,
-  ViewToken,
 } from 'react-native';
 import {
   ActivityIndicator,
@@ -27,10 +26,9 @@ import {AxiosError, AxiosResponse} from 'axios';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
 import {RootStackTabScreenProps} from '../types';
-import {PressableOpacity} from 'react-native-pressable-opacity';
 import NetInfo from '@react-native-community/netinfo';
 import {theme} from '../styles/theme';
-import {useIsFocused} from '@react-navigation/native';
+import {PressableOpacity} from 'react-native-pressable-opacity';
 
 export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   interface Item {
@@ -51,11 +49,6 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     totalPages: number;
   }
 
-  interface Info {
-    viewableItems: ViewToken[];
-    changed: ViewToken[];
-  }
-
   const [isLoading, setIsLoading] = useState(true);
   const [results, setResults] = useState<Item[]>([]);
   const [isRefreshing] = useState(false);
@@ -64,15 +57,8 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   const accessToken = useAppSelector(selectAccessToken);
   const [isError, setIsError] = useState(false);
   const [errorText, setErrorText] = useState('');
-  const [minVisibleIndex, setMinVisibleIndex] = useState(0);
-  const isFocused = useIsFocused();
 
   const flatListRef = useRef<FlatList>(null);
-  const onViewRef = useRef(({viewableItems}: Info) => {
-    if (isFocused) {
-      setMinVisibleIndex(viewableItems[0].index as number);
-    }
-  });
   const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
 
   const componentDidMount = useCallback(async () => {
@@ -193,33 +179,37 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     musicArtist,
     playerName,
   }: Item) => (
-    <PressableOpacity
-      style={styles.itemContainer}
+    <TouchableWithoutFeedback
       onPress={() => {
         navigateToPracticeScreen(id);
       }}>
-      <ImageBackground
-        style={styles.thumbnailContainer}
-        imageStyle={styles.thumbnail}
-        source={{uri: thumbnailUrl}}
-        resizeMode="center">
-        <View style={styles.durationTextPosition}>
-          <Text style={styles.duration}>
-            {playbackTime && formatDuration(Math.ceil(playbackTime))}
-          </Text>
-        </View>
-      </ImageBackground>
-      <View>
-        <Title style={styles.title}>{phraseTitle || musicTitle}</Title>
-        <Text style={styles.itemText}>{phraseSubheading || musicArtist}</Text>
-        <Text style={styles.itemText}>{bookTitle || ''}</Text>
-        <Text style={styles.itemText}>{playerName}</Text>
-        <View style={styles.textContainer}>
-          <Text style={styles.itemText}>{view} views</Text>
-          <Text style={styles.itemText}>{createdAt}</Text>
-        </View>
+      <View style={styles.itemContainer}>
+        <ImageBackground
+          style={styles.thumbnailContainer}
+          imageStyle={styles.thumbnail}
+          source={{uri: thumbnailUrl}}
+          resizeMode="center">
+          <View style={styles.durationTextPosition}>
+            <Text style={styles.duration}>
+              {playbackTime && formatDuration(Math.ceil(playbackTime))}
+            </Text>
+          </View>
+        </ImageBackground>
+        <PressableOpacity
+          onPress={() => {
+            navigateToPracticeScreen(id);
+          }}>
+          <Title style={styles.title}>{phraseTitle || musicTitle}</Title>
+          <Text style={styles.itemText}>{phraseSubheading || musicArtist}</Text>
+          <Text style={styles.itemText}>{bookTitle || ''}</Text>
+          <Text style={styles.itemText}>{playerName}</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.itemText}>{view} views</Text>
+            <Text style={styles.itemText}>{createdAt}</Text>
+          </View>
+        </PressableOpacity>
       </View>
-    </PressableOpacity>
+    </TouchableWithoutFeedback>
   );
 
   const renderItem: ListRenderItem<Item> = ({item}) => {
@@ -283,7 +273,6 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
           <FlatList
             style={{width: '100%'}}
             ref={flatListRef}
-            onViewableItemsChanged={onViewRef.current}
             viewabilityConfig={viewConfigRef.current}
             data={results}
             extraData={results}
@@ -303,7 +292,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
             small
             style={styles.fab}
             onPress={scrollToTop}
-            visible={minVisibleIndex !== 0}
+            visible={true}
           />
         </View>
       )}
@@ -386,8 +375,8 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 40,
-    right: 40,
+    bottom: 20,
+    right: 20,
     opacity: 0.7,
     backgroundColor: theme.colors.primary,
   },

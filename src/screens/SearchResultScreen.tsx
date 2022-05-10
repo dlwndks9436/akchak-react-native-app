@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,11 +6,13 @@ import {
   ListRenderItem,
   ImageBackground,
   Dimensions,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   ActivityIndicator,
   Button,
   Dialog,
+  FAB,
   Paragraph,
   Portal,
   Text,
@@ -25,6 +27,7 @@ import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
 import {RootStackSearchResultScreenProps} from '../types';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import NetInfo from '@react-native-community/netinfo';
+import {theme} from '../styles/theme';
 
 export default function SearchResultScreen({
   navigation,
@@ -56,6 +59,9 @@ export default function SearchResultScreen({
   const accessToken = useAppSelector(selectAccessToken);
   const [isError, setIsError] = useState(false);
   const [errorText, setErrorText] = useState('');
+
+  const flatListRef = useRef<FlatList>(null);
+  const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
 
   const componentDidMount = useCallback(async () => {
     setIsLoading(true);
@@ -154,6 +160,14 @@ export default function SearchResultScreen({
     navigation.navigate('ViewPractice', {practiceLogId: id});
   };
 
+  const scrollToTop = () => {
+    flatListRef.current?.scrollToIndex({
+      animated: true,
+      index: 0,
+      viewPosition: 1,
+    });
+  };
+
   const Item = ({
     id,
     createdAt,
@@ -167,33 +181,37 @@ export default function SearchResultScreen({
     musicArtist,
     playerName,
   }: Item) => (
-    <PressableOpacity
-      style={styles.itemContainer}
+    <TouchableWithoutFeedback
       onPress={() => {
         navigateToPracticeScreen(id);
       }}>
-      <ImageBackground
-        style={styles.thumbnailContainer}
-        imageStyle={styles.thumbnail}
-        source={{uri: thumbnailUrl}}
-        resizeMode="center">
-        <View style={styles.durationTextPosition}>
-          <Text style={styles.duration}>
-            {playbackTime && formatDuration(Math.ceil(playbackTime))}
-          </Text>
-        </View>
-      </ImageBackground>
-      <View>
-        <Title style={styles.title}>{phraseTitle || musicTitle}</Title>
-        <Text style={styles.itemText}>{phraseSubheading || musicArtist}</Text>
-        <Text style={styles.itemText}>{bookTitle || ''}</Text>
-        <Text style={styles.itemText}>{playerName}</Text>
-        <View style={styles.textContainer}>
-          <Text style={styles.itemText}>{view} views</Text>
-          <Text style={styles.itemText}>{createdAt}</Text>
-        </View>
+      <View style={styles.itemContainer}>
+        <ImageBackground
+          style={styles.thumbnailContainer}
+          imageStyle={styles.thumbnail}
+          source={{uri: thumbnailUrl}}
+          resizeMode="center">
+          <View style={styles.durationTextPosition}>
+            <Text style={styles.duration}>
+              {playbackTime && formatDuration(Math.ceil(playbackTime))}
+            </Text>
+          </View>
+        </ImageBackground>
+        <PressableOpacity
+          onPress={() => {
+            navigateToPracticeScreen(id);
+          }}>
+          <Title style={styles.title}>{phraseTitle || musicTitle}</Title>
+          <Text style={styles.itemText}>{phraseSubheading || musicArtist}</Text>
+          <Text style={styles.itemText}>{bookTitle || ''}</Text>
+          <Text style={styles.itemText}>{playerName}</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.itemText}>{view} views</Text>
+            <Text style={styles.itemText}>{createdAt}</Text>
+          </View>
+        </PressableOpacity>
       </View>
-    </PressableOpacity>
+    </TouchableWithoutFeedback>
   );
 
   const renderItem: ListRenderItem<Item> = ({item}) => {
@@ -253,21 +271,32 @@ export default function SearchResultScreen({
       ) : results.length === 0 ? (
         <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
       ) : (
-        <FlatList
-          style={{width: '100%'}}
-          data={results}
-          extraData={results}
-          renderItem={renderItem}
-          keyExtractor={(_, index) => index.toString()}
-          onEndReached={loadMoreData}
-          onEndReachedThreshold={0.1}
-          ListHeaderComponent={<Header />}
-          ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps={'never'}
-          onRefresh={componentDidMount}
-          refreshing={isRefreshing}
-        />
+        <View>
+          <FlatList
+            style={{width: '100%'}}
+            data={results}
+            extraData={results}
+            ref={flatListRef}
+            viewabilityConfig={viewConfigRef.current}
+            renderItem={renderItem}
+            keyExtractor={(_, index) => index.toString()}
+            onEndReached={loadMoreData}
+            onEndReachedThreshold={0.1}
+            ListHeaderComponent={<Header />}
+            ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps={'never'}
+            onRefresh={componentDidMount}
+            refreshing={isRefreshing}
+          />
+          <FAB
+            icon="chevron-up"
+            small
+            style={styles.fab}
+            onPress={scrollToTop}
+            visible={true}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
@@ -349,5 +378,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     justifyContent: 'center',
     alignItems: 'flex-end',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    opacity: 0.7,
+    backgroundColor: theme.colors.primary,
   },
 });
