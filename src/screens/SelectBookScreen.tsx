@@ -12,6 +12,7 @@ import {
   Button,
   Dialog,
   FAB,
+  Modal,
   Paragraph,
   Portal,
   Searchbar,
@@ -32,6 +33,7 @@ export default function SelectBookScreen({
   const [books, setBooks] = useState<Book[]>([]);
   const [book, setBook] = useState<Book>();
   const [title, setTitle] = useState<string>('');
+  const [query, setQuery] = useState<string>('');
   const [visible, setVisible] = React.useState(false);
   const [isError, setIsError] = useState(false);
   const [errorText, setErrorText] = useState('');
@@ -62,7 +64,6 @@ export default function SelectBookScreen({
         const params = {
           page: 1,
           size: 20,
-          title,
         };
         const result = await Api.get('book', {
           headers: {Authorization: 'Bearer ' + accessToken},
@@ -85,11 +86,51 @@ export default function SelectBookScreen({
         setIsError(true);
       }
     });
-  }, [accessToken, title]);
+  }, [accessToken]);
 
   useEffect(() => {
     componentDidMount();
   }, [componentDidMount]);
+
+  const getData = async () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params = {
+            page: 1,
+            size: 20,
+            title,
+          };
+          const result = await Api.get('book', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          });
+          setIsLoading(false);
+          if (result.status === 200) {
+            if (result.data && result.data.books.length > 0) {
+              setQuery(title);
+              setBooks(result.data.books);
+              setLastPage(result.data.total_pages);
+            } else {
+              setBooks([]);
+            }
+          } else {
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            setIsError(true);
+          }
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const loadMoreData = async () => {
     if (isLoading || currentPage >= lastPage) {
@@ -103,7 +144,7 @@ export default function SelectBookScreen({
           const params = {
             page: nextPage,
             size: 20,
-            title,
+            title: query,
           };
           const result = await Api.get('book', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -221,6 +262,9 @@ export default function SelectBookScreen({
             </Dialog.Actions>
           </View>
         </Dialog>
+        <Modal visible={isLoading} contentContainerStyle={styles.modal}>
+          <ActivityIndicator animating={true} size="large" />
+        </Modal>
       </Portal>
       <FlatList
         ref={flatListRef}
@@ -246,6 +290,9 @@ export default function SelectBookScreen({
               style={styles.inputContainer}
               value={title}
               onChangeText={setTitle}
+              onSubmitEditing={() => {
+                getData();
+              }}
             />
           </View>
         }
@@ -320,5 +367,11 @@ const styles = StyleSheet.create({
     right: 40,
     opacity: 0.7,
     backgroundColor: theme.colors.primary,
+  },
+  modal: {
+    flex: 1,
+    backgroundColor: '#00000033',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

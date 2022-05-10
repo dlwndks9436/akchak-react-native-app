@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -7,11 +7,13 @@ import {
   ImageBackground,
   Dimensions,
   TouchableWithoutFeedback,
+  ViewToken,
 } from 'react-native';
 import {
   ActivityIndicator,
   Button,
   Dialog,
+  FAB,
   IconButton,
   Paragraph,
   Portal,
@@ -27,6 +29,8 @@ import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
 import {RootStackTabScreenProps} from '../types';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import NetInfo from '@react-native-community/netinfo';
+import {theme} from '../styles/theme';
+import {useIsFocused} from '@react-navigation/native';
 
 export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   interface Item {
@@ -47,6 +51,11 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
     totalPages: number;
   }
 
+  interface Info {
+    viewableItems: ViewToken[];
+    changed: ViewToken[];
+  }
+
   const [isLoading, setIsLoading] = useState(true);
   const [results, setResults] = useState<Item[]>([]);
   const [isRefreshing] = useState(false);
@@ -55,6 +64,16 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
   const accessToken = useAppSelector(selectAccessToken);
   const [isError, setIsError] = useState(false);
   const [errorText, setErrorText] = useState('');
+  const [minVisibleIndex, setMinVisibleIndex] = useState(0);
+  const isFocused = useIsFocused();
+
+  const flatListRef = useRef<FlatList>(null);
+  const onViewRef = useRef(({viewableItems}: Info) => {
+    if (isFocused) {
+      setMinVisibleIndex(viewableItems[0].index as number);
+    }
+  });
+  const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
 
   const componentDidMount = useCallback(async () => {
     setIsLoading(true);
@@ -151,6 +170,14 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
 
   const navigateToSearchScreen = () => {
     navigation.navigate('연습기록 검색');
+  };
+
+  const scrollToTop = () => {
+    flatListRef.current?.scrollToIndex({
+      animated: true,
+      index: 0,
+      viewPosition: 1,
+    });
   };
 
   const Item = ({
@@ -252,21 +279,33 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
       ) : results.length === 0 ? (
         <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
       ) : (
-        <FlatList
-          style={{width: '100%'}}
-          data={results}
-          extraData={results}
-          renderItem={renderItem}
-          keyExtractor={(_, index) => index.toString()}
-          onEndReached={loadMoreData}
-          onEndReachedThreshold={0.1}
-          ListHeaderComponent={<SearchBar />}
-          ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps={'never'}
-          onRefresh={componentDidMount}
-          refreshing={isRefreshing}
-        />
+        <View>
+          <FlatList
+            style={{width: '100%'}}
+            ref={flatListRef}
+            onViewableItemsChanged={onViewRef.current}
+            viewabilityConfig={viewConfigRef.current}
+            data={results}
+            extraData={results}
+            renderItem={renderItem}
+            keyExtractor={(_, index) => index.toString()}
+            onEndReached={loadMoreData}
+            onEndReachedThreshold={0.1}
+            ListHeaderComponent={<SearchBar />}
+            ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps={'never'}
+            onRefresh={componentDidMount}
+            refreshing={isRefreshing}
+          />
+          <FAB
+            icon="chevron-up"
+            small
+            style={styles.fab}
+            onPress={scrollToTop}
+            visible={minVisibleIndex !== 0}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
@@ -344,5 +383,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     justifyContent: 'center',
     alignItems: 'flex-end',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 40,
+    right: 40,
+    opacity: 0.7,
+    backgroundColor: theme.colors.primary,
   },
 });

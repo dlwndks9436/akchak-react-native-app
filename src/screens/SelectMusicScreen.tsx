@@ -12,6 +12,7 @@ import {
   Button,
   Dialog,
   FAB,
+  Modal,
   Paragraph,
   Portal,
   Searchbar,
@@ -42,6 +43,7 @@ export default function SelectMusicScreen({
   const [isLoading, setIsLoading] = useState(false);
   const [minVisibleIndex, setMinVisibleIndex] = useState(0);
   const [isRefreshing] = useState(false);
+  const [query, setQuery] = useState<string>('');
 
   const flatListRef = useRef<FlatList>(null);
   const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
@@ -65,7 +67,6 @@ export default function SelectMusicScreen({
           const params = {
             page: 1,
             size: 20,
-            title,
           };
           const result = await Api.get('music', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -91,11 +92,51 @@ export default function SelectMusicScreen({
     } catch (err) {
       console.log('에러1', err);
     }
-  }, [accessToken, title]);
+  }, [accessToken]);
 
   useEffect(() => {
     componentDidMount();
   }, [componentDidMount]);
+
+  const getData = async () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params = {
+            page: 1,
+            size: 20,
+            title,
+          };
+          const result = await Api.get('music', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          });
+          setIsLoading(false);
+          if (result.status === 200) {
+            if (result.data && result.data.musics.length > 0) {
+              setQuery(title);
+              setMusics(result.data.musics);
+              setLastPage(result.data.total_pages);
+            } else {
+              setMusics([]);
+            }
+          } else {
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            setIsError(true);
+          }
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const loadMoreData = async () => {
     if (isLoading || currentPage >= lastPage) {
@@ -109,7 +150,7 @@ export default function SelectMusicScreen({
           const params = {
             page: nextPage,
             size: 20,
-            title,
+            title: query,
           };
           const result = await Api.get('music', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -259,6 +300,9 @@ export default function SelectMusicScreen({
             </Dialog.Actions>
           </View>
         </Dialog>
+        <Modal visible={isLoading} contentContainerStyle={styles.modal}>
+          <ActivityIndicator animating={true} size="large" />
+        </Modal>
       </Portal>
       <FlatList
         ref={flatListRef}
@@ -284,6 +328,9 @@ export default function SelectMusicScreen({
               style={styles.inputContainer}
               value={title}
               onChangeText={setTitle}
+              onSubmitEditing={() => {
+                getData();
+              }}
             />
             <View
               style={{
@@ -372,5 +419,11 @@ const styles = StyleSheet.create({
     right: 40,
     opacity: 0.7,
     backgroundColor: theme.colors.primary,
+  },
+  modal: {
+    flex: 1,
+    backgroundColor: '#00000033',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

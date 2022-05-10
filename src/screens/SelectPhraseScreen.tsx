@@ -12,6 +12,7 @@ import {
   Button,
   Dialog,
   FAB,
+  Modal,
   Paragraph,
   Portal,
   Searchbar,
@@ -35,6 +36,7 @@ export default function SelectPhraseScreen({
   const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [phrase, setPhrase] = useState<Phrase>();
   const [title, setTitle] = useState<string>('');
+  const [query, setQuery] = useState<string>('');
   const [visible, setVisible] = useState(false);
   const [created, setCreated] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -67,7 +69,6 @@ export default function SelectPhraseScreen({
           page: 1,
           size: 20,
           bookId: route.params.book.id,
-          title,
         };
         const result = await Api.get('phrase', {
           headers: {Authorization: 'Bearer ' + accessToken},
@@ -90,11 +91,52 @@ export default function SelectPhraseScreen({
         setIsError(true);
       }
     });
-  }, [accessToken, title, route]);
+  }, [accessToken, route]);
 
   useEffect(() => {
     componentDidMount();
   }, [componentDidMount]);
+
+  const getData = async () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params = {
+            page: 1,
+            size: 20,
+            bookId: route.params.book.id,
+            title,
+          };
+          const result = await Api.get('phrase', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          });
+          setIsLoading(false);
+          if (result.status === 200) {
+            if (result.data && result.data.phrases.length > 0) {
+              setQuery(title);
+              setPhrases(result.data.phrases);
+              setLastPage(result.data.total_pages);
+            } else {
+              setPhrases([]);
+            }
+          } else {
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            setIsError(true);
+          }
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const loadMoreData = async () => {
     if (isLoading || currentPage >= lastPage) {
@@ -109,7 +151,7 @@ export default function SelectPhraseScreen({
             page: nextPage,
             size: 20,
             bookId: route.params.book.id,
-            title,
+            title: query,
           };
           const result = await Api.get('phrase', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -265,6 +307,9 @@ export default function SelectPhraseScreen({
             </Dialog.Actions>
           </View>
         </Dialog>
+        <Modal visible={isLoading} contentContainerStyle={styles.modal}>
+          <ActivityIndicator animating={true} size="large" />
+        </Modal>
       </Portal>
       <FlatList
         ref={flatListRef}
@@ -290,6 +335,9 @@ export default function SelectPhraseScreen({
               style={styles.inputContainer}
               value={title}
               onChangeText={setTitle}
+              onSubmitEditing={() => {
+                getData();
+              }}
             />
             <View
               style={{
@@ -381,5 +429,11 @@ const styles = StyleSheet.create({
     right: 40,
     opacity: 0.7,
     backgroundColor: theme.colors.primary,
+  },
+  modal: {
+    flex: 1,
+    backgroundColor: '#00000033',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

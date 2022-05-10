@@ -12,6 +12,7 @@ import {
   Button,
   Dialog,
   FAB,
+  Modal,
   Paragraph,
   Portal,
   Searchbar,
@@ -32,6 +33,7 @@ export default function SelectGoalScreen({
   const [goals, setGoals] = useState<Goal[]>([]);
   const [goal, setGoal] = useState<Goal>();
   const [title, setTitle] = useState<string>('');
+  const [query, setQuery] = useState<string>('');
   const [visible, setVisible] = useState(false);
   const [created, setCreated] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -77,7 +79,6 @@ export default function SelectGoalScreen({
           const params = {
             page: 1,
             size: 20,
-            title,
             type,
           };
           const result = await Api.get('goal', {
@@ -106,11 +107,54 @@ export default function SelectGoalScreen({
     } catch (err) {
       console.log(err);
     }
-  }, [accessToken, title, type]);
+  }, [accessToken, type]);
 
   useEffect(() => {
     componentDidMount();
   }, [componentDidMount]);
+
+  const getData = async () => {
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params = {
+            page: 1,
+            size: 20,
+            type,
+            title,
+          };
+          const result = await Api.get('goal', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          });
+          console.log(result.data);
+
+          setIsLoading(false);
+          if (result.status === 200) {
+            if (result.data) {
+              setQuery(title);
+              setGoals(result.data.goals);
+              setLastPage(result.data.total_pages);
+            } else {
+              setGoals([]);
+            }
+          } else {
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            setIsError(true);
+          }
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const loadMoreData = async () => {
     if (isLoading || currentPage >= lastPage) {
@@ -124,7 +168,7 @@ export default function SelectGoalScreen({
           const params = {
             page: nextPage,
             size: 20,
-            title,
+            title: query,
           };
           const result = await Api.get('goal', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -249,6 +293,9 @@ export default function SelectGoalScreen({
             </Dialog.Actions>
           </View>
         </Dialog>
+        <Modal visible={isLoading} contentContainerStyle={styles.modal}>
+          <ActivityIndicator animating={true} size="large" />
+        </Modal>
       </Portal>
       <FlatList
         ref={flatListRef}
@@ -273,6 +320,9 @@ export default function SelectGoalScreen({
               style={styles.inputContainer}
               value={title}
               onChangeText={setTitle}
+              onSubmitEditing={() => {
+                getData();
+              }}
             />
             <View style={styles.typeButtonContainer}>
               <Button
@@ -385,5 +435,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     borderRadius: 0,
+  },
+  modal: {
+    flex: 1,
+    backgroundColor: '#00000033',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
