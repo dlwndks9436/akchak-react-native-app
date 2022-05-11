@@ -3,27 +3,20 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
+  ActivityIndicator,
   Button,
   Dialog,
   Modal,
   Paragraph,
   Portal,
-  // ProgressBar,
-  Text,
   TextInput,
 } from 'react-native-paper';
 import {RootStackUploadScreenProps} from '../types';
 import RNFS from 'react-native-fs';
-// import {API_ENDPOINT} from 'react-native-dotenv';
 import axios, {AxiosError} from 'axios';
 import {useAppSelector} from '../redux/hooks';
 import {checkUserId, selectAccessToken} from '../features/user/userSlice';
 import Api from '../libs/api';
-import {theme} from '../styles/theme';
-// import {theme} from '../styles/theme';
-// import {decode} from 'base64-arraybuffer';
-// import {Buffer, Blob} from 'buffer';
-// import {blobFrom} from 'fetch-blob/from';
 
 export default function UploadPracticeScreen({
   navigation,
@@ -194,7 +187,7 @@ export default function UploadPracticeScreen({
             <Modal
               visible={loading}
               contentContainerStyle={styles.modalContainerStyle}>
-              <Text>업로드 중</Text>
+              <ActivityIndicator animating={true} size="large" />
             </Modal>
           </Portal>
           <TextInput
@@ -244,13 +237,9 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width / 3,
   },
   modalContainerStyle: {
-    height: 100,
-    width: Dimensions.get('window').width / 1.2,
+    flex: 1,
+    backgroundColor: '#00000033',
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor: theme.colors.background,
-    borderWidth: 1,
-    borderRadius: 50,
   },
 });

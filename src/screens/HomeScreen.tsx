@@ -63,6 +63,9 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
 
   const componentDidMount = useCallback(async () => {
     setIsLoading(true);
+    if (!accessToken) {
+      return;
+    }
     try {
       NetInfo.fetch().then(async state => {
         if (state.isConnected) {

@@ -1,13 +1,6 @@
 import {StyleSheet, Dimensions, View} from 'react-native';
 import React, {useState} from 'react';
-import {
-  TextInput,
-  Button,
-  HelperText,
-  Portal,
-  Dialog,
-  Paragraph,
-} from 'react-native-paper';
+import {TextInput, Button, Portal, Dialog, Paragraph} from 'react-native-paper';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {AuthStackChangePasswordScreenProps} from '../types';
 import validator from 'validator';
@@ -20,9 +13,12 @@ export default function ChangePasswordScreen({
 }: AuthStackChangePasswordScreenProps): React.ReactElement {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordErrorText, setPasswordErrorText] = useState('');
-  const [confirmPasswordErrorText, setConfirmPasswordErrorText] = useState('');
   const [visible, setVisible] = React.useState(false);
+  const [errorText, setErrorText] = useState('');
+  const [isError, setIsError] = useState(false);
+
+  const showError = () => setIsError(true);
+  const hideError = () => setIsError(false);
 
   const showDialog = () => setVisible(true);
 
@@ -31,36 +27,21 @@ export default function ChangePasswordScreen({
     navigation.popToTop();
   };
 
-  const passwordErrorProps =
-    passwordErrorText.length > 0
-      ? {
-          selectionColor: '#ff6663',
-          underlineColor: '#ff6663',
-          activeUnderlineColor: '#ff6663',
-        }
-      : null;
-
   const inputsAreValid = (): boolean => {
     let hasNoError = true;
     if (validator.isEmpty(password)) {
-      setPasswordErrorText('빈 칸입니다');
+      setErrorText('비밀번호를 입력해주세요');
+      hasNoError = false;
+    } else if (password !== confirmPassword) {
+      setErrorText('입력하신 비밀번호가 일치하지 않습니다');
       hasNoError = false;
     } else if (!validator.isStrongPassword(password, {minSymbols: 0})) {
-      setPasswordErrorText(
-        '대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
+      setErrorText(
+        '비밀번호는 대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
       );
       hasNoError = false;
     } else {
-      setPasswordErrorText('');
-    }
-    if (validator.isEmpty(confirmPassword)) {
-      setConfirmPasswordErrorText('빈 칸입니다');
-      hasNoError = false;
-    } else if (!password || password.localeCompare(confirmPassword) !== 0) {
-      setConfirmPasswordErrorText('비밀번호가 일치하지 않습니다');
-      hasNoError = false;
-    } else {
-      setConfirmPasswordErrorText('');
+      setErrorText('');
     }
     return hasNoError;
   };
@@ -79,7 +60,16 @@ export default function ChangePasswordScreen({
         })
         .catch((err: AxiosError) => {
           console.log(err);
+          if (err.response?.status === 409) {
+            setErrorText('비밀번호가 기존 비밀번호와 동일합니다');
+            showError();
+          } else {
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            showError();
+          }
         });
+    } else {
+      showError();
     }
   };
 
@@ -88,6 +78,14 @@ export default function ChangePasswordScreen({
       <KeyboardAwareScrollView>
         <View style={styles.container}>
           <Portal>
+            <Dialog visible={isError} onDismiss={hideError}>
+              <Dialog.Content>
+                <Paragraph>{errorText}</Paragraph>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={hideError}>확인</Button>
+              </Dialog.Actions>
+            </Dialog>
             <Dialog visible={visible} onDismiss={hideDialog}>
               <Dialog.Content>
                 <Paragraph>성공적으로 비밀번호가 변경되었습니다</Paragraph>
@@ -104,11 +102,7 @@ export default function ChangePasswordScreen({
             secureTextEntry={true}
             onChangeText={text => setPassword(text)}
             style={styles.textInput}
-            {...passwordErrorProps}
           />
-          <HelperText type="error" style={styles.helperText}>
-            {passwordErrorText}
-          </HelperText>
           <TextInput
             label="비밀번호 재확인"
             value={confirmPassword}
@@ -116,11 +110,7 @@ export default function ChangePasswordScreen({
             secureTextEntry={true}
             onChangeText={text => setConfirmPassword(text)}
             style={styles.textInput}
-            {...passwordErrorProps}
           />
-          <HelperText type="error" style={styles.helperText}>
-            {confirmPasswordErrorText}
-          </HelperText>
           <Button
             mode="contained"
             contentStyle={styles.continueButtonContent}

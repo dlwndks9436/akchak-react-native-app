@@ -70,6 +70,7 @@ export type RootStackParamList = {
     type: QueryType;
     query: string;
   };
+  '개인 정보': undefined;
 };
 
 export type AuthStackParamList = {
@@ -81,9 +82,10 @@ export type AuthStackParamList = {
 };
 
 export type BottomTabParamList = {
-  Home: undefined;
+  홈: undefined;
   PracticeLog: undefined;
   NavigateCamera: undefined;
+  '내 정보': undefined;
 };
 
 export type RootStackTabScreenProps = StackScreenProps<
@@ -209,6 +211,11 @@ export type RootStackSearchPracticeScreenProps = StackScreenProps<
 export type RootStackSearchResultScreenProps = StackScreenProps<
   RootStackParamList,
   '검색 결과'
+>;
+
+export type RootStackPersonalDataScreenProps = StackScreenProps<
+  RootStackParamList,
+  '개인 정보'
 >;
 
 export type CustomAppBarProps = StackHeaderProps;

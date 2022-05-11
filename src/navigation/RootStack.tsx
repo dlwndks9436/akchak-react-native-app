@@ -36,6 +36,7 @@ import CreateThumbnailScreen from '../screens/CreateThumbnailScreen';
 import CheckThumbnailScreen from '../screens/CheckThumbnailScreen';
 import SearchPracticeScreen from '../screens/SearchPracticeScreen';
 import SearchResultScreen from '../screens/SearchResultScreen';
+import PersonalDataScreen from '../screens/PersonalDataScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -122,6 +123,7 @@ const RootStack = () => {
         <Stack.Screen name="영상 편집" component={VideoTrimScreen} />
         <Stack.Screen name="섬네일 추가" component={CreateThumbnailScreen} />
         <Stack.Screen name="섬네일 확인" component={CheckThumbnailScreen} />
+        <Stack.Screen name="개인 정보" component={PersonalDataScreen} />
       </Stack.Group>
       <Stack.Group
         screenOptions={{

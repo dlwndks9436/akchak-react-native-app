@@ -40,6 +40,7 @@
     "react-native-fs": "^2.18.0",
     "react-native-gesture-handler": "^2.1.1",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-localize": "^2.2.1",
     "react-native-orientation-locker": "^1.4.0",
     "react-native-paper": "^4.11.2",
     "react-native-pressable-opacity": "^1.0.8",
