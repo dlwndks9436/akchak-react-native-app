@@ -3,11 +3,11 @@ import React, {useState} from 'react';
 import {
   TextInput,
   Button,
-  HelperText,
   Portal,
   Dialog,
   Title,
   ActivityIndicator,
+  Paragraph,
 } from 'react-native-paper';
 import {AuthStackRegisterScreenProps} from '../types';
 import axios, {AxiosResponse, AxiosError} from 'axios';
@@ -23,39 +23,12 @@ export default function SignupScreen({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secondPassword, setSecondPassword] = useState('');
-  const [usernameErrorText, setUsernameErrorText] = useState('');
-  const [emailErrorText, setEmailErrorText] = useState('');
-  const [passwordErrorText, setPasswordErrorText] = useState('');
-  const [secondPasswordErrorText, setSecondPasswordErrorText] = useState('');
   const [visibleDialog, setVisibleDialog] = useState(false);
   const [isSigningUp, setIsSigningUp] = useState(false);
-
-  const usernameErrorProps =
-    usernameErrorText.length > 0
-      ? {
-          selectionColor: '#ff6663',
-          underlineColor: '#ff6663',
-          activeUnderlineColor: '#ff6663',
-        }
-      : null;
-
-  const emailErrorProps =
-    emailErrorText.length > 0
-      ? {
-          selectionColor: '#ff6663',
-          underlineColor: '#ff6663',
-          activeUnderlineColor: '#ff6663',
-        }
-      : null;
-
-  const passwordErrorProps =
-    passwordErrorText.length > 0
-      ? {
-          selectionColor: '#ff6663',
-          underlineColor: '#ff6663',
-          activeUnderlineColor: '#ff6663',
-        }
-      : null;
+  const [isError, setIsError] = useState(false);
+  const [errorText, setErrorText] = useState('');
+  const showError = () => setIsError(true);
+  const hideError = () => setIsError(false);
 
   const usernameIsValid = (): boolean => {
     const regex = /^(?=.*[a-z])[a-zA-Z0-9]{8,20}$/i;
@@ -65,45 +38,34 @@ export default function SignupScreen({
   const inputsAreValid = (): boolean => {
     let hasNoError = true;
     if (validator.isEmpty(username)) {
-      setUsernameErrorText('빈 칸입니다');
+      setErrorText('닉네임을 입력해주세요');
       hasNoError = false;
     } else if (!usernameIsValid()) {
-      setUsernameErrorText(
-        '알파벳과 숫자로 이루어져있어야하며, 길이는 8~20자 이내로 만들어주세요',
+      setErrorText(
+        '닉네임은 알파벳과 숫자로 이루어져있어야하며, 길이는 8~20자 이내로 만들어주세요',
       );
       hasNoError = false;
-    } else {
-      setUsernameErrorText('');
-    }
-    if (validator.isEmpty(email)) {
-      setEmailErrorText('빈 칸입니다');
+    } else if (validator.isEmpty(email)) {
+      setErrorText('이메일을 입력해주세요');
       hasNoError = false;
     } else if (!validator.isEmail(email)) {
-      setEmailErrorText('유효하지 않는 이메일 형식입니다');
+      setErrorText('유효하지 않는 이메일 형식입니다');
       hasNoError = false;
-    } else {
-      setEmailErrorText('');
-    }
-    if (validator.isEmpty(password)) {
-      setPasswordErrorText('빈 칸입니다');
+    } else if (validator.isEmpty(password)) {
+      setErrorText('비밀번호를 입력해주세요');
       hasNoError = false;
     } else if (!validator.isStrongPassword(password, {minSymbols: 0})) {
-      setPasswordErrorText(
-        '대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
+      setErrorText(
+        '비밀번호는 대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
       );
       hasNoError = false;
-    } else {
-      setPasswordErrorText('');
-    }
-    if (validator.isEmpty(secondPassword)) {
-      setSecondPasswordErrorText('빈 칸입니다');
-      hasNoError = false;
     } else if (!password || password.localeCompare(secondPassword) !== 0) {
-      setSecondPasswordErrorText('비밀번호가 일치하지 않습니다');
+      setErrorText('비밀번호가 일치하지 않습니다');
       hasNoError = false;
     } else {
-      setSecondPasswordErrorText('');
+      setErrorText('');
     }
+
     return hasNoError;
   };
 
@@ -126,19 +88,21 @@ export default function SignupScreen({
           setIsSigningUp(false);
           if (err.response?.data?.param) {
             if (err.response.data.param === 'username') {
-              setUsernameErrorText(err.response.data.msg);
+              setErrorText(err.response.data.msg);
             }
             if (err.response.data.param === 'email') {
-              setEmailErrorText(err.response.data.msg);
+              setErrorText(err.response.data.msg);
             }
             if (err.response.data.param === 'password') {
-              setPasswordErrorText(err.response.data.msg);
+              setErrorText(err.response.data.msg);
             }
             console.log(err.response.status);
           } else {
             console.log(err);
           }
         });
+    } else {
+      showError();
     }
   };
 
@@ -161,6 +125,14 @@ export default function SignupScreen({
                 </Button>
               </Dialog.Actions>
             </Dialog>
+            <Dialog visible={isError} onDismiss={hideError}>
+              <Dialog.Content>
+                <Paragraph>{errorText}</Paragraph>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={hideError}>확인</Button>
+              </Dialog.Actions>
+            </Dialog>
           </Portal>
           {isSigningUp ? (
             <View style={styles.container}>
@@ -170,18 +142,14 @@ export default function SignupScreen({
           ) : (
             <View>
               <TextInput
-                label="별명"
+                label="닉네임"
                 value={username}
                 autoCapitalize={'none'}
                 onChangeText={text => {
                   setUsername(text);
                 }}
                 style={styles.textInput}
-                {...usernameErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {usernameErrorText}
-              </HelperText>
               <TextInput
                 label="이메일"
                 value={email}
@@ -189,11 +157,7 @@ export default function SignupScreen({
                 onChangeText={text => setEmail(text)}
                 keyboardType={'email-address'}
                 style={styles.textInput}
-                {...emailErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {emailErrorText}
-              </HelperText>
               <TextInput
                 label="비밀번호"
                 value={password}
@@ -201,11 +165,7 @@ export default function SignupScreen({
                 onChangeText={text => setPassword(text)}
                 secureTextEntry={true}
                 style={styles.textInput}
-                {...passwordErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {passwordErrorText}
-              </HelperText>
               <TextInput
                 label="비밀번호 재확인"
                 value={secondPassword}
@@ -213,11 +173,7 @@ export default function SignupScreen({
                 onChangeText={text => setSecondPassword(text)}
                 secureTextEntry={true}
                 style={styles.textInput}
-                {...passwordErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {secondPasswordErrorText}
-              </HelperText>
               <Button
                 mode="contained"
                 contentStyle={styles.signupButtonContent}
@@ -242,7 +198,7 @@ const styles = StyleSheet.create({
     marginTop: Dimensions.get('window').height / 15,
   },
   textInput: {
-    height: 50,
+    height: 60,
     width: Dimensions.get('window').width / 1.5,
     backgroundColor: '#ffffff00',
   },

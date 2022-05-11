@@ -1,6 +1,5 @@
 import {Dimensions, StyleSheet, View} from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   ActivityIndicator,
@@ -168,11 +167,8 @@ export default function UploadPracticeScreen({
     }
   };
 
-  const goBack = () => {
-    navigation.goBack();
-  };
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <View style={{flex: 1}}>
       <KeyboardAwareScrollView>
         <View style={styles.container}>
           <Portal>
@@ -194,38 +190,29 @@ export default function UploadPracticeScreen({
             mode="outlined"
             label="메모 (*선택)"
             value={memo}
-            numberOfLines={10}
+            numberOfLines={20}
             multiline={true}
             onChangeText={text => setMemo(text)}
             style={styles.textInput}
           />
-          <View style={styles.buttonContainer}>
-            <Button style={styles.button} mode="contained" onPress={goBack}>
-              Back
-            </Button>
-            <Button
-              style={styles.button}
-              mode="contained"
-              onPress={upload}
-              loading={loading}>
-              업로드
-            </Button>
-          </View>
+          <Button
+            style={styles.button}
+            mode="contained"
+            onPress={upload}
+            contentStyle={styles.buttonContent}>
+            업로드
+          </Button>
         </View>
       </KeyboardAwareScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Dimensions.get('window').height / 5,
+    paddingTop: Dimensions.get('window').height / 10,
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
   textInput: {
@@ -234,12 +221,15 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 20,
-    width: Dimensions.get('window').width / 3,
   },
   modalContainerStyle: {
     flex: 1,
     backgroundColor: '#00000033',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  buttonContent: {
+    width: Dimensions.get('window').width / 1.3,
+    height: 60,
   },
 });

@@ -199,14 +199,14 @@ export default function VideoTrimScreen({
         </View>
         <View style={styles.setTimeContainer}>
           <Button style={styles.smallButton} mode="outlined" onPress={setStart}>
-            Set Start
+            현재화면부터 시작하기
           </Button>
           <Button style={styles.smallButton} mode="outlined" onPress={setEnd}>
-            Set End
+            현재화면에서 종료하기
           </Button>
         </View>
         <Button style={styles.bigButton} mode="outlined" onPress={trimVideo}>
-          Trim video
+          편집하기
         </Button>
       </View>
     </AndroidBackHandler>

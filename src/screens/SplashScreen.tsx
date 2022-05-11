@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, StyleSheet, Dimensions} from 'react-native';
-import Logo from '../assets/images/resonar_logo_square_invert.svg';
+import Logo from '../assets/images/akchak_logo_square.svg';
 
 export default function SplashScreen() {
   return (
@@ -18,6 +18,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0b3454',
+    backgroundColor: '#212121',
   },
 });

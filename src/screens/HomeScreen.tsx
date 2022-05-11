@@ -14,6 +14,7 @@ import {
   Dialog,
   FAB,
   IconButton,
+  Modal,
   Paragraph,
   Portal,
   Text,
@@ -63,6 +64,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
 
   const componentDidMount = useCallback(async () => {
     setIsLoading(true);
+    setCurrentPage(1);
     if (!accessToken) {
       return;
     }
@@ -72,7 +74,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
           const params: {
             page: number;
             size: number;
-          } = {page: 1, size: 10};
+          } = {page: 1, size: 20};
           console.log('componentDidMount start');
           await Api.get('/practicelog', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -122,7 +124,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
         if (state.isConnected) {
           const params = {
             page: nextPage,
-            size: 10,
+            size: 20,
           };
           const result = await Api.get('/practicelog', {
             headers: {Authorization: 'Bearer ' + accessToken},
@@ -130,7 +132,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
           });
           setIsLoading(false);
           if (result.status === 200) {
-            if (result.data && result.data.goals.length > 0) {
+            if (result.data && result.data.results.length > 0) {
               setResults([...results, ...result.data.results]);
               setCurrentPage(nextPage);
             }
@@ -264,13 +266,16 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
             </Dialog.Actions>
           </View>
         </Dialog>
+        <Modal
+          visible={isLoading}
+          contentContainerStyle={styles.modalContainer}>
+          <ActivityIndicator animating={true} size="large" />
+        </Modal>
       </Portal>
-      {isLoading ? (
-        <View style={styles.indicatorContainer}>
-          <ActivityIndicator size="large" />
+      {results.length === 0 ? (
+        <View style={styles.container}>
+          <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
         </View>
-      ) : results.length === 0 ? (
-        <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
       ) : (
         <View>
           <FlatList
@@ -382,5 +387,11 @@ const styles = StyleSheet.create({
     right: 20,
     opacity: 0.7,
     backgroundColor: theme.colors.primary,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#00000000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

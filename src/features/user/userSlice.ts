@@ -38,6 +38,7 @@ interface UserState {
   loginError: string | null;
   initializeError: string | null;
   authorizeUserError: string | null;
+  accountDeletionResult: string | null;
 }
 
 const initialState: UserState = {
@@ -53,6 +54,7 @@ const initialState: UserState = {
   loginError: null,
   initializeError: null,
   authorizeUserError: null,
+  accountDeletionResult: null,
 };
 
 export const initializeUser = createAsyncThunk(
@@ -211,6 +213,27 @@ export const authorizeUser = createAsyncThunk(
   },
 );
 
+export const deleteAccount = createAsyncThunk(
+  'user/deleteAccount',
+  async () => {
+    const tokens = await SecureStore.getItemAsync('tokens');
+    if (!tokens) {
+      return null;
+    }
+    const {accessToken} = JSON.parse(tokens);
+    await axios
+      .delete(API_URL + 'player/account', {
+        headers: {Authorization: 'Bearer ' + accessToken},
+      })
+      .then(async () => {
+        await SecureStore.deleteItemAsync('tokens');
+        await SecureStore.deleteItemAsync('lastTimeAuthenticated');
+      });
+
+    return null;
+  },
+);
+
 export const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -233,6 +256,16 @@ export const userSlice = createSlice({
     dropLoginError: state => {
       state.loginError = null;
     },
+    dropDeletionResult: state => {
+      state.accountDeletionResult = null;
+    },
+    dropUser: state => {
+      state.tokens.accessToken = '';
+      state.tokens.refreshToken = '';
+      state.loggedIn = false;
+      state.lastTimeAuthenticated = null;
+      state.accountDeletionResult = null;
+    },
   },
   extraReducers(builder) {
     builder
@@ -254,6 +287,7 @@ export const userSlice = createSlice({
           state.username = action.payload.username;
           state.id = action.payload.id;
           state.loggedIn = true;
+          state.accountDeletionResult = null;
         } else {
           state.loggedIn = false;
         }
@@ -321,6 +355,12 @@ export const userSlice = createSlice({
             state.authorizeUserError = 'Given code is not valid.';
           }
         }
+      })
+      .addCase(deleteAccount.fulfilled, state => {
+        state.accountDeletionResult = '회원탈퇴가 완료되었습니다';
+      })
+      .addCase(deleteAccount.rejected, state => {
+        state.accountDeletionResult = '문제가 발생했습니다. 다시 시도해주세요';
       });
   },
 });
@@ -332,6 +372,8 @@ export const {
   setLastTimeAuthenticated,
   dropauthorizeError,
   dropLoginError,
+  dropDeletionResult,
+  dropUser,
 } = userSlice.actions;
 
 export const selectAccessToken = (state: RootState) =>
@@ -360,5 +402,8 @@ export const checkauthorizeError = (state: RootState) =>
   state.user.authorizeUserError;
 
 export const checkLoginError = (state: RootState) => state.user.loginError;
+
+export const checkAccountDeletionResult = (state: RootState) =>
+  state.user.accountDeletionResult;
 
 export default userSlice.reducer;

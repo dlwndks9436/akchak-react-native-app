@@ -1,27 +1,60 @@
 import {Dimensions, StyleSheet, View} from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Dialog, Paragraph, Portal, TextInput} from 'react-native-paper';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import validator from 'validator';
 import {AxiosError} from 'axios';
 import Api from '../libs/api';
-import {useAppSelector} from '../redux/hooks';
-import {checkUserId, selectAccessToken} from '../features/user/userSlice';
+import {useAppDispatch, useAppSelector} from '../redux/hooks';
+import {
+  checkAccountDeletionResult,
+  checkUserId,
+  deleteAccount,
+  dropDeletionResult,
+  dropUser,
+  selectAccessToken,
+} from '../features/user/userSlice';
 export default function PersonalDataScreen() {
   const [previousPassword, setPreviousPassword] = useState<string>('');
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
   const [isError, setIsError] = useState(false);
+  const [haveResult, setHaveResult] = useState(false);
   const [visible, setVisible] = useState(false);
   const [errorText, setErrorText] = useState('');
+  const [checkDeletion, setCheckDeletion] = useState(false);
   const playerId = useAppSelector(checkUserId);
   const accessToken = useAppSelector(selectAccessToken);
+  const accountDeletionResult = useAppSelector(checkAccountDeletionResult);
+  const dispatch = useAppDispatch();
 
   const showError = () => setIsError(true);
   const hideError = () => setIsError(false);
 
   const showDialog = () => setVisible(true);
   const hideDialog = () => setVisible(false);
+
+  const showResult = () => setHaveResult(true);
+  const hideResult = () => {
+    setHaveResult(false);
+    const deleted = accountDeletionResult === '회원탈퇴가 완료되었습니다';
+    if (deleted) {
+      dispatch(dropUser());
+    } else {
+      dispatch(dropDeletionResult());
+    }
+  };
+
+  const showCheckDeletionDialog = () => setCheckDeletion(true);
+  const hideCheckDeletionDialog = () => setCheckDeletion(false);
+
+  useEffect(() => {
+    if (accountDeletionResult) {
+      console.log(accountDeletionResult);
+
+      showResult();
+    }
+  }, [accountDeletionResult]);
 
   const inputsAreValid = (): boolean => {
     let hasNoError = true;
@@ -92,6 +125,29 @@ export default function PersonalDataScreen() {
               <Button onPress={hideDialog}>확인</Button>
             </Dialog.Actions>
           </Dialog>
+          <Dialog visible={checkDeletion} onDismiss={hideCheckDeletionDialog}>
+            <Dialog.Content>
+              <Paragraph>정말 회원탈퇴하시겠습니까?</Paragraph>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button
+                onPress={() => {
+                  hideCheckDeletionDialog();
+                  dispatch(deleteAccount());
+                }}>
+                확인
+              </Button>
+              <Button onPress={hideCheckDeletionDialog}>취소</Button>
+            </Dialog.Actions>
+          </Dialog>
+          <Dialog visible={haveResult} onDismiss={hideResult}>
+            <Dialog.Content>
+              <Paragraph>{accountDeletionResult}</Paragraph>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={hideResult}>확인</Button>
+            </Dialog.Actions>
+          </Dialog>
         </Portal>
         <TextInput
           label="기존 비밀번호"
@@ -127,7 +183,8 @@ export default function PersonalDataScreen() {
         <Button
           mode="outlined"
           style={styles.button}
-          contentStyle={styles.buttonContent}>
+          contentStyle={styles.buttonContent}
+          onPress={showCheckDeletionDialog}>
           회원탈퇴
         </Button>
       </View>

@@ -19,7 +19,7 @@ export default function ForgotPasswordScreen({
 
   const checkInput = async () => {
     if (validator.isEmpty(email)) {
-      setErrorText('이메일을 기입해주세요');
+      setErrorText('이메일을 입력해주세요');
       showDialog();
     } else if (!validator.isEmail(email)) {
       setErrorText('올바른 이메일 형식이 아닙니다');

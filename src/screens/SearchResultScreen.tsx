@@ -5,7 +5,6 @@ import {
   FlatList,
   ListRenderItem,
   ImageBackground,
-  Dimensions,
   TouchableWithoutFeedback,
 } from 'react-native';
 import {
@@ -13,6 +12,7 @@ import {
   Button,
   Dialog,
   FAB,
+  Modal,
   Paragraph,
   Portal,
   Text,
@@ -22,7 +22,6 @@ import Api from '../libs/api';
 import {useAppSelector} from '../redux/hooks';
 import {selectAccessToken} from '../features/user/userSlice';
 import {AxiosError, AxiosResponse} from 'axios';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
 import {RootStackSearchResultScreenProps} from '../types';
 import {PressableOpacity} from 'react-native-pressable-opacity';
@@ -65,12 +64,13 @@ export default function SearchResultScreen({
 
   const componentDidMount = useCallback(async () => {
     setIsLoading(true);
+    setCurrentPage(1);
     try {
       NetInfo.fetch().then(async state => {
         if (state.isConnected) {
           const params = {
             page: 1,
-            size: 10,
+            size: 20,
             type: route.params.type,
             query: route.params.query,
           };
@@ -123,7 +123,7 @@ export default function SearchResultScreen({
         if (state.isConnected) {
           const params = {
             page: nextPage,
-            size: 10,
+            size: 20,
             type: route.params.type,
             query: route.params.query,
           };
@@ -133,7 +133,7 @@ export default function SearchResultScreen({
           });
           setIsLoading(false);
           if (result.status === 200) {
-            if (result.data && result.data.goals.length > 0) {
+            if (result.data && result.data.results.length > 0) {
               setResults([...results, ...result.data.results]);
               setCurrentPage(nextPage);
             }
@@ -239,7 +239,7 @@ export default function SearchResultScreen({
   const Header = () => (
     <View>
       <Title style={styles.header}>
-        검색 결과 - {route.params.query} ({route.params.type})
+        {route.params.type} - {route.params.query}
       </Title>
     </View>
   );
@@ -251,7 +251,7 @@ export default function SearchResultScreen({
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Portal>
         <Dialog visible={isError} onDismiss={hideError}>
           <Dialog.Content>
@@ -263,13 +263,16 @@ export default function SearchResultScreen({
             </Dialog.Actions>
           </View>
         </Dialog>
+        <Modal
+          visible={isLoading}
+          contentContainerStyle={styles.modalContainer}>
+          <ActivityIndicator animating={true} size="large" />
+        </Modal>
       </Portal>
-      {isLoading ? (
-        <View style={styles.indicatorContainer}>
-          <ActivityIndicator size="large" />
+      {results.length === 0 ? (
+        <View style={styles.container}>
+          <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
         </View>
-      ) : results.length === 0 ? (
-        <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
       ) : (
         <View>
           <FlatList
@@ -298,7 +301,7 @@ export default function SearchResultScreen({
           />
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -307,8 +310,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 20,
     fontSize: 30,
+    marginTop: 10,
+    paddingHorizontal: 20,
   },
   indicatorContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   itemContainer: {
@@ -337,18 +341,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
   },
-  loadMoreBtn: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    height: 40,
-  },
-  footer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-    width: '100%',
-  },
   textContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -369,21 +361,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
-  searchBar: {
-    height: 40,
-    width: Dimensions.get('window').width / 1.5,
-    borderRadius: 50,
-    borderWidth: 0.2,
-    alignSelf: 'center',
-    marginTop: 10,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-  },
   fab: {
     position: 'absolute',
     bottom: 20,
     right: 20,
     opacity: 0.7,
     backgroundColor: theme.colors.primary,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#00000000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

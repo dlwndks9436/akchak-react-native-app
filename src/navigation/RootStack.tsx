@@ -97,10 +97,8 @@ const RootStack = () => {
       <Stack.Group>
         <Stack.Screen name="Tab" component={BottomTab} />
         <Stack.Screen name="ViewPractice" component={ViewPracticeScreen} />
-        <Stack.Screen name="업로드" component={UploadPracticeScreen} />
         <Stack.Screen name="VideoPlay" component={VideoPlayScreen} />
         <Stack.Screen name="연습기록 검색" component={SearchPracticeScreen} />
-        <Stack.Screen name="검색 결과" component={SearchResultScreen} />
         <Stack.Screen
           name="CameraPermission"
           component={CameraPermissionScreen}
@@ -124,6 +122,8 @@ const RootStack = () => {
         <Stack.Screen name="섬네일 추가" component={CreateThumbnailScreen} />
         <Stack.Screen name="섬네일 확인" component={CheckThumbnailScreen} />
         <Stack.Screen name="개인 정보" component={PersonalDataScreen} />
+        <Stack.Screen name="검색 결과" component={SearchResultScreen} />
+        <Stack.Screen name="업로드" component={UploadPracticeScreen} />
       </Stack.Group>
       <Stack.Group
         screenOptions={{

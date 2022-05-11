@@ -31,18 +31,11 @@ import {useIsForeground} from '../hooks/useIsForeground';
 import {StatusBarBlurBackground} from '../components/atoms/StatusBarBlurBackground';
 import {CaptureButton} from '../components/atoms/CaptureButton';
 import {PressableOpacity} from 'react-native-pressable-opacity';
-// import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {RootStackCameraScreenProps} from '../types';
 import {useIsFocused} from '@react-navigation/core';
 import {formatDuration} from '../utils';
 import {useAndroidBackHandler} from 'react-navigation-backhandler';
-// import RNFS from 'react-native-fs';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-// import {useAppDispatch} from '../redux/hooks';
-// import {nanoid} from '@reduxjs/toolkit';
-
-// import {practiceLogAdded} from '../features/practiceLogs/practiceLogsSlice';
 import Orientation from 'react-native-orientation-locker';
 import {Button, Dialog, Paragraph, Portal, Text} from 'react-native-paper';
 import {FFprobeKit} from 'ffmpeg-kit-react-native';
@@ -65,6 +58,7 @@ export default function CameraScreen({
   const zoom = useSharedValue(0);
   const isPressingButton = useSharedValue(false);
   const creationTime = useRef<Date>();
+  const intervalId = useRef<NodeJS.Timer>();
 
   // check if camera page is active
   const isFocussed = useIsFocused();
@@ -254,16 +248,21 @@ export default function CameraScreen({
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timer;
     if (isRecording) {
       creationTime.current = new Date();
-      interval = setInterval(() => {
+      intervalId.current = setInterval(() => {
         setTimeRecording(seconds => seconds + 1);
       }, 1000);
     } else {
-      clearInterval;
+      if (intervalId.current) {
+        clearInterval(intervalId.current);
+      }
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalId.current) {
+        clearInterval(intervalId.current);
+      }
+    };
   }, [isRecording]);
   //#endregion
 
