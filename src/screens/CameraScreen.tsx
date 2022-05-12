@@ -28,8 +28,8 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import {useEffect} from 'react';
 import {useIsForeground} from '../hooks/useIsForeground';
-import {StatusBarBlurBackground} from '../components/atoms/StatusBarBlurBackground';
-import {CaptureButton} from '../components/atoms/CaptureButton';
+import {StatusBarBlurBackground} from '../components/StatusBarBlurBackground';
+import {CaptureButton} from '../components/CaptureButton';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import {RootStackCameraScreenProps} from '../types';

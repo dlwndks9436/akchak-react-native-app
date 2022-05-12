@@ -31,7 +31,7 @@ import {
   CAPTURE_BUTTON_SIZE,
   SCREEN_HEIGHT,
   SCREEN_WIDTH,
-} from '../../utils/constants';
+} from '../utils/constants';
 
 const PAN_GESTURE_HANDLER_FAIL_X = [-SCREEN_WIDTH, SCREEN_WIDTH];
 const PAN_GESTURE_HANDLER_ACTIVE_Y = [-2, 2];
