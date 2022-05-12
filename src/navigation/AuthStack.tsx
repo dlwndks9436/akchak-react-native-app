@@ -5,7 +5,7 @@ import {AuthStackParamList} from '../types';
 import SignupScreen from '../screens/SignupScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
-import CustomAppBar from '../components/atoms/CustomAppBar';
+import CustomAppBar from '../components/CustomAppBar';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
 
 const Stack = createStackNavigator<AuthStackParamList>();

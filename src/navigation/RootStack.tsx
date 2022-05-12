@@ -9,10 +9,6 @@ import CameraScreen from '../screens/CameraScreen';
 import AuthStack from './AuthStack';
 import {useAppDispatch, useAppSelector} from '../redux/hooks';
 import {
-  checkPracticeLogsStatus,
-  initializePracticeLogs,
-} from '../features/practiceLogs/practiceLogsSlice';
-import {
   checkUserIsAuthorized,
   checkUserLoggedIn,
   checkUserStatus,
@@ -23,7 +19,7 @@ import UploadPracticeScreen from '../screens/UploadPracticeScreen';
 import ViewPracticeScreen from '../screens/ViewPracticeScreen';
 import StartPracticeScreen from '../screens/StartPracticeScreen';
 import CreateObjectiveScreen from '../screens/CreateObjectiveScreen';
-import CustomAppBar from '../components/atoms/CustomAppBar';
+import CustomAppBar from '../components/CustomAppBar';
 import SelectBookScreen from '../screens/SelectBookScreen';
 import SelectMusicScreen from '../screens/SelectMusicScreen';
 import VerifyEmailScreen from '../screens/VerifyEmailScreen';
@@ -42,16 +38,9 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const RootStack = () => {
   const dispatch = useAppDispatch();
-  const practiceLogsStatus = useAppSelector(checkPracticeLogsStatus);
   const userStatus = useAppSelector(checkUserStatus);
   const userLoggedin = useAppSelector(checkUserLoggedIn);
   const userIsAuthorized = useAppSelector(checkUserIsAuthorized);
-
-  useEffect(() => {
-    if (practiceLogsStatus === 'idle') {
-      dispatch(initializePracticeLogs());
-    }
-  }, [practiceLogsStatus, dispatch]);
 
   useEffect(() => {
     if (userStatus === 'idle') {
@@ -59,11 +48,7 @@ const RootStack = () => {
     }
   }, [userStatus, dispatch]);
 
-  if (
-    practiceLogsStatus === ('idle' || 'loading') ||
-    userStatus === ('idle' || 'loading') ||
-    userLoggedin === null
-  ) {
+  if (userStatus === ('idle' || 'loading') || userLoggedin === null) {
     return (
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen name="Splash" component={SplashScreen} />

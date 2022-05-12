@@ -4,8 +4,8 @@ import {Provider as StoreProvider} from 'react-redux';
 import {Provider as PaperProvider} from 'react-native-paper';
 import {store} from './redux/store';
 import RootStack from './navigation/RootStack';
-import {PreferencesContext} from './components/atoms/PreferencesContext';
-import FocusAwareStatusBar from './components/atoms/FocusAwareStatusBar';
+import {PreferencesContext} from './components/PreferencesContext';
+import FocusAwareStatusBar from './components/FocusAwareStatusBar';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {theme} from './styles/theme';
 
