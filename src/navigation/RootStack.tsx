@@ -118,7 +118,7 @@ const RootStack = () => {
         <Stack.Screen name="교본 추가" component={AddBookScreen} />
         <Stack.Screen name="음악 선택" component={SelectMusicScreen} />
         <Stack.Screen name="음악 추가" component={AddMusicScreen} />
-        <Stack.Screen name="영상 편집" component={VideoTrimScreen} />
+        <Stack.Screen name="영상 자르기" component={VideoTrimScreen} />
         <Stack.Screen name="섬네일 추가" component={CreateThumbnailScreen} />
         <Stack.Screen name="섬네일 확인" component={CheckThumbnailScreen} />
         <Stack.Screen name="개인 정보" component={PersonalDataScreen} />

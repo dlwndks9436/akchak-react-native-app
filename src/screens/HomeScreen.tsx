@@ -273,7 +273,7 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
         </Modal>
       </Portal>
       {results.length === 0 ? (
-        <View style={styles.container}>
+        <View style={styles.emptyContainer}>
           <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
         </View>
       ) : (
@@ -312,6 +312,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  emptyContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   indicatorContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   itemContainer: {
     padding: 20,

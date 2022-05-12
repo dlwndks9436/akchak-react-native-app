@@ -206,7 +206,7 @@ export default function CameraScreen({
       const data = JSON.parse(dataStr);
       console.log('duration: ', data.format.duration);
 
-      navigation.navigate('영상 편집', {
+      navigation.navigate('영상 자르기', {
         goal: route.params.goal,
         media,
         creationTime: creationTime.current!.toUTCString(),

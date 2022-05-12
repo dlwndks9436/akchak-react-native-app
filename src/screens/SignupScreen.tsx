@@ -99,7 +99,9 @@ export default function SignupScreen({
             console.log(err.response.status);
           } else {
             console.log(err);
+            setErrorText('서버에 문제가 발생했습니다. 다시 시도해주세요');
           }
+          showError();
         });
     } else {
       showError();

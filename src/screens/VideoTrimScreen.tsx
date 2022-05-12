@@ -100,20 +100,29 @@ export default function VideoTrimScreen({
 
           hideModal();
           console.log('trimming finish');
-          navigation.navigate('VideoPlay', {
-            goal: route.params.goal,
-            video: {
-              duration: parseFloat(data.format.duration as string),
-              fileSize: Math.ceil(
-                parseInt(data.format.size as string) / 1000000,
-              ),
-              path: newUri,
-              fileName: currentDateTime,
-              fileNameWithExt: newFileName,
-            },
-            creationTime: route.params.creationTime,
-            practiceTime: route.params.practiceTime,
-          });
+          const fileSize = Math.ceil(
+            parseInt(data.format.size as string) / 1000000,
+          );
+          if (fileSize > 250) {
+            await RNFS.unlink(newUri);
+            setDialogText(
+              `영상의 용량이 250MB를 초과합니다. 영상 길이를 더 줄여주세요. 현재 영상의 용량 : ${fileSize}MB`,
+            );
+            showDialog();
+          } else {
+            navigation.navigate('VideoPlay', {
+              goal: route.params.goal,
+              video: {
+                duration: parseFloat(data.format.duration as string),
+                fileSize,
+                path: newUri,
+                fileName: currentDateTime,
+                fileNameWithExt: newFileName,
+              },
+              creationTime: route.params.creationTime,
+              practiceTime: route.params.practiceTime,
+            });
+          }
         }
       })
       .catch(err => {
@@ -206,7 +215,7 @@ export default function VideoTrimScreen({
           </Button>
         </View>
         <Button style={styles.bigButton} mode="outlined" onPress={trimVideo}>
-          편집하기
+          자르기
         </Button>
       </View>
     </AndroidBackHandler>

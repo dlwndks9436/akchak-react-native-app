@@ -56,8 +56,15 @@ export default function UploadPracticeScreen({
         headers: {Authorization: 'Bearer ' + accessToken},
       },
     )
-      .then(res => {
+      .then(async res => {
         console.log('create practice result: ', res);
+        const files = await RNFS.readDir(
+          'file://' + RNFS.ExternalDirectoryPath,
+        );
+        files.forEach(async file => {
+          await RNFS.unlink(file.path);
+          console.log(`${file.name} 삭제됨`);
+        });
         navigation.popToTop();
       })
       .catch((err: AxiosError) => {

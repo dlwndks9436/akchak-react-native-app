@@ -19,7 +19,7 @@ export type RootStackParamList = {
     creationTime: string;
     practiceTime: number;
   };
-  '영상 편집': {
+  '영상 자르기': {
     goal: Goal;
     media: VideoFile;
     creationTime: string;
@@ -110,7 +110,7 @@ export type RootStackPlayScreenProps = StackScreenProps<
 
 export type RootStackTrimScreenProps = StackScreenProps<
   RootStackParamList,
-  '영상 편집'
+  '영상 자르기'
 >;
 
 export type RootStackCreateThumbnailScreenProps = StackScreenProps<
