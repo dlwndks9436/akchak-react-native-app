@@ -1,12 +1,13 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet, View, Linking, Text, TouchableOpacity} from 'react-native';
 import {Camera} from 'react-native-vision-camera';
-import {RootStackPermissionScreenProps} from '../types/type';
+import {RootStackPermissionScreenProps} from '../types';
 import {CameraPermissionStatus} from 'react-native-vision-camera';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function CameraPermissionScreen({
   navigation,
+  route,
 }: RootStackPermissionScreenProps) {
   const [cameraPermissionStatus, setCameraPermissionStatus] =
     useState<CameraPermissionStatus>('not-determined');
@@ -39,7 +40,7 @@ export default function CameraPermissionScreen({
       cameraPermissionStatus === 'authorized' &&
       microphonePermissionStatus === 'authorized'
     ) {
-      navigation.replace('Camera');
+      navigation.replace('Camera', {goal: route.params.goal});
     }
     if (
       cameraPermissionStatus === 'not-determined' &&
@@ -60,7 +61,7 @@ export default function CameraPermissionScreen({
         });
       });
     }
-  }, [cameraPermissionStatus, microphonePermissionStatus, navigation]);
+  }, [cameraPermissionStatus, microphonePermissionStatus, navigation, route]);
 
   return (
     <View style={styles.container}>

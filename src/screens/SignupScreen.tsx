@@ -3,13 +3,13 @@ import React, {useState} from 'react';
 import {
   TextInput,
   Button,
-  HelperText,
   Portal,
   Dialog,
   Title,
   ActivityIndicator,
+  Paragraph,
 } from 'react-native-paper';
-import {AuthStackRegisterScreenProps} from '../types/type';
+import {AuthStackRegisterScreenProps} from '../types';
 import axios, {AxiosResponse, AxiosError} from 'axios';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -23,91 +23,60 @@ export default function SignupScreen({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secondPassword, setSecondPassword] = useState('');
-  const [usernameErrorText, setUsernameErrorText] = useState('');
-  const [emailErrorText, setEmailErrorText] = useState('');
-  const [passwordErrorText, setPasswordErrorText] = useState('');
-  const [secondPasswordErrorText, setSecondPasswordErrorText] = useState('');
   const [visibleDialog, setVisibleDialog] = useState(false);
   const [isSigningUp, setIsSigningUp] = useState(false);
-
-  const usernameErrorProps =
-    usernameErrorText.length > 0
-      ? {
-          selectionColor: '#ff6663',
-          underlineColor: '#ff6663',
-          activeUnderlineColor: '#ff6663',
-        }
-      : null;
-
-  const emailErrorProps =
-    emailErrorText.length > 0
-      ? {
-          selectionColor: '#ff6663',
-          underlineColor: '#ff6663',
-          activeUnderlineColor: '#ff6663',
-        }
-      : null;
-
-  const passwordErrorProps =
-    passwordErrorText.length > 0
-      ? {
-          selectionColor: '#ff6663',
-          underlineColor: '#ff6663',
-          activeUnderlineColor: '#ff6663',
-        }
-      : null;
+  const [isError, setIsError] = useState(false);
+  const [errorText, setErrorText] = useState('');
+  const showError = () => setIsError(true);
+  const hideError = () => setIsError(false);
 
   const usernameIsValid = (): boolean => {
-    const regex = /^(?=.*[a-z])[a-zA-Z0-9]{8,20}$/i;
+    const regex = /^[ㄱ-ㅎ|가-힣|a-z|A-Z|0-9|]+$/;
     return regex.test(username);
+  };
+
+  const usernameIsLength = (): boolean => {
+    console.log(username.length);
+    return username.length >= 3 && username.length <= 15;
+  };
+
+  const passwordIsValid = (): boolean => {
+    const regex = /^(?=.*[a-zA-Z])((?=.*\d)(?=.*\W)).{8,16}$/;
+    return regex.test(password);
   };
 
   const inputsAreValid = (): boolean => {
     let hasNoError = true;
     if (validator.isEmpty(username)) {
-      setUsernameErrorText('Username is empty. Please fill it in...');
+      setErrorText('닉네임을 입력해주세요');
+      hasNoError = false;
+    } else if (!usernameIsLength()) {
+      setErrorText('닉네임을 3~15자 이내로 입력해주세요');
       hasNoError = false;
     } else if (!usernameIsValid()) {
-      setUsernameErrorText(
-        '1. Username must contain only alpabets and numbers.\n2. Length must be between 8~20 characters',
-      );
+      setErrorText('닉네임을 한글, 영어, 숫자로 만들어주세요');
       hasNoError = false;
-    } else {
-      setUsernameErrorText('');
-    }
-    if (validator.isEmpty(email)) {
-      setEmailErrorText('Email is empty. Please fill it in...');
+    } else if (validator.isEmpty(email)) {
+      setErrorText('이메일을 입력해주세요');
       hasNoError = false;
     } else if (!validator.isEmail(email)) {
-      setEmailErrorText('Not a valid email address form');
+      setErrorText('유효하지 않는 이메일 형식입니다');
       hasNoError = false;
-    } else {
-      setEmailErrorText('');
-    }
-    if (validator.isEmpty(password)) {
-      setPasswordErrorText('Password is empty. Please fill it in...');
+    } else if (validator.isEmpty(password)) {
+      setErrorText('비밀번호를 입력해주세요');
       hasNoError = false;
-    } else if (!validator.isStrongPassword(password, {minSymbols: 0})) {
-      setPasswordErrorText(
-        '1. At least one uppercase, one lowercase, one number must be included.\n2. Must be longer than 7 characters',
+    } else if (!passwordIsValid()) {
+      setErrorText(
+        '비밀번호를 8자 이상 16자 이하 영어, 숫자, 특수문자로 만들어주세요',
       );
       hasNoError = false;
-    } else {
-      setPasswordErrorText('');
-    }
-    if (validator.isEmpty(secondPassword)) {
-      setSecondPasswordErrorText(
-        'Confirm password is empty. Please fill it in...',
-      );
-      hasNoError = false;
-    } else if (!password || password.localeCompare(secondPassword) !== 0) {
-      setSecondPasswordErrorText(
-        'Password and Confirm password does not match.',
-      );
+    } else if (!password || !validator.equals(password, secondPassword)) {
+      setErrorText('비밀번호가 일치하지 않습니다');
       hasNoError = false;
     } else {
-      setSecondPasswordErrorText('');
+      setErrorText('');
     }
+
     return hasNoError;
   };
 
@@ -115,7 +84,7 @@ export default function SignupScreen({
     if (inputsAreValid()) {
       setIsSigningUp(true);
       await axios
-        .post(API_URL + 'auth/signup', {
+        .post(API_URL + 'player/signup', {
           username,
           email,
           password,
@@ -130,17 +99,23 @@ export default function SignupScreen({
           setIsSigningUp(false);
           if (err.response?.data?.param) {
             if (err.response.data.param === 'username') {
-              setUsernameErrorText(err.response.data.msg);
+              setErrorText(err.response.data.msg);
             }
             if (err.response.data.param === 'email') {
-              setEmailErrorText(err.response.data.msg);
+              setErrorText(err.response.data.msg);
             }
             if (err.response.data.param === 'password') {
-              setPasswordErrorText(err.response.data.msg);
+              setErrorText(err.response.data.msg);
             }
             console.log(err.response.status);
+          } else {
+            console.error(err);
+            setErrorText('서버에 문제가 발생했습니다. 다시 시도해주세요');
           }
+          showError();
         });
+    } else {
+      showError();
     }
   };
 
@@ -151,7 +126,7 @@ export default function SignupScreen({
           <Portal>
             <Dialog visible={visibleDialog}>
               <Dialog.Content>
-                <Title>User account created.</Title>
+                <Title>회원가입 완료</Title>
               </Dialog.Content>
               <Dialog.Actions>
                 <Button
@@ -163,75 +138,62 @@ export default function SignupScreen({
                 </Button>
               </Dialog.Actions>
             </Dialog>
+            <Dialog visible={isError} onDismiss={hideError}>
+              <Dialog.Content>
+                <Paragraph>{errorText}</Paragraph>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={hideError}>확인</Button>
+              </Dialog.Actions>
+            </Dialog>
           </Portal>
           {isSigningUp ? (
             <View style={styles.container}>
-              <Title>Signing up...</Title>
+              <Title>회원가입 진행 중...</Title>
               <ActivityIndicator animating={true} size={'large'} />
             </View>
           ) : (
             <View>
               <TextInput
-                label="Username"
+                label="닉네임"
                 value={username}
                 autoCapitalize={'none'}
                 onChangeText={text => {
                   setUsername(text);
                 }}
                 style={styles.textInput}
-                {...usernameErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {usernameErrorText}
-              </HelperText>
               <TextInput
-                label="E-mail"
+                label="이메일"
                 value={email}
                 autoCapitalize={'none'}
                 onChangeText={text => setEmail(text)}
                 keyboardType={'email-address'}
                 style={styles.textInput}
-                {...emailErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {emailErrorText}
-              </HelperText>
               <TextInput
-                label="Password"
+                label="비밀번호"
                 value={password}
                 autoCapitalize={'none'}
                 onChangeText={text => setPassword(text)}
                 secureTextEntry={true}
                 style={styles.textInput}
-                {...passwordErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {passwordErrorText}
-              </HelperText>
               <TextInput
-                label="Confirm Password"
+                label="비밀번호 재확인"
                 value={secondPassword}
                 autoCapitalize={'none'}
                 onChangeText={text => setSecondPassword(text)}
                 secureTextEntry={true}
                 style={styles.textInput}
-                {...passwordErrorProps}
               />
-              <HelperText type="error" style={styles.helperText}>
-                {secondPasswordErrorText}
-              </HelperText>
               <Button
                 mode="contained"
                 contentStyle={styles.signupButtonContent}
                 style={styles.signupButton}
                 onPress={signup}>
-                Sign up
+                회원가입하기
               </Button>
-              <View style={styles.footer}>
-                <Button uppercase={false} onPress={() => navigation.goBack()}>
-                  Back to login
-                </Button>
-              </View>
             </View>
           )}
         </View>
@@ -249,7 +211,7 @@ const styles = StyleSheet.create({
     marginTop: Dimensions.get('window').height / 15,
   },
   textInput: {
-    height: 50,
+    height: 60,
     width: Dimensions.get('window').width / 1.5,
     backgroundColor: '#ffffff00',
   },
@@ -262,9 +224,5 @@ const styles = StyleSheet.create({
   signupButtonContent: {
     width: Dimensions.get('window').width / 1.5,
     height: 60,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
 });

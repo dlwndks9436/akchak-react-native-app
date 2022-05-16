@@ -1,43 +1,29 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState} from 'react';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import React from 'react';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/HomeScreen';
 import DummyScreen from '../screens/DummyScreen';
-import PracticeLogListScreen from '../screens/PracticeLogListScreen';
-import {Camera, CameraPermissionStatus} from 'react-native-vision-camera';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-import {RootStackParamList} from '../types/type';
+import {RootStackParamList} from '../types';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useAppSelector} from '../redux/hooks';
 import {checkUserLoggedIn} from '../features/user/userSlice';
-import ProfileScreen from '../screens/AccountScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
+import {theme} from '../styles/theme';
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialBottomTabNavigator();
 
 export default function BottomTab() {
-  const [cameraPermission, setCameraPermission] =
-    useState<CameraPermissionStatus>();
-  const [microphonePermission, setMicrophonePermission] =
-    useState<CameraPermissionStatus>();
-
   const userLoggedIn = useAppSelector(checkUserLoggedIn);
-
-  useEffect(() => {
-    Camera.getCameraPermissionStatus().then(setCameraPermission);
-    Camera.getMicrophonePermissionStatus().then(setMicrophonePermission);
-  }, []);
-
-  const showPermissionsPage =
-    cameraPermission !== 'authorized' || microphonePermission !== 'authorized';
 
   const navigateToNextScreen = (
     navigation: StackNavigationProp<RootStackParamList>,
   ) => {
     if (userLoggedIn) {
-      showPermissionsPage
-        ? navigation.navigate('CameraPermission')
-        : navigation.navigate('Camera');
+      // showPermissionsPage
+      //   ? navigation.navigate('CameraPermission')
+      //   : navigation.navigate('Camera');
+      navigation.navigate('StartPractice');
     } else {
       navigation.navigate('AuthStack');
     }
@@ -45,35 +31,18 @@ export default function BottomTab() {
 
   return (
     <Tab.Navigator
-      initialRouteName="Home"
-      backBehavior="initialRoute"
-      screenOptions={() => ({
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarIconStyle: {width: '100%', height: '100%'},
-      })}>
+      initialRouteName="홈"
+      shifting={true}
+      activeColor={theme.colors.primary}
+      backBehavior="none"
+      barStyle={{backgroundColor: theme.colors.background}}>
       <Tab.Screen
-        name="Home"
+        name="홈"
         component={HomeScreen}
         options={{
           tabBarIcon: ({color}) => (
-            <MaterialCommunityIcon name="home" color={color} size={30} />
+            <MaterialCommunityIcon name="home" color={color} size={26} />
           ),
-          tabBarStyle: {elevation: 5},
-        }}
-      />
-      <Tab.Screen
-        name="PracticeLog"
-        component={PracticeLogListScreen}
-        options={{
-          tabBarIcon: ({color}) => (
-            <MaterialCommunityIcon
-              name="filmstrip-box-multiple"
-              color={color}
-              size={30}
-            />
-          ),
-          tabBarStyle: {elevation: 5},
         }}
       />
       <Tab.Screen
@@ -84,7 +53,7 @@ export default function BottomTab() {
             <MaterialCommunityIcon
               name="plus-circle-outline"
               color={color}
-              size={40}
+              size={26}
             />
           ),
         })}
@@ -96,11 +65,11 @@ export default function BottomTab() {
         })}
       />
       <Tab.Screen
-        name="Account"
+        name="내 정보"
         component={ProfileScreen}
         options={() => ({
           tabBarIcon: ({color}) => (
-            <MaterialCommunityIcon name="account" color={color} size={40} />
+            <MaterialCommunityIcon name="account" color={color} size={26} />
           ),
         })}
       />

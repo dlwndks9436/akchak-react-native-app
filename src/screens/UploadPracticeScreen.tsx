@@ -1,15 +1,18 @@
 import {Dimensions, StyleSheet, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, {useCallback, useEffect, useState} from 'react';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Button, Dialog, Paragraph, Portal, TextInput} from 'react-native-paper';
-import {RootStackUploadScreenProps} from '../types/type';
+import {
+  ActivityIndicator,
+  Button,
+  Dialog,
+  Modal,
+  Paragraph,
+  Portal,
+  TextInput,
+} from 'react-native-paper';
+import {RootStackUploadScreenProps} from '../types';
 import RNFS from 'react-native-fs';
-import {API_ENDPOINT} from 'react-native-dotenv';
 import axios, {AxiosError} from 'axios';
-import {decode} from 'base64-arraybuffer';
-// import {S3Client} from '@aws-sdk/client-s3';
-// import Api from '../libs/api';
 import {useAppSelector} from '../redux/hooks';
 import {checkUserId, selectAccessToken} from '../features/user/userSlice';
 import Api from '../libs/api';
@@ -18,183 +21,161 @@ export default function UploadPracticeScreen({
   navigation,
   route,
 }: RootStackUploadScreenProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [memo, setMemo] = useState('');
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [errorText, setErrorText] = useState('');
-  const [mode, setMode] = useState<'upload' | 'edit'>();
+  const [thumbnailUploaded, setThumbnailUploaded] = useState<boolean>();
+  const [videoUploaded, setVideoUploaded] = useState<boolean>();
+  // const [uploadId, setUploadId] = useState('');
 
   const accessToken = useAppSelector(selectAccessToken);
   const userId = useAppSelector(checkUserId);
+
+  useEffect(() => {
+    if (thumbnailUploaded === false || videoUploaded === false) {
+      setLoading(false);
+      setThumbnailUploaded(undefined);
+      setVideoUploaded(undefined);
+    }
+  }, [thumbnailUploaded, videoUploaded]);
+
+  const savePracticeLog = useCallback(async () => {
+    await Api.post(
+      '/practicelog',
+      {
+        memo,
+        goalId: route.params.goal.id,
+        time: route.params.practiceTime,
+        videoFileNameExt: route.params.video.fileNameWithExt,
+        videoFileName: route.params.video.fileName,
+        videoPlaybackTime: route.params.video.duration,
+        videoFileSize: route.params.video.fileSize,
+      },
+      {
+        headers: {Authorization: 'Bearer ' + accessToken},
+      },
+    )
+      .then(async res => {
+        console.log('create practice result: ', res);
+        const files = await RNFS.readDir(
+          'file://' + RNFS.ExternalDirectoryPath,
+        );
+        files.forEach(async file => {
+          await RNFS.unlink(file.path);
+          console.log(`${file.name} 삭제됨`);
+        });
+        navigation.popToTop();
+      })
+      .catch((err: AxiosError) => {
+        setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+        setVisible(true);
+        console.log('error response: ', err.response?.data);
+      });
+  }, [route, navigation, accessToken, memo]);
+
+  useEffect(() => {
+    if (thumbnailUploaded && videoUploaded) {
+      savePracticeLog();
+    }
+  }, [thumbnailUploaded, videoUploaded, savePracticeLog]);
 
   const hideDialog = () => {
     setVisible(false);
   };
 
-  useEffect(() => {
-    if (route.params.title && route.params.description) {
-      setMode('edit');
-      setTitle(route.params.title);
-      setDescription(route.params.description);
-    } else {
-      setMode('upload');
-    }
-  }, [route.params.title, route.params.description]);
-
-  // const [uploadProgress, setUploadProgress] = useState(0);
-
-  // const upload = async () => {
-  //   const formData = new FormData();
-  //   console.log(route.params.thumbnailName);
-  //   formData.append('video', {
-  //     uri: route.params.trimmedVideoUri,
-  //     type: 'video/mp4',
-  //     name: route.params.fileName,
-  //   });
-  //   formData.append('thumbnail', {
-  //     uri: route.params.thumbnailUri,
-  //     type: 'image/jpeg',
-  //     name: route.params.thumbnailName,
-  //   });
-  //   formData.append('id', route.params.id);
-  //   formData.append('duration', route.params.duration);
-  //   formData.append('practiceTime', route.params.practiceTime);
-  //   const res = await Api.post('practice/upload', formData, {
-  //     headers: {
-  //       Authorization: 'Bearer ' + accessToken,
-  //       'Content-Type': 'multipart/form-data',
-  //     },
-  //     transformRequest: data => {
-  //       return data;
-  //     },
-  // onUploadProgress: p => {
-  //   const percentCompleted = Math.round((p.loaded * 100) / p.total);
-  //   setUploadProgress(percentCompleted);
-  //   console.log('progress: ', uploadProgress);
-  // },
-  //   }).catch(err => console.log(err));
-  //   console.log('res: ', res);
-  // };
-
   const upload = async () => {
+    console.log(route.params);
     setVisible(false);
     setLoading(true);
     try {
-      const presignedUrls = await axios.get(API_ENDPOINT, {
-        params: {userId: userId, directory: route.params.directory},
-      });
-      console.log('presignedUrl response: ', presignedUrls);
+      const video = route.params.video;
 
-      const videoBase64 = await RNFS.readFile(
-        route.params.trimmedVideoUri!,
-        'base64',
+      const presignedUrls = await axios.get(
+        'https://o2dmtsh3e1.execute-api.ap-northeast-2.amazonaws.com/default/akchak-presigned-urls',
+        {
+          params: {userId: userId, fileName: video.fileName},
+        },
       );
 
-      const video = decode(videoBase64);
-
-      await axios
-        .put(presignedUrls.data.videoUploadURL, video, {
-          headers: {
-            'Content-Type': 'video/mp4',
-          },
-        })
-        .then(res => {
-          console.log('upload video result: ', res);
-        });
-
-      const thumbnailBase64 = await RNFS.readFile(
-        route.params.thumbnailUri!,
-        'base64',
-      );
-      const thumbnail = decode(thumbnailBase64);
-
-      await axios
-        .put(presignedUrls.data.thumbnailUploadURL, thumbnail, {
-          headers: {
-            'Content-Type': 'image/jpeg',
-          },
-        })
-        .then(res => {
-          console.log('upload thumbnail result: ', res);
-        });
-
-      await Api.post(
-        '/practice',
+      const videoFiles = [
         {
-          title,
-          description,
-          from: route.params.directory,
-          duration: route.params.duration,
-          practiceTime: route.params.practiceTime,
-          s3Key: presignedUrls.data.videoKey,
+          name: video.fileName,
+          filename: video.fileNameWithExt,
+          filepath: video.path.slice(7),
+          filetype: 'video/mp4',
         },
-        {
-          headers: {Authorization: 'Bearer ' + accessToken},
+      ];
+
+      RNFS.uploadFiles({
+        toUrl: presignedUrls.data.videoUploadURL,
+        files: videoFiles,
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
         },
-      )
-        .then(res => {
-          console.log('create practice result: ', res);
-          navigation.popToTop();
-        })
-        .catch((err: AxiosError) => {
-          if (err.response?.status === 400 && err.response?.data?.param) {
-            if (err.response.data.param === 'title') {
-              setVisible(true);
-              setErrorText('title is must be longer than 5 characters');
-            } else if (err.response.data.param === 'duration') {
-              setVisible(true);
-              setErrorText('duration is not a number');
-            } else if (err.response.data.param === 'from') {
-              setVisible(true);
-              setErrorText('the video file is not valid');
-            } else if (err.response.data.param === 'practiceTime') {
-              setVisible(true);
-              setErrorText('practice time is not valid');
-            } else if (err.response.data.param === 's3Key') {
-              setVisible(true);
-              setErrorText('uploaded video is not valid');
-            }
-            console.log(err.response.status);
+        binaryStreamOnly: true,
+      })
+        .promise.then(response => {
+          if (response.statusCode == 200) {
+            console.log('FILES UPLOADED!'); // response.statusCode, response.headers, response.body
+            setVideoUploaded(true);
           } else {
-            setVisible(true);
-            setErrorText('Unexpected error occured');
-            console.log('error response: ', err.response?.data);
+            console.log('SERVER ERROR');
+            setVideoUploaded(false);
           }
+        })
+        .catch(err => {
+          if (err.description === 'cancelled') {
+            // cancelled by user
+          }
+          setVideoUploaded(false);
+          console.log(err);
+        });
+
+      const thumbnailFilename = route.params.thumbnailPath.split('/').pop()!;
+      const thumbnailName = thumbnailFilename?.split('.')[0];
+      const thumbnailFiles = [
+        {
+          name: thumbnailName,
+          filename: thumbnailFilename,
+          filepath: route.params.thumbnailPath.slice(7),
+          filetype: 'image/jpeg',
+        },
+      ];
+
+      RNFS.uploadFiles({
+        toUrl: presignedUrls.data.thumbnailUploadURL,
+        files: thumbnailFiles,
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+        },
+        binaryStreamOnly: true,
+      })
+        .promise.then(response => {
+          if (response.statusCode == 200) {
+            console.log('FILES UPLOADED!'); // response.statusCode, response.headers, response.body
+            setThumbnailUploaded(true);
+          } else {
+            console.log('SERVER ERROR');
+            setThumbnailUploaded(false);
+          }
+        })
+        .catch(err => {
+          if (err.description === 'cancelled') {
+            // cancelled by user
+          }
+          setThumbnailUploaded(false);
+          console.log(err);
         });
     } catch (err) {
       console.log(err);
     }
-    setLoading(false);
   };
 
-  const edit = async () => {
-    setVisible(false);
-    setLoading(true);
-    await Api.patch(
-      'practice/' + route.params.id,
-      {title, description},
-      {headers: {Authorization: 'Bearer ' + accessToken}},
-    )
-      .then(() => {
-        navigation.goBack();
-      })
-      .catch((err: AxiosError) => {
-        if (err.response?.status === 400 && err.response?.data?.param) {
-          if (err.response.data.param === 'title') {
-            setVisible(true);
-            setErrorText('title is must be longer than 5 characters');
-          }
-        }
-      });
-    setLoading(false);
-  };
-
-  const goBack = () => {
-    navigation.goBack();
-  };
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <View style={{flex: 1}}>
       <KeyboardAwareScrollView>
         <View style={styles.container}>
           <Portal>
@@ -206,50 +187,39 @@ export default function UploadPracticeScreen({
                 <Button onPress={hideDialog}>OK</Button>
               </Dialog.Actions>
             </Dialog>
+            <Modal
+              visible={loading}
+              contentContainerStyle={styles.modalContainerStyle}>
+              <ActivityIndicator animating={true} size="large" />
+            </Modal>
           </Portal>
           <TextInput
             mode="outlined"
-            label="title"
-            value={title}
-            onChangeText={text => setTitle(text)}
-            style={styles.textInput}
-          />
-          <TextInput
-            mode="outlined"
-            label="description"
-            value={description}
-            onChangeText={text => setDescription(text)}
+            label="메모 (*선택)"
+            value={memo}
+            numberOfLines={20}
             multiline={true}
-            numberOfLines={15}
+            onChangeText={text => setMemo(text)}
             style={styles.textInput}
           />
-          <View style={styles.buttonContainer}>
-            <Button style={styles.button} mode="contained" onPress={goBack}>
-              Back
-            </Button>
-            <Button
-              style={styles.button}
-              mode="contained"
-              onPress={mode === 'upload' ? upload : edit}
-              loading={loading}>
-              {mode === 'upload' ? 'Upload' : 'Edit'}
-            </Button>
-          </View>
+          <Button
+            style={styles.button}
+            mode="contained"
+            onPress={upload}
+            contentStyle={styles.buttonContent}>
+            업로드
+          </Button>
         </View>
       </KeyboardAwareScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Dimensions.get('window').height / 5,
+    paddingTop: Dimensions.get('window').height / 10,
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
   textInput: {
@@ -258,6 +228,15 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 20,
-    width: Dimensions.get('window').width / 3,
+  },
+  modalContainerStyle: {
+    flex: 1,
+    backgroundColor: '#00000033',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonContent: {
+    width: Dimensions.get('window').width / 1.3,
+    height: 60,
   },
 });

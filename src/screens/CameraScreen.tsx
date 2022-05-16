@@ -28,22 +28,17 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import {useEffect} from 'react';
 import {useIsForeground} from '../hooks/useIsForeground';
-import {StatusBarBlurBackground} from '../components/atoms/StatusBarBlurBackground';
-import {CaptureButton} from '../components/atoms/CaptureButton';
+import {StatusBarBlurBackground} from '../components/StatusBarBlurBackground';
+import {CaptureButton} from '../components/CaptureButton';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import IonIcon from 'react-native-vector-icons/Ionicons';
-import {PracticeLogType, RootStackCameraScreenProps} from '../types/type';
+import {RootStackCameraScreenProps} from '../types';
 import {useIsFocused} from '@react-navigation/core';
-import {formatDuration, formatTime} from '../utils';
+import {formatDuration} from '../utils';
 import {useAndroidBackHandler} from 'react-navigation-backhandler';
-import RNFS from 'react-native-fs';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useAppDispatch} from '../redux/hooks';
-import {nanoid} from '@reduxjs/toolkit';
-
-import {practiceLogAdded} from '../features/practiceLogs/practiceLogsSlice';
 import Orientation from 'react-native-orientation-locker';
 import {Button, Dialog, Paragraph, Portal, Text} from 'react-native-paper';
+import {FFprobeKit} from 'ffmpeg-kit-react-native';
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera);
 Reanimated.addWhitelistedNativeProps({
@@ -55,12 +50,15 @@ const BUTTON_SIZE = 40;
 
 export default function CameraScreen({
   navigation,
+  route,
 }: RootStackCameraScreenProps): React.ReactElement {
   const camera = useRef<Camera>(null);
   const [isCameraInitialized, setIsCameraInitialized] = useState(false);
   const [hasMicrophonePermission, setHasMicrophonePermission] = useState(false);
   const zoom = useSharedValue(0);
   const isPressingButton = useSharedValue(false);
+  const creationTime = useRef<Date>();
+  const intervalId = useRef<NodeJS.Timer>();
 
   // check if camera page is active
   const isFocussed = useIsFocused();
@@ -68,23 +66,29 @@ export default function CameraScreen({
   const isActive = isFocussed && isForeground;
 
   const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>(
-    'back',
+    'front',
   );
-  const [enableHdr] = useState(false);
-  const [flash] = useState<'off' | 'on'>('off');
+  // const [enableHdr, setEnableHdr] = useState(false);
+  // const [flash, setFlash] = useState<'off' | 'on'>('off');
   const [enableNightMode] = useState(false);
 
   const [isRecording, setIsRecording] = useState(false);
   const [timeRecording, setTimeRecording] = useState<number>(0);
 
   const [visible, setVisible] = useState(false);
-  // const [isLoading, setIsLoading] = useState(false);
 
   const showDialog = () => setVisible(true);
 
   const hideDialog = () => setVisible(false);
 
-  const dispatch = useAppDispatch();
+  useAndroidBackHandler(() => {
+    if (isRecording) {
+      showDialog();
+    } else {
+      navigation.reset({index: 0, routes: [{name: 'Tab'}]});
+    }
+    return true;
+  });
 
   // camera format settings
   const devices = useCameraDevices();
@@ -104,15 +108,15 @@ export default function CameraScreen({
       return 30;
     }
 
-    const supportsHdrAt60Fps = formats.some(
-      f =>
-        f.supportsVideoHDR &&
-        f.frameRateRanges.some(r => frameRateIncluded(r, 60)),
-    );
-    if (enableHdr && !supportsHdrAt60Fps) {
-      // User has enabled HDR, but HDR is not supported at 60 FPS.
-      return 30;
-    }
+    // const supportsHdrAt60Fps = formats.some(
+    //   f =>
+    //     f.supportsVideoHDR &&
+    //     f.frameRateRanges.some(r => frameRateIncluded(r, 60)),
+    // );
+    // if (enableHdr && !supportsHdrAt60Fps) {
+    //   // User has enabled HDR, but HDR is not supported at 60 FPS.
+    //   return 30;
+    // }
 
     const supports60Fps = formats.some(f =>
       f.frameRateRanges.some(r => frameRateIncluded(r, 60)),
@@ -123,19 +127,13 @@ export default function CameraScreen({
     }
     // If nothing blocks us from using it, we default to 60 FPS.
     return 60;
-  }, [
-    device?.supportsLowLightBoost,
-    enableHdr,
-    enableNightMode,
-    formats,
-    is60Fps,
-  ]);
+  }, [device?.supportsLowLightBoost, enableNightMode, formats, is60Fps]);
 
   const supportsCameraFlipping = useMemo(
     () => devices.back != null && devices.front != null,
     [devices.back, devices.front],
   );
-  const supportsFlash = device?.hasFlash ?? false;
+  // const supportsFlash = device?.hasFlash ?? false;
   // const supportsHdr = useMemo(
   //   () => formats.some(f => f.supportsVideoHDR || f.supportsPhotoHDR),
   //   [formats],
@@ -154,17 +152,17 @@ export default function CameraScreen({
 
   const format = useMemo(() => {
     let result = formats;
-    if (enableHdr) {
-      // We only filter by HDR capable formats if HDR is set to true.
-      // Otherwise we ignore the `supportsVideoHDR` property and accept formats which support HDR `true` or `false`
-      result = result.filter(f => f.supportsVideoHDR);
-    }
+    // if (enableHdr) {
+    //   // We only filter by HDR capable formats if HDR is set to true.
+    //   // Otherwise we ignore the `supportsVideoHDR` property and accept formats which support HDR `true` or `false`
+    //   result = result.filter(f => f.supportsVideoHDR);
+    // }
 
     // find the first format that includes the given FPS
     return result.find(f =>
       f.frameRateRanges.some(r => frameRateIncluded(r, fps)),
     );
-  }, [formats, fps, enableHdr]);
+  }, [formats, fps]);
 
   //#region Animated Zoom
   // This just maps the zoom factor to a percentage value.
@@ -179,15 +177,6 @@ export default function CameraScreen({
     };
   }, [maxZoom, minZoom, zoom]);
   //#endregion
-
-  useAndroidBackHandler(() => {
-    if (isRecording) {
-      showDialog();
-    } else {
-      navigation.reset({index: 0, routes: [{name: 'Tab'}]});
-    }
-    return true;
-  });
 
   //#region Callbacks
   const setIsPressingButton = useCallback(
@@ -208,99 +197,23 @@ export default function CameraScreen({
   const onMediaCaptured = useCallback(
     async (media: VideoFile) => {
       console.log(`Media captured! ${JSON.stringify(media)}`);
-      const practiceDate: Date = new Date();
-      const currentSec = formatTime(practiceDate.getSeconds().toString());
-      const currentMin = formatTime(practiceDate.getMinutes().toString());
-      const currentHour = formatTime(practiceDate.getHours().toString());
-      const currentDay = practiceDate.getDate().toString();
-      const currentMonth = ('0' + (practiceDate.getMonth() + 1)).slice(-2);
-      const currentYear = practiceDate.getFullYear().toString();
-
-      const fileName: string =
-        currentYear +
-        currentMonth +
-        currentDay +
-        currentHour +
-        currentMin +
-        currentSec;
-
-      await RNFS.mkdir(RNFS.ExternalDirectoryPath + '/' + fileName);
-      const directory: string =
-        'file://' + RNFS.ExternalDirectoryPath + '/' + fileName;
-      const newFilePath: string = directory + '/practice.mp4';
-      await RNFS.moveFile(media.path, newFilePath);
-
-      const duration: number = media.duration as number;
-      const formattedDuration = formatDuration(duration);
-      const formattedDurationWithoutMillisecond =
-        formattedDuration.split('.')[0];
-
-      const id = nanoid();
-
-      dispatch(
-        practiceLogAdded({
-          id,
-          filePath: newFilePath,
-          fileName,
-          directory,
-          duration,
-          formattedDuration,
-          formattedDurationWithoutMillisecond,
-          date: practiceDate.toUTCString(),
-        }),
+      setTimeRecording(0);
+      const fileData = await FFprobeKit.execute(
+        `-v quiet -print_format json -show_format -show_streams ${media.path}`,
       );
+      const dataStr = await fileData.getOutput();
+      console.log('video metadata: ', dataStr);
+      const data = JSON.parse(dataStr);
+      console.log('duration: ', data.format.duration);
 
-      const savedPracticeLogs: string | null = await AsyncStorage.getItem(
-        'practice_logs',
-      );
-
-      if (savedPracticeLogs !== null) {
-        const practiceLogs = JSON.parse(savedPracticeLogs);
-
-        const newLogData: PracticeLogType = {
-          id,
-          filePath: newFilePath,
-          fileName,
-          directory,
-          duration,
-          formattedDuration,
-          formattedDurationWithoutMillisecond,
-          date: practiceDate.toUTCString(),
-        };
-        // console.log('newLogData', newLogData);
-        const newPracticeLogs: PracticeLogType[] = [
-          ...practiceLogs,
-          newLogData,
-        ];
-
-        console.log('newPracticeLogs', newPracticeLogs);
-        await AsyncStorage.setItem(
-          'practice_logs',
-          JSON.stringify(newPracticeLogs),
-        );
-      } else {
-        const newLogData: PracticeLogType = {
-          id,
-          filePath: newFilePath,
-          fileName,
-          duration,
-          directory,
-          formattedDuration,
-          formattedDurationWithoutMillisecond,
-          date: practiceDate.toUTCString(),
-        };
-        console.log(newLogData);
-
-        await AsyncStorage.setItem(
-          'practice_logs',
-          JSON.stringify([newLogData]),
-        );
-      }
-      navigation.navigate('VideoPlay', {
-        videoUri: newFilePath,
+      navigation.navigate('영상 자르기', {
+        goal: route.params.goal,
+        media,
+        creationTime: creationTime.current!.toUTCString(),
+        practiceTime: parseInt(data.format.duration, 10),
       });
     },
-    [navigation, dispatch],
+    [navigation, route],
   );
   const onFlipCameraPressed = useCallback(() => {
     setCameraPosition(p => (p === 'back' ? 'front' : 'back'));
@@ -330,20 +243,26 @@ export default function CameraScreen({
   }, []);
 
   useEffect(() => {
-    Orientation.lockToLandscape();
+    Orientation.lockToPortrait();
     return () => Orientation.unlockAllOrientations();
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timer;
     if (isRecording) {
-      interval = setInterval(() => {
+      creationTime.current = new Date();
+      intervalId.current = setInterval(() => {
         setTimeRecording(seconds => seconds + 1);
       }, 1000);
     } else {
-      clearInterval;
+      if (intervalId.current) {
+        clearInterval(intervalId.current);
+      }
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalId.current) {
+        clearInterval(intervalId.current);
+      }
+    };
   }, [isRecording]);
   //#endregion
 
@@ -392,7 +311,9 @@ export default function CameraScreen({
       <Portal>
         <Dialog visible={visible} onDismiss={hideDialog}>
           <Dialog.Content>
-            <Paragraph>Would you discard this practice?</Paragraph>
+            <Paragraph>
+              연습을 취소하시겠습니까? 취소할 경우 저장되지 않습니다
+            </Paragraph>
           </Dialog.Content>
           <Dialog.Actions>
             <Button
@@ -400,9 +321,9 @@ export default function CameraScreen({
                 hideDialog();
                 navigation.goBack();
               }}>
-              OK
+              네
             </Button>
-            <Button onPress={hideDialog}>Cancel</Button>
+            <Button onPress={hideDialog}>아니요</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -417,7 +338,7 @@ export default function CameraScreen({
                 device={device}
                 format={format}
                 // fps={30}
-                hdr={enableHdr}
+                // hdr={enableHdr}
                 lowLightBoost={device.supportsLowLightBoost && enableNightMode}
                 isActive={isActive}
                 onInitialized={onInitialized}
@@ -436,11 +357,13 @@ export default function CameraScreen({
       <CaptureButton
         style={styles.captureButton}
         camera={camera}
-        onMediaCaptured={onMediaCaptured}
+        onMediaCaptured={media => {
+          onMediaCaptured(media as VideoFile);
+        }}
         cameraZoom={zoom}
         minZoom={minZoom}
         maxZoom={maxZoom}
-        flash={supportsFlash ? flash : 'off'}
+        flash={'off'}
         enabled={isCameraInitialized && isActive}
         setIsPressingButton={setIsPressingButton}
       />

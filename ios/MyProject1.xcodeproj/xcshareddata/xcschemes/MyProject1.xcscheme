@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "MyProject1.app"
-               BlueprintName = "MyProject1"
-               ReferencedContainer = "container:MyProject1.xcodeproj">
+               BuildableName = "akchak.app"
+               BlueprintName = "akchak"
+               ReferencedContainer = "container:akchak.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
                BuildableName = "MyProject1Tests.xctest"
                BlueprintName = "MyProject1Tests"
-               ReferencedContainer = "container:MyProject1.xcodeproj">
+               ReferencedContainer = "container:akchak.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "MyProject1.app"
-            BlueprintName = "MyProject1"
-            ReferencedContainer = "container:MyProject1.xcodeproj">
+            BuildableName = "akchak.app"
+            BlueprintName = "akchak"
+            ReferencedContainer = "container:akchak.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "MyProject1.app"
-            BlueprintName = "MyProject1"
-            ReferencedContainer = "container:MyProject1.xcodeproj">
+            BuildableName = "akchak.app"
+            BlueprintName = "akchak"
+            ReferencedContainer = "container:akchak.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

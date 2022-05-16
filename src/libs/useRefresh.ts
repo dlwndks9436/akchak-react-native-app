@@ -6,19 +6,17 @@ import {
   setTokens,
   Tokens,
 } from '../features/user/userSlice';
-// import {useAppDispatch} from '../redux/hooks';
 import store from '../redux/store';
 import {API_URL} from '../utils/constants';
 
 const refresh = async (
   config: AxiosRequestConfig,
 ): Promise<AxiosRequestConfig> => {
-  // const dispatch = useAppDispatch();
   const lastTimeAuthenticated = await SecureStore.getItemAsync(
     'lastTimeAuthenticated',
   );
   if (lastTimeAuthenticated) {
-    console.log('current user was authenticated before');
+    console.log('access token 체크');
 
     const now = new Date(Date.now()).getTime();
 
@@ -26,11 +24,11 @@ const refresh = async (
 
     const timeAllowed = 1000 * 60 * 60 * 3;
     if (timeSince > timeAllowed) {
-      console.log('but access token is expired');
+      console.log('하지만 access token이 만료됨');
       const tokensStr = await SecureStore.getItemAsync('tokens');
       if (tokensStr) {
         const {refreshToken} = JSON.parse(tokensStr);
-        const result = await axios.patch(API_URL + 'auth/token', null, {
+        const result = await axios.patch(API_URL + 'player/token', null, {
           headers: {Authorization: 'Bearer ' + refreshToken},
         });
         if (result.status === 200) {
@@ -40,9 +38,11 @@ const refresh = async (
           store.dispatch(setTokens(newTokens));
           store.dispatch(setLastTimeAuthenticated(now));
           config.headers!['Authorization'] = `Bearer ${newTokens.accessToken}`;
-          console.log('new access token issued');
+          console.log('새로운 access token 발급됨');
         }
       }
+    } else {
+      console.log('access token 유효함');
     }
   }
 

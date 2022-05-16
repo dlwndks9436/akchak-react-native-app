@@ -49,19 +49,17 @@ export const getElapsedTime = (date: number): string => {
   const months = Math.floor(days / 30);
   const years = Math.floor(months / 12);
   if (years > 0) {
-    return years === 1 ? `${years} year before` : `${years} years before`;
+    return `${years} 년 전`;
   } else if (months > 0) {
-    return months === 1 ? `${months} month before` : `${months} months before`;
+    return `${months} 달 전`;
   } else if (days > 0) {
-    return days === 1 ? `${days} day before` : `${days} days before`;
+    return `${days} 일 전`;
   } else if (hours > 0) {
-    return hours === 1 ? `${hours} hour before` : `${hours} hours before`;
+    return `${hours} 시간 전`;
   } else if (minutes > 0) {
-    return minutes === 1
-      ? `${minutes} minute before`
-      : `${minutes} minutes before`;
+    return `${minutes} 분 전`;
   } else {
-    return 'few seconds ago';
+    return '방금 전';
   }
 };
 

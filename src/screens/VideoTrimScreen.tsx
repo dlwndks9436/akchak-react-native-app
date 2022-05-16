@@ -1,13 +1,21 @@
-import {StyleSheet, View, Dimensions, Image, StatusBar} from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {RootStackTrimScreenProps} from '../types/type';
-import Orientation, {OrientationLocker} from 'react-native-orientation-locker';
-import {AndroidBackHandler} from 'react-navigation-backhandler';
+import {StyleSheet, View, Dimensions, StatusBar} from 'react-native';
+import React, {useState} from 'react';
+import {RootStackTrimScreenProps} from '../types';
 import VideoPlayer from 'react-native-video-controls';
 import {FFmpegKit, FFprobeKit, ReturnCode} from 'ffmpeg-kit-react-native';
 import {formatDuration} from '../utils';
 import RNFS from 'react-native-fs';
-import {Button, Dialog, Paragraph, Portal, Text} from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Button,
+  Dialog,
+  Modal,
+  Paragraph,
+  Portal,
+  Text,
+} from 'react-native-paper';
+import {AndroidBackHandler} from 'react-navigation-backhandler';
+import {theme} from '../styles/theme';
 
 export default function VideoTrimScreen({
   navigation,
@@ -15,40 +23,18 @@ export default function VideoTrimScreen({
 }: RootStackTrimScreenProps) {
   const [startTime, setStartTime] = useState<number>();
   const [endTime, setEndTime] = useState<number>();
-  const [thumbnailUri, setThumbnailUri] = useState<string>();
-  const [videoUri] = useState(route.params.videoUri);
-  const [trimmedVideoUri, setTrimmedVideoUri] = useState<string>();
-  const [duration, setDuration] = useState<number>();
-  const [fileName, setFileName] = useState<string>('');
-  const [thumbnailName, setThumbnailName] = useState<string>('');
+  const [videoUri] = useState(route.params.media.path);
   const [visible, setVisible] = useState(false);
   const [dialogText, setDialogText] = useState('');
+  const [backPressed, setBackPressed] = useState(false);
+  const [modalVisible, setModelVisible] = useState(false);
 
   const videoPlayer = React.useRef<VideoPlayer>(null);
-  const imageRef = React.useRef<Image>(null);
 
   const {height} = Dimensions.get('screen');
 
-  useEffect(() => {
-    const directoryPath = route.params.directory;
-
-    RNFS.readDir(directoryPath)
-      .then(files => {
-        files.forEach(file => {
-          if (file.name.includes('thumbnail')) {
-            setThumbnailUri('file://' + file.path);
-            const jpgName = file.path.split('/').pop() as string;
-            setThumbnailName(jpgName);
-            return false;
-          }
-        });
-      })
-      .catch(err => console.log(err));
-  }, [route.params.directory]);
-
   const onBackButtonPressAndroid = () => {
-    Orientation.unlockAllOrientations();
-    navigation.goBack();
+    setBackPressed(true);
     return true;
   };
 
@@ -76,31 +62,21 @@ export default function VideoTrimScreen({
 
   const trimVideo = () => {
     if (!startTime || !endTime) {
-      setDialogText(
-        '"Start time" and "End time" needs to be set to proceed video trimming.',
-      );
+      setDialogText('영상이 시작하는 지점과 끝나는 지점을 정해주세요');
       showDialog();
       return;
     }
     console.log('trimming start');
-    const previousTrimmedVideosUri = new Array();
-    RNFS.readDir(route.params.directory).then(videos => {
-      videos.forEach(video => {
-        if (video.name.includes('editted')) {
-          previousTrimmedVideosUri.push(video.path);
-        }
-      });
-    });
+    showModal();
+
     console.log('start time: ', startTime, 'end time: ', endTime);
 
-    const milsec = new Date().getMilliseconds();
-    const sec = new Date().getSeconds();
-    const newFileName = 'practice_editted' + sec + milsec + '.mp4';
-    setFileName(newFileName);
-    const newUri = route.params.directory + '/' + newFileName;
+    const currentDateTime = new Date().getTime().toString();
+    const newFileName = currentDateTime + '.mp4';
+    const newUri = 'file://' + RNFS.ExternalDirectoryPath + '/' + newFileName;
     FFmpegKit.execute(
       '-i ' +
-        route.params.videoUri +
+        route.params.media.path +
         ' -ss ' +
         startTime +
         ' -to ' +
@@ -111,25 +87,42 @@ export default function VideoTrimScreen({
       .then(async session => {
         const returnCode = await session.getReturnCode();
         if (ReturnCode.isSuccess(returnCode)) {
-          setTrimmedVideoUri(newUri);
-          const time = await FFprobeKit.execute(
-            `-i ${newUri} -show_entries format=duration -v quiet -of csv="p=0"`,
+          const fileData = await FFprobeKit.execute(
+            `-v quiet -print_format json -show_format -show_streams ${newUri}`,
           );
-          const durStr = await time.getOutput();
-          setDuration(Number.parseFloat(durStr));
+          const dataStr = await fileData.getOutput();
+          console.log('편집된 video metadata: ', dataStr);
+          const data = JSON.parse(dataStr);
+
+          console.log('duration: ', data.format.duration);
+          console.log('file size: ', data.format.size);
           console.log(newUri);
-          if (previousTrimmedVideosUri.length > 0) {
-            previousTrimmedVideosUri.forEach(videoPath => {
-              RNFS.unlink(videoPath)
-                .then(() => console.log('PREVIOUS TRIMMED VIDEO DELETED'))
-                .catch(err => {
-                  console.log(err);
-                });
+
+          hideModal();
+          console.log('trimming finish');
+          const fileSize = Math.ceil(
+            parseInt(data.format.size as string) / 1000000,
+          );
+          if (fileSize > 250) {
+            await RNFS.unlink(newUri);
+            setDialogText(
+              `영상의 용량이 250MB를 초과합니다. 영상 길이를 더 줄여주세요. 현재 영상의 용량 : ${fileSize}MB`,
+            );
+            showDialog();
+          } else {
+            navigation.navigate('VideoPlay', {
+              goal: route.params.goal,
+              video: {
+                duration: parseFloat(data.format.duration as string),
+                fileSize,
+                path: newUri,
+                fileName: currentDateTime,
+                fileNameWithExt: newFileName,
+              },
+              creationTime: route.params.creationTime,
+              practiceTime: route.params.practiceTime,
             });
           }
-          console.log('trimming finish');
-          setDialogText('Video trimming successfully done');
-          showDialog();
         }
       })
       .catch(err => {
@@ -137,84 +130,24 @@ export default function VideoTrimScreen({
       });
   };
 
-  const preview = () => {
-    if (trimmedVideoUri) {
-      navigation.navigate('VideoPlay', {
-        videoUri: trimmedVideoUri,
-      });
-    } else {
-      setDialogText(
-        'There is no video trimmed to preview. Trim video and try again.',
-      );
-      showDialog();
-      return;
-    }
-  };
-
-  const getThumbnailWithTime = (seconds: number) => {
-    const previousThumbnailUri = thumbnailUri;
-
-    console.log(videoUri);
-    const jpgUri = videoUri
-      .split('/')
-      .map(val => {
-        if (val === 'practice.mp4') {
-          const milsec = new Date().getMilliseconds();
-          const sec = new Date().getSeconds();
-          return 'thumbnail' + sec + milsec + '.jpg';
-        } else return val;
-      })
-      .join('/');
-    console.log(jpgUri);
-
-    FFmpegKit.execute(
-      '-ss ' + seconds + ' -i ' + videoUri + ' -frames:v 1 -q:v 2 ' + jpgUri,
-    ).then(session => {
-      console.log(session);
-      setThumbnailUri('file://' + jpgUri);
-      const jpgName = jpgUri.split('/').pop() as string;
-      setThumbnailName(jpgName);
-      if (previousThumbnailUri) {
-        RNFS.unlink(previousThumbnailUri)
-          .then(() => console.log('PREVIOUS THUMBNAIL DELETED'))
-          .catch(err => {
-            console.log(err);
-          });
-      }
-    });
-  };
-
   const showDialog = () => setVisible(true);
 
   const hideDialog = () => setVisible(false);
 
-  const navigateToUploadScreen = () => {
-    if (trimmedVideoUri && thumbnailUri && duration) {
-      navigation.navigate('Upload', {
-        trimmedVideoUri,
-        thumbnailUri,
-        duration,
-        practiceTime: route.params.duration,
-        id: route.params.id,
-        fileName,
-        thumbnailName,
-        directory: route.params.fileName,
-      });
-    } else if (!trimmedVideoUri) {
-      setDialogText('Please trim video to continue.');
-      showDialog();
-    } else if (!thumbnailUri) {
-      setDialogText('Please set thumbnail to continue');
-      showDialog();
-    }
+  const hideNotice = () => setBackPressed(false);
+
+  const showModal = () => setModelVisible(true);
+  const hideModal = () => setModelVisible(false);
+
+  const goBackToHome = () => {
+    navigation.popToTop();
   };
 
   return (
     <AndroidBackHandler onBackPress={onBackButtonPressAndroid}>
-      <OrientationLocker orientation={'PORTRAIT'} />
       <View style={styles.container}>
         <StatusBar backgroundColor={'black'} barStyle={'light-content'} />
-        <View style={[{height: height / 3}, styles.videoContainer]}>
+        <View style={[{height: height / 1.5}, styles.videoContainer]}>
           <Portal>
             <Dialog visible={visible} onDismiss={hideDialog}>
               <Dialog.Content>
@@ -224,6 +157,30 @@ export default function VideoTrimScreen({
                 <Button onPress={hideDialog}>OK</Button>
               </Dialog.Actions>
             </Dialog>
+            <Dialog visible={backPressed} onDismiss={hideNotice}>
+              <Dialog.Content>
+                <Paragraph>
+                  중단하시면 녹화한 영상이 저장되지 않습니다. 정말
+                  취소하시겠습니까?
+                </Paragraph>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={goBackToHome}>네</Button>
+              </Dialog.Actions>
+              <Dialog.Actions>
+                <Button onPress={hideNotice}>아니요</Button>
+              </Dialog.Actions>
+            </Dialog>
+            <Modal
+              visible={modalVisible}
+              onDismiss={hideModal}
+              contentContainerStyle={styles.modal}>
+              <ActivityIndicator
+                animating={true}
+                color={theme.colors.primary}
+                size="large"
+              />
+            </Modal>
           </Portal>
           <VideoPlayer
             source={{uri: videoUri}}
@@ -251,54 +208,15 @@ export default function VideoTrimScreen({
         </View>
         <View style={styles.setTimeContainer}>
           <Button style={styles.smallButton} mode="outlined" onPress={setStart}>
-            Set Start
+            현재화면부터 시작하기
           </Button>
           <Button style={styles.smallButton} mode="outlined" onPress={setEnd}>
-            Set End
+            현재화면에서 종료하기
           </Button>
         </View>
         <Button style={styles.bigButton} mode="outlined" onPress={trimVideo}>
-          Trim video
+          자르기
         </Button>
-        <Button
-          style={styles.bigButton}
-          mode="outlined"
-          onPress={() => {
-            getThumbnailWithTime(videoPlayer.current?.state.currentTime!);
-          }}>
-          Set thumbnail
-        </Button>
-        <Button style={styles.bigButton} mode="outlined" onPress={preview}>
-          Preview
-        </Button>
-        <View style={styles.imageControl}>
-          <View
-            style={{
-              height: height / 3.5,
-              width: '100%',
-            }}>
-            <Image
-              source={{uri: thumbnailUri}}
-              style={styles.thumbnail}
-              ref={imageRef}
-            />
-          </View>
-        </View>
-        <View style={styles.pageNavigator}>
-          <Button
-            icon="chevron-left"
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}>
-            Back
-          </Button>
-          <Button
-            icon="chevron-right"
-            onPress={navigateToUploadScreen}
-            style={styles.nextButton}
-            contentStyle={styles.nextButtonContent}>
-            Next
-          </Button>
-        </View>
       </View>
     </AndroidBackHandler>
   );
@@ -330,9 +248,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  imageControl: {
-    alignItems: 'center',
-  },
   thumbnail: {
     height: '100%',
     width: '100%',
@@ -340,22 +255,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 10,
   },
-  pageNavigator: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 20,
-  },
   smallButton: {flex: 1, borderRadius: 0},
   bigButton: {borderRadius: 0},
-  backButton: {
+  modal: {
+    justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
-    marginLeft: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignSelf: 'center',
   },
-  nextButton: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginRight: 20,
-  },
-  nextButtonContent: {flexDirection: 'row-reverse'},
 });

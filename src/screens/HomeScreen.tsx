@@ -1,242 +1,308 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
   FlatList,
   ListRenderItem,
   ImageBackground,
+  Dimensions,
+  TouchableWithoutFeedback,
 } from 'react-native';
-import {ActivityIndicator, Button, Text, Title} from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Button,
+  Dialog,
+  FAB,
+  IconButton,
+  Modal,
+  Paragraph,
+  Portal,
+  Text,
+  Title,
+} from 'react-native-paper';
 import Api from '../libs/api';
 import {useAppSelector} from '../redux/hooks';
 import {selectAccessToken} from '../features/user/userSlice';
 import {AxiosError, AxiosResponse} from 'axios';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {convertUnit, formatDuration, getElapsedTime} from '../utils/index';
-import {RootStackTabScreenProps} from '../types/type';
+import {RootStackTabScreenProps} from '../types';
+import NetInfo from '@react-native-community/netinfo';
+import {theme} from '../styles/theme';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 
 export default function HomeScreen({navigation}: RootStackTabScreenProps) {
-  interface Practice {
-    _id?: number;
-    user_id?: number;
-    title?: string;
-    description?: string;
-    duration?: number;
-    from_directory?: string;
-    practice_time?: number;
-    s3_key?: string;
-    user: {username: string};
-    thumbnailUri?: string;
-    views?: string | number;
-    createdAt?: string;
+  interface Item {
+    id: number;
+    playerName: string;
+    phraseTitle?: string;
+    phraseSubheading?: string;
+    bookTitle?: string;
+    musicTitle?: string;
+    musicArtist?: string;
+    view: number | string;
+    playbackTime: number;
+    thumbnailUrl?: string;
+    createdAt: string;
   }
   interface PracticeQueryResult {
-    totalItems: number;
-    practices: Practice[];
+    results: Item[];
     totalPages: number;
-    currentPage: number;
-    thumbnailURLs: string[];
   }
 
-  const [loading, setLoading] = useState(true);
-  const [startMount, setStartMount] = useState(false);
-  const [serverData, setServerData] = useState<Practice[]>([]);
-  const [thumbnailUrls, setThumbnailUrls] = useState<string[]>([]);
-  const [fetching, setFetching] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [results, setResults] = useState<Item[]>([]);
   const [isRefreshing] = useState(false);
-  const [page, setPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(0);
   const accessToken = useAppSelector(selectAccessToken);
-  const [intervalID, setIntervalID] = useState<NodeJS.Timer>();
-  // const [title] = useState();
-  // const [username] = useState();
-  const [search] = useState('');
-  const [searchType] = useState<'title' | 'username'>();
+  const [isError, setIsError] = useState(false);
+  const [errorText, setErrorText] = useState('');
+
+  const flatListRef = useRef<FlatList>(null);
+  const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
 
   const componentDidMount = useCallback(async () => {
-    setStartMount(true);
-    const params: {
-      page: number;
-      size: number;
-      title?: string;
-      username?: string;
-    } = {page: 0, size: 10};
-    if (search) {
-      if (searchType === 'title') {
-        params.title = search;
-      } else if (searchType === 'username') {
-        params.username = search;
-      }
+    setIsLoading(true);
+    setCurrentPage(1);
+    if (!accessToken) {
+      return;
     }
-
-    console.log('componentDidMount start');
-    await Api.get('practice', {
-      headers: {Authorization: 'Bearer ' + accessToken},
-      params,
-    })
-      .then((response: AxiosResponse) => response.data)
-      .then((data: PracticeQueryResult) => {
-        console.log('initial loading successfully done');
-        console.log('loaded practices: ', data.practices);
-        console.log('loaded thumbnails: ', data.thumbnailURLs);
-
-        setPage(currentPage => currentPage + 1);
-        setServerData(data.practices);
-        setThumbnailUrls(data.thumbnailURLs);
-        if (data.practices) {
-          setLoading(false);
-          if (intervalID) {
-            clearInterval(intervalID);
-            setIntervalID(undefined);
-          }
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params: {
+            page: number;
+            size: number;
+          } = {page: 1, size: 20};
+          console.log('componentDidMount start');
+          await Api.get('/practicelog', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          })
+            .then((response: AxiosResponse) => response.data)
+            .then((data: PracticeQueryResult) => {
+              if (data) {
+                setIsLoading(false);
+                console.log('initial isLoading successfully done');
+                console.log('loaded data: ', data.results);
+                setResults(data.results);
+                setLastPage(data.totalPages);
+              } else {
+                setResults([]);
+              }
+            })
+            .catch((err: AxiosError) => {
+              console.error(
+                'componentDidMount api error: ',
+                err.response?.data,
+              );
+            });
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
         }
-      })
-      .catch((err: AxiosError) => {
-        console.error('componentDidMount api error: ', err.response?.data);
       });
-  }, [accessToken, search, searchType, intervalID]);
+    } catch (err) {
+      console.log(err);
+    }
+  }, [accessToken]);
 
   useEffect(() => {
-    console.log('start use effect');
-    let id: NodeJS.Timer | undefined;
-    if (!startMount) {
-      console.log('start mount function');
-      id = setInterval(async () => {
-        await componentDidMount();
-        setIntervalID(id);
-      }, 2000);
-    }
-    return () => {
-      if (id) {
-        clearInterval(id);
-      }
-    };
-  }, [componentDidMount, startMount, serverData]);
-
-  // useEffect(() => {
-  //   console.log('server data: ', serverData);
-  // }, [serverData]);
+    componentDidMount();
+  }, [componentDidMount]);
 
   const loadMoreData = async () => {
-    setFetching(true);
-    const params: {
-      page: number;
-      size: number;
-      title?: string;
-      username?: string;
-    } = {page, size: 10};
-    if (search) {
-      if (searchType === 'title') {
-        params.title = search;
-      } else if (searchType === 'username') {
-        params.username = search;
-      }
+    if (isLoading || currentPage >= lastPage) {
+      return;
     }
-    await Api.get('practice', {
-      headers: {Authorization: 'Bearer ' + accessToken},
-      params,
-    })
-      .then((response: AxiosResponse) => response.data)
-      .then((data: PracticeQueryResult) => {
-        setPage(currentPage => currentPage + 1);
-        setServerData(serverData.concat(data.practices));
-        setThumbnailUrls(thumbnailUrls.concat(data.thumbnailURLs));
-        setFetching(false);
-      })
-      .catch(err => console.log(err));
-    setFetching(false);
+    const nextPage = currentPage + 1;
+    setIsLoading(true);
+
+    try {
+      NetInfo.fetch().then(async state => {
+        if (state.isConnected) {
+          const params = {
+            page: nextPage,
+            size: 20,
+          };
+          const result = await Api.get('/practicelog', {
+            headers: {Authorization: 'Bearer ' + accessToken},
+            params,
+          });
+          setIsLoading(false);
+          if (result.status === 200) {
+            if (result.data && result.data.results.length > 0) {
+              setResults([...results, ...result.data.results]);
+              setCurrentPage(nextPage);
+            }
+          } else {
+            setErrorText('문제가 발생했습니다. 다시 시도해주세요');
+            setIsError(true);
+          }
+        } else {
+          setErrorText('인터넷이 연결되었는지 확인해주세요');
+          setIsError(true);
+        }
+      });
+    } catch (err) {
+      setResults([]);
+      setIsLoading(false);
+    }
+  };
+
+  const hideError = () => {
+    setIsError(false);
   };
 
   const navigateToPracticeScreen = (id: number) => {
-    navigation.navigate('ViewPractice', {practiceId: id});
+    navigation.navigate('ViewPractice', {practiceLogId: id});
+  };
+
+  const navigateToSearchScreen = () => {
+    navigation.navigate('연습기록 검색');
+  };
+
+  const scrollToTop = () => {
+    flatListRef.current?.scrollToIndex({
+      animated: true,
+      index: 0,
+      viewPosition: 1,
+    });
   };
 
   const Item = ({
-    _id,
-    title,
-    thumbnailUri,
-    duration,
-    user,
+    id,
     createdAt,
-    views,
-  }: Practice) => (
-    <PressableOpacity
-      style={styles.itemContainer}
+    phraseTitle,
+    playbackTime,
+    view,
+    thumbnailUrl,
+    phraseSubheading,
+    bookTitle,
+    musicTitle,
+    musicArtist,
+    playerName,
+  }: Item) => (
+    <TouchableWithoutFeedback
       onPress={() => {
-        navigateToPracticeScreen(_id!);
+        navigateToPracticeScreen(id);
       }}>
-      <ImageBackground
-        style={styles.thumbnailContainer}
-        imageStyle={styles.thumbnail}
-        source={{uri: thumbnailUri}}>
-        <View style={styles.durationTextPosition}>
-          <Text style={styles.duration}>
-            {duration && formatDuration(duration)}
-          </Text>
-        </View>
-      </ImageBackground>
-      <Title style={styles.title}>{title}</Title>
-      <View style={styles.textContainer}>
-        <Text style={styles.itemText}>{user.username}</Text>
-        <Text style={styles.itemText}>{views} views</Text>
-        <Text style={styles.itemText}>{createdAt}</Text>
+      <View style={styles.itemContainer}>
+        <ImageBackground
+          style={styles.thumbnailContainer}
+          imageStyle={styles.thumbnail}
+          source={{uri: thumbnailUrl}}
+          resizeMode="center">
+          <View style={styles.durationTextPosition}>
+            <Text style={styles.duration}>
+              {playbackTime && formatDuration(Math.ceil(playbackTime))}
+            </Text>
+          </View>
+        </ImageBackground>
+        <PressableOpacity
+          onPress={() => {
+            navigateToPracticeScreen(id);
+          }}>
+          <Title style={styles.title}>{phraseTitle || musicTitle}</Title>
+          <Text style={styles.itemText}>{phraseSubheading || musicArtist}</Text>
+          <Text style={styles.itemText}>{bookTitle || ''}</Text>
+          <Text style={styles.itemText}>{playerName}</Text>
+          <View style={styles.textContainer}>
+            <Text style={styles.itemText}>{view} views</Text>
+            <Text style={styles.itemText}>{createdAt}</Text>
+          </View>
+        </PressableOpacity>
       </View>
-    </PressableOpacity>
+    </TouchableWithoutFeedback>
   );
 
-  const renderItem: ListRenderItem<Practice> = ({item, index}) => {
-    const date = Date.parse(item.createdAt!);
+  const renderItem: ListRenderItem<Item> = ({item}) => {
+    const date = Date.parse(item.createdAt);
     const createdAt = getElapsedTime(date);
-    const views = convertUnit(item.views as number) || '0';
+    const views = convertUnit(item.view as number) || '0';
     return (
       <Item
-        _id={item._id}
-        title={item.title}
-        key={item._id}
-        duration={item.duration}
-        thumbnailUri={thumbnailUrls[index]}
-        user={item.user}
-        views={views}
+        id={item.id}
+        key={item.id}
+        thumbnailUrl={item.thumbnailUrl}
+        view={views}
         createdAt={createdAt}
+        bookTitle={item.bookTitle}
+        phraseTitle={item.phraseTitle}
+        phraseSubheading={item.phraseSubheading}
+        musicTitle={item.musicTitle}
+        musicArtist={item.musicArtist}
+        playbackTime={item.playbackTime}
+        playerName={item.playerName}
       />
     );
   };
 
-  const renderFooter = () => {
-    return (
-      <View style={styles.footer}>
-        <Button
-          onPress={loadMoreData}
-          style={styles.loadMoreBtn}
-          labelStyle={styles.btnText}
-          loading={fetching}
-          disabled={fetching}>
-          {fetching ? null : 'Load more'}
-        </Button>
+  const LoadingIndicator = () => (
+    <View style={styles.loadingIndicator}>
+      <ActivityIndicator size="large" color={'white'} />
+    </View>
+  );
+
+  const SearchBar = () => (
+    <TouchableWithoutFeedback onPress={navigateToSearchScreen}>
+      <View style={styles.searchBar}>
+        <IconButton icon="magnify" />
       </View>
-    );
-  };
+    </TouchableWithoutFeedback>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      {loading ? (
-        <View style={styles.indicatorContainer}>
-          <ActivityIndicator size="large" />
+      <Portal>
+        <Dialog visible={isError} onDismiss={hideError}>
+          <Dialog.Content>
+            <Paragraph>{errorText}</Paragraph>
+          </Dialog.Content>
+          <View style={styles.actionContainer}>
+            <Dialog.Actions>
+              <Button onPress={hideError}>확인</Button>
+            </Dialog.Actions>
+          </View>
+        </Dialog>
+        <Modal
+          visible={isLoading}
+          contentContainerStyle={styles.modalContainer}>
+          <ActivityIndicator animating={true} size="large" />
+        </Modal>
+      </Portal>
+      {results.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Button onPress={componentDidMount}>연습 기록 불러오기</Button>
         </View>
-      ) : serverData.length === 0 ? (
-        <Button onPress={componentDidMount}>Load practice</Button>
       ) : (
-        <FlatList
-          style={{width: '100%'}}
-          data={serverData}
-          renderItem={renderItem}
-          keyExtractor={(_item, index) => index.toString()}
-          onEndReached={loadMoreData}
-          onEndReachedThreshold={0.1}
-          ListFooterComponent={renderFooter}
-          onRefresh={componentDidMount}
-          refreshing={isRefreshing}
-        />
+        <View>
+          <FlatList
+            style={{width: '100%'}}
+            ref={flatListRef}
+            viewabilityConfig={viewConfigRef.current}
+            data={results}
+            extraData={results}
+            renderItem={renderItem}
+            keyExtractor={(_, index) => index.toString()}
+            onEndReached={loadMoreData}
+            onEndReachedThreshold={0.1}
+            ListHeaderComponent={<SearchBar />}
+            ListFooterComponent={isLoading ? <LoadingIndicator /> : null}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps={'never'}
+            onRefresh={componentDidMount}
+            refreshing={isRefreshing}
+          />
+          <FAB
+            icon="chevron-up"
+            small
+            style={styles.fab}
+            onPress={scrollToTop}
+            visible={true}
+          />
+        </View>
       )}
     </SafeAreaView>
   );
@@ -246,9 +312,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  emptyContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   indicatorContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   itemContainer: {
     padding: 20,
+    flexDirection: 'row',
   },
   title: {
     fontSize: 20,
@@ -262,9 +330,9 @@ const styles = StyleSheet.create({
   },
   thumbnailContainer: {
     height: 200,
-    width: '100%',
+    width: 120,
   },
-  thumbnail: {borderRadius: 10},
+  thumbnail: {borderRadius: 50},
   durationTextPosition: {
     position: 'absolute',
     right: 10,
@@ -278,10 +346,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 40,
   },
-  btnText: {
-    fontSize: 15,
-    textAlign: 'center',
-  },
   footer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -291,11 +355,44 @@ const styles = StyleSheet.create({
   textContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
   },
   itemText: {
     fontSize: 15,
-    paddingRight: 10,
+    paddingHorizontal: 10,
     marginBottom: 5,
+  },
+  loadingIndicator: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  searchBar: {
+    height: 40,
+    width: Dimensions.get('window').width / 1.5,
+    borderRadius: 50,
+    borderWidth: 0.2,
+    alignSelf: 'center',
+    marginTop: 10,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    opacity: 0.7,
+    backgroundColor: theme.colors.primary,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#00000000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

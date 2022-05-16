@@ -11,8 +11,8 @@ interface LoginForm {
 }
 
 export interface Tokens {
-  accessToken: string;
-  refreshToken: string;
+  accessToken: string | null;
+  refreshToken: string | null;
 }
 
 interface LoginResult {
@@ -21,7 +21,8 @@ interface LoginResult {
   id: number;
   email: string | null;
   username: string;
-  active: boolean;
+  authorized: boolean;
+  bannedUntil: Date | null;
 }
 
 interface UserState {
@@ -30,26 +31,30 @@ interface UserState {
   username: string | null;
   tokens: Tokens;
   loggedIn: boolean | null;
-  active: boolean;
+  authorized: boolean;
   lastTimeAuthenticated: number | null;
+  bannedUntil: Date | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   loginError: string | null;
   initializeError: string | null;
-  activateUserError: string | null;
+  authorizeUserError: string | null;
+  accountDeletionResult: string | null;
 }
 
 const initialState: UserState = {
   id: null,
   email: null,
   username: null,
-  tokens: {accessToken: '', refreshToken: ''},
+  tokens: {accessToken: null, refreshToken: null},
   loggedIn: null,
-  active: false,
+  authorized: false,
+  bannedUntil: null,
   lastTimeAuthenticated: null,
   status: 'idle',
   loginError: null,
   initializeError: null,
-  activateUserError: null,
+  authorizeUserError: null,
+  accountDeletionResult: null,
 };
 
 export const initializeUser = createAsyncThunk(
@@ -66,16 +71,17 @@ export const initializeUser = createAsyncThunk(
       console.log('access token is stored in storage');
 
       const {accessToken} = JSON.parse(tokens);
-      const user = await Api.get('user/info', {
+      const user = await Api.get('player/info', {
         headers: {Authorization: 'Bearer ' + accessToken},
       });
 
       if (user) {
-        console.log('fetced user data: ', user.data);
+        console.log('접속한 유저 정보 : ', user.data);
         return {
           tokens: JSON.parse(tokens),
           lastTimeAuthenticated: Number.parseInt(lastTimeAuthenticated, 10),
-          active: user.data.active,
+          authorized: user.data.authorized,
+          bannedUntil: user.data.banned_until,
           email: user.data.email,
           username: user.data.username,
           id: user.data.id,
@@ -95,9 +101,10 @@ export const login = createAsyncThunk(
     console.log('start login');
 
     const result = {
-      tokens: {accessToken: '', refreshToken: ''},
+      tokens: {accessToken: '', refreshToken: ''} as Tokens,
       id: 0,
-      active: false,
+      authorized: false,
+      bannedUntil: null as Date | null,
       email: '',
       username: '',
       lastTimeAuthenticated: 0,
@@ -105,7 +112,7 @@ export const login = createAsyncThunk(
     };
 
     await axios
-      .post(API_URL + 'auth/login', {
+      .post(API_URL + 'player/login', {
         email,
         password,
       })
@@ -115,7 +122,8 @@ export const login = createAsyncThunk(
           refreshToken: response.data.refreshToken,
         } as Tokens;
         const id = response.data.id;
-        const active = response.data.active;
+        const authorized = response.data.authorized;
+        const bannedUntil = response.data.bannedUntil;
         const username = response.data.username;
         const lastTimeAuthenticated = new Date(Date.now()).getTime();
         await SecureStore.setItemAsync('tokens', JSON.stringify(tokens));
@@ -127,7 +135,8 @@ export const login = createAsyncThunk(
         result.tokens = tokens;
         result.lastTimeAuthenticated = lastTimeAuthenticated;
         result.id = id;
-        result.active = active;
+        result.authorized = authorized;
+        result.bannedUntil = bannedUntil;
         result.email = email;
         result.username = username;
       })
@@ -149,7 +158,7 @@ export const logout = createAsyncThunk('user/logout', async () => {
   }
   const {refreshToken} = JSON.parse(tokens);
   await axios
-    .delete(API_URL + 'auth/token', {
+    .delete(API_URL + 'player/token', {
       headers: {Authorization: 'Bearer ' + refreshToken},
     })
     .catch(err => console.log(err));
@@ -164,7 +173,7 @@ export const reissueToken = createAsyncThunk('user/reissueToken', async () => {
     return null;
   }
   const {refreshToken} = JSON.parse(tokenStr);
-  const result = await axios.patch(API_URL + 'auth/token', null, {
+  const result = await axios.patch(API_URL + 'player/token', null, {
     headers: {Authorization: 'Bearer ' + refreshToken},
   });
   if (result.status === 200) {
@@ -180,24 +189,48 @@ export const reissueToken = createAsyncThunk('user/reissueToken', async () => {
   return null;
 });
 
-export const activateUser = createAsyncThunk(
-  'user/activateUser',
-  async (authCode: string) => {
+export const authorizeUser = createAsyncThunk(
+  'user/authorizeUser',
+  async (code: string) => {
     const tokens = await SecureStore.getItemAsync('tokens');
     if (!tokens) {
       return null;
     }
     const {accessToken} = JSON.parse(tokens);
-    const result = await Api.post(
-      'auth/activate-user',
-      {authCode},
+    const result = await Api.patch(
+      'player/authorized',
+      {code},
       {headers: {Authorization: 'Bearer ' + accessToken}},
     );
     if (result.status === 200) {
+      console.log('인증 코드 일치함');
+
       return 200;
     } else if (result.status === 403) {
+      console.log('인증 코드 일치하지 않음');
       return 403;
     }
+  },
+);
+
+export const deleteAccount = createAsyncThunk(
+  'user/deleteAccount',
+  async () => {
+    const tokens = await SecureStore.getItemAsync('tokens');
+    if (!tokens) {
+      return null;
+    }
+    const {accessToken} = JSON.parse(tokens);
+    await axios
+      .delete(API_URL + 'player/account', {
+        headers: {Authorization: 'Bearer ' + accessToken},
+      })
+      .then(async () => {
+        await SecureStore.deleteItemAsync('tokens');
+        await SecureStore.deleteItemAsync('lastTimeAuthenticated');
+      });
+
+    return null;
   },
 );
 
@@ -217,11 +250,21 @@ export const userSlice = createSlice({
     setLastTimeAuthenticated: (state, action: PayloadAction<number>) => {
       state.lastTimeAuthenticated = action.payload;
     },
-    dropActivateError: state => {
-      state.activateUserError = null;
+    dropauthorizeError: state => {
+      state.authorizeUserError = null;
     },
     dropLoginError: state => {
       state.loginError = null;
+    },
+    dropDeletionResult: state => {
+      state.accountDeletionResult = null;
+    },
+    dropUser: state => {
+      state.tokens.accessToken = '';
+      state.tokens.refreshToken = '';
+      state.loggedIn = false;
+      state.lastTimeAuthenticated = null;
+      state.accountDeletionResult = null;
     },
   },
   extraReducers(builder) {
@@ -233,14 +276,18 @@ export const userSlice = createSlice({
         console.log('fullfilled');
 
         if (action.payload) {
-          state.tokens = action.payload.tokens;
+          if (!state.tokens.accessToken && !state.tokens.refreshToken) {
+            state.tokens = action.payload.tokens;
+          }
           state.lastTimeAuthenticated = action.payload.lastTimeAuthenticated;
-          state.active = action.payload.active;
+          state.authorized = action.payload.authorized;
+          state.bannedUntil = action.payload.bannedUntil;
           state.initializeError = null;
           state.email = action.payload.email;
           state.username = action.payload.username;
           state.id = action.payload.id;
           state.loggedIn = true;
+          state.accountDeletionResult = null;
         } else {
           state.loggedIn = false;
         }
@@ -260,7 +307,8 @@ export const userSlice = createSlice({
         if (action.payload) {
           if (action.payload.tokens && action.payload.lastTimeAuthenticated) {
             state.tokens = action.payload.tokens;
-            state.active = action.payload.active;
+            state.authorized = action.payload.authorized;
+            state.bannedUntil = action.payload.bannedUntil;
             state.email = action.payload.email;
             state.id = action.payload.id;
             state.username = action.payload.username;
@@ -272,9 +320,10 @@ export const userSlice = createSlice({
               action.payload.statusCode === 401 ||
               action.payload.statusCode === 404
             ) {
-              state.loginError = 'E-mail or password is invalid';
+              state.loginError = '이메일이나 비밀번호가 옳지 않습니다';
             } else {
-              state.loginError = 'Unexpected error. Please try again';
+              state.loginError =
+                '서버에 문제가 발생했습니다. 다시 시도해주세요';
             }
           }
         }
@@ -297,15 +346,21 @@ export const userSlice = createSlice({
           state.lastTimeAuthenticated = action.payload.lastTimeAuthenticated;
         }
       })
-      .addCase(activateUser.fulfilled, (state, action) => {
+      .addCase(authorizeUser.fulfilled, (state, action) => {
         if (action.payload) {
           if (action.payload === 200) {
-            state.active = true;
-            state.activateUserError = null;
+            state.authorized = true;
+            state.authorizeUserError = null;
           } else {
-            state.activateUserError = 'Given code is not valid.';
+            state.authorizeUserError = 'Given code is not valid.';
           }
         }
+      })
+      .addCase(deleteAccount.fulfilled, state => {
+        state.accountDeletionResult = '회원탈퇴가 완료되었습니다';
+      })
+      .addCase(deleteAccount.rejected, state => {
+        state.accountDeletionResult = '문제가 발생했습니다. 다시 시도해주세요';
       });
   },
 });
@@ -315,8 +370,10 @@ export const {
   setRefreshToken,
   setTokens,
   setLastTimeAuthenticated,
-  dropActivateError,
+  dropauthorizeError,
   dropLoginError,
+  dropDeletionResult,
+  dropUser,
 } = userSlice.actions;
 
 export const selectAccessToken = (state: RootState) =>
@@ -335,14 +392,18 @@ export const checkUserStatus = (state: RootState) => state.user.status;
 
 export const checkUserLoggedIn = (state: RootState) => state.user.loggedIn;
 
-export const checkUserActive = (state: RootState) => state.user.active;
+export const checkUserIsAuthorized = (state: RootState) =>
+  state.user.authorized;
 
 export const checkLastTimeAuthenticated = (state: RootState) =>
   state.user.lastTimeAuthenticated;
 
-export const checkActivateError = (state: RootState) =>
-  state.user.activateUserError;
+export const checkauthorizeError = (state: RootState) =>
+  state.user.authorizeUserError;
 
 export const checkLoginError = (state: RootState) => state.user.loginError;
+
+export const checkAccountDeletionResult = (state: RootState) =>
+  state.user.accountDeletionResult;
 
 export default userSlice.reducer;
