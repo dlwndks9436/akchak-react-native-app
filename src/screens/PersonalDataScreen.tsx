@@ -28,6 +28,11 @@ export default function PersonalDataScreen() {
   const accountDeletionResult = useAppSelector(checkAccountDeletionResult);
   const dispatch = useAppDispatch();
 
+  const passwordIsValid = (): boolean => {
+    const regex = /^(?=.*[a-zA-Z])((?=.*\d)(?=.*\W)).{8,16}$/;
+    return regex.test(newPassword);
+  };
+
   const showError = () => setIsError(true);
   const hideError = () => setIsError(false);
 
@@ -64,9 +69,9 @@ export default function PersonalDataScreen() {
     } else if (validator.isEmpty(newPassword)) {
       setErrorText('새 비밀번호를 입력해주세요');
       hasNoError = false;
-    } else if (!validator.isStrongPassword(newPassword, {minSymbols: 0})) {
+    } else if (!passwordIsValid()) {
       setErrorText(
-        '새 비밀번호가 대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
+        '비밀번호를 8자 이상 16자 이하 영어, 숫자, 특수문자로 만들어주세요',
       );
       hasNoError = false;
     } else if (newPassword !== confirmNewPassword) {

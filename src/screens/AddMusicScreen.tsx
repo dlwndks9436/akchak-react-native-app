@@ -111,7 +111,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: Dimensions.get('window').width / 1.2,
     marginBottom: 50,
-    backgroundColor: '#dfdfdf',
     borderWidth: 0,
   },
   nextButton: {

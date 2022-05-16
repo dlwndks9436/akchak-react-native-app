@@ -60,7 +60,10 @@ export default function VerifyEmailScreen({
           .post(API_URL + 'player/verification-code', {
             email: email,
           })
-          .then(() => {
+          .catch(err => {
+            console.log(err);
+          })
+          .finally(() => {
             setTimeRemain(300);
             setCodeIssued(true);
           });
@@ -75,7 +78,10 @@ export default function VerifyEmailScreen({
       .post(API_URL + 'player/verification-code', {
         email,
       })
-      .then(() => {
+      .catch(err => {
+        console.log(err);
+      })
+      .finally(() => {
         setTimeRemain(300);
         setCodeIssued(true);
       });

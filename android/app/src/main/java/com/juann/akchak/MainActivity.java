@@ -1,4 +1,4 @@
-package com.juann.resonar;
+package com.juann.akchak;
 
 import com.facebook.react.ReactActivity;
 import android.os.Bundle;
@@ -16,7 +16,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "MyProject1";
+    return "akchak";
   }
 
   @Override

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.juann.resonar"
+  package="com.juann.akchak"
   android:installLocation="auto">
 
     <uses-permission android:name="android.permission.INTERNET" />

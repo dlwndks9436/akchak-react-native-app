@@ -31,8 +31,18 @@ export default function SignupScreen({
   const hideError = () => setIsError(false);
 
   const usernameIsValid = (): boolean => {
-    const regex = /^(?=.*[a-z])[a-zA-Z0-9]{8,20}$/i;
+    const regex = /^[ㄱ-ㅎ|가-힣|a-z|A-Z|0-9|]+$/;
     return regex.test(username);
+  };
+
+  const usernameIsLength = (): boolean => {
+    console.log(username.length);
+    return username.length >= 3 && username.length <= 15;
+  };
+
+  const passwordIsValid = (): boolean => {
+    const regex = /^(?=.*[a-zA-Z])((?=.*\d)(?=.*\W)).{8,16}$/;
+    return regex.test(password);
   };
 
   const inputsAreValid = (): boolean => {
@@ -40,10 +50,11 @@ export default function SignupScreen({
     if (validator.isEmpty(username)) {
       setErrorText('닉네임을 입력해주세요');
       hasNoError = false;
+    } else if (!usernameIsLength()) {
+      setErrorText('닉네임을 3~15자 이내로 입력해주세요');
+      hasNoError = false;
     } else if (!usernameIsValid()) {
-      setErrorText(
-        '닉네임은 알파벳과 숫자로 이루어져있어야하며, 길이는 8~20자 이내로 만들어주세요',
-      );
+      setErrorText('닉네임을 한글, 영어, 숫자로 만들어주세요');
       hasNoError = false;
     } else if (validator.isEmpty(email)) {
       setErrorText('이메일을 입력해주세요');
@@ -54,12 +65,12 @@ export default function SignupScreen({
     } else if (validator.isEmpty(password)) {
       setErrorText('비밀번호를 입력해주세요');
       hasNoError = false;
-    } else if (!validator.isStrongPassword(password, {minSymbols: 0})) {
+    } else if (!passwordIsValid()) {
       setErrorText(
-        '비밀번호는 대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
+        '비밀번호를 8자 이상 16자 이하 영어, 숫자, 특수문자로 만들어주세요',
       );
       hasNoError = false;
-    } else if (!password || password.localeCompare(secondPassword) !== 0) {
+    } else if (!password || !validator.equals(password, secondPassword)) {
       setErrorText('비밀번호가 일치하지 않습니다');
       hasNoError = false;
     } else {
@@ -98,7 +109,7 @@ export default function SignupScreen({
             }
             console.log(err.response.status);
           } else {
-            console.log(err);
+            console.error(err);
             setErrorText('서버에 문제가 발생했습니다. 다시 시도해주세요');
           }
           showError();

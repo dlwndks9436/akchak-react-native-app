@@ -17,6 +17,11 @@ export default function ChangePasswordScreen({
   const [errorText, setErrorText] = useState('');
   const [isError, setIsError] = useState(false);
 
+  const passwordIsValid = (): boolean => {
+    const regex = /^(?=.*[a-zA-Z])((?=.*\d)(?=.*\W)).{8,16}$/;
+    return regex.test(password);
+  };
+
   const showError = () => setIsError(true);
   const hideError = () => setIsError(false);
 
@@ -35,9 +40,9 @@ export default function ChangePasswordScreen({
     } else if (password !== confirmPassword) {
       setErrorText('입력하신 비밀번호가 일치하지 않습니다');
       hasNoError = false;
-    } else if (!validator.isStrongPassword(password, {minSymbols: 0})) {
+    } else if (!passwordIsValid()) {
       setErrorText(
-        '비밀번호는 대문자 알파벳, 소문자 알파벳, 숫자로 이루어져 있어야하며, 길이는 8자 이상이어야 합니다',
+        '비밀번호를 8자 이상 16자 이하 영어, 숫자, 특수문자로 만들어주세요',
       );
       hasNoError = false;
     } else {

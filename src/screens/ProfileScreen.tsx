@@ -108,8 +108,8 @@ export default function ProfileScreen({navigation}: RootStackTabScreenProps) {
           style={styles.profileIcon}
         />
         <View>
-          <Text>Username : {username}</Text>
-          <Text>E-mail : {email}</Text>
+          <Text>{username}</Text>
+          <Text>{email}</Text>
         </View>
       </View>
     </SafeAreaView>
