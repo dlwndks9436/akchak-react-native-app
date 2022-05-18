@@ -203,14 +203,15 @@ export default function HomeScreen({navigation}: RootStackTabScreenProps) {
         <PressableOpacity
           onPress={() => {
             navigateToPracticeScreen(id);
-          }}>
+          }}
+          style={styles.textContainer}>
           <Title style={styles.title}>{phraseTitle || musicTitle}</Title>
-          <Text style={styles.itemText}>{phraseSubheading || musicArtist}</Text>
-          <Text style={styles.itemText}>{bookTitle || ''}</Text>
-          <Text style={styles.itemText}>{playerName}</Text>
-          <View style={styles.textContainer}>
-            <Text style={styles.itemText}>{view} views</Text>
-            <Text style={styles.itemText}>{createdAt}</Text>
+          <Text style={styles.mainText}>{phraseSubheading || musicArtist}</Text>
+          {bookTitle && <Text style={styles.mainText}>{bookTitle}</Text>}
+          <Text style={styles.subText}>{playerName}</Text>
+          <View style={styles.subTextContainer}>
+            <Text style={styles.subText}>{view} views</Text>
+            <Text style={styles.subText}>{createdAt}</Text>
           </View>
         </PressableOpacity>
       </View>
@@ -315,8 +316,10 @@ const styles = StyleSheet.create({
   emptyContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   indicatorContainer: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   itemContainer: {
-    padding: 20,
     flexDirection: 'row',
+    width: Dimensions.get('window').width / 1.1,
+    alignSelf: 'center',
+    marginVertical: 10,
   },
   title: {
     fontSize: 20,
@@ -353,13 +356,23 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   textContainer: {
+    marginTop: 10,
+    flex: 1,
+  },
+  subTextContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  itemText: {
+  mainText: {
     fontSize: 15,
     paddingHorizontal: 10,
     marginBottom: 5,
+  },
+  subText: {
+    fontSize: 15,
+    paddingHorizontal: 10,
+    marginBottom: 5,
+    color: '#666666',
   },
   loadingIndicator: {
     width: '100%',
@@ -378,7 +391,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 0.2,
     alignSelf: 'center',
-    marginTop: 10,
+    marginVertical: 10,
     justifyContent: 'center',
     alignItems: 'flex-end',
   },

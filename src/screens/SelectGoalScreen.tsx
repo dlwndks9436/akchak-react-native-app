@@ -247,9 +247,14 @@ export default function SelectGoalScreen({
         <Subheading style={{color: '#333333'}}>
           {item.music ? item.music.title : item.phrase?.title}
         </Subheading>
-        <Paragraph style={{color: '#999999'}}>
+        <Paragraph>
           {item.music ? item.music.artist : item.phrase?.subheading}
         </Paragraph>
+        {item.phrase && (
+          <Paragraph style={{color: '#999999'}}>
+            {item.phrase.book.title}
+          </Paragraph>
+        )}
       </View>
     </TouchableRipple>
   );

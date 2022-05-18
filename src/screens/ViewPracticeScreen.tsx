@@ -263,9 +263,8 @@ export default function ViewPracticeScreen({
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    height: 40,
                   }}>
-                  <Title>
+                  <Title style={{flex: 9}}>
                     {practice.phraseTitle || practice.musicTitle} -{' '}
                     {practice.phraseSubheading || practice.musicArtist}
                   </Title>
@@ -273,6 +272,7 @@ export default function ViewPracticeScreen({
                     <Menu
                       visible={visible}
                       onDismiss={closeMenu}
+                      style={{flex: 1}}
                       anchor={
                         <IconButton icon="dots-vertical" onPress={openMenu} />
                       }>

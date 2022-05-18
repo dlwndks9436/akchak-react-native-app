@@ -254,6 +254,7 @@ export interface Phrase {
   title: string;
   subheading: string;
   page: number;
+  book: Book;
 }
 
 export interface Music {
