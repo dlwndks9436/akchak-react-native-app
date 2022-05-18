@@ -157,8 +157,10 @@ export const logout = createAsyncThunk('user/logout', async () => {
     return null;
   }
   const {refreshToken} = JSON.parse(tokens);
+  console.log(`refresh token: ${refreshToken}`);
+
   await axios
-    .delete(API_URL + 'player/token', {
+    .delete(API_URL + 'token', {
       headers: {Authorization: 'Bearer ' + refreshToken},
     })
     .catch(err => console.log(err));
@@ -173,7 +175,7 @@ export const reissueToken = createAsyncThunk('user/reissueToken', async () => {
     return null;
   }
   const {refreshToken} = JSON.parse(tokenStr);
-  const result = await axios.patch(API_URL + 'player/token', null, {
+  const result = await axios.patch(API_URL + 'token', null, {
     headers: {Authorization: 'Bearer ' + refreshToken},
   });
   if (result.status === 200) {

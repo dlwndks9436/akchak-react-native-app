@@ -77,15 +77,15 @@ export default function ViewPracticeScreen({
       headers: {Authorization: 'Bearer ' + accessToken},
     })
       .then(res => {
-        console.log("user's rating: ", res.data);
-        setLike(res.data[0].isLike);
+        console.log("user's rating: ", res.data[0].is_like);
+        setLike(res.data[0].is_like);
       })
       .catch((err: AxiosError) => {
         if (err.response?.status === 404) {
           setErrorText('Problem occurred during fetching data');
         }
       });
-    Api.get('like/number', {
+    Api.get('like/count', {
       headers: {Authorization: 'Bearer ' + accessToken},
       params: {practiceLogId},
     })
@@ -182,26 +182,25 @@ export default function ViewPracticeScreen({
 
   const toggleLike = async () => {
     console.log('like: ', like);
-
-    const response = await Api.patch(
-      'like/' + practiceLogId,
-      {isLike: !like},
-      {headers: {Authorization: 'Bearer ' + accessToken}},
-    );
-    await Api.get('like/number', {
-      headers: {Authorization: 'Bearer ' + accessToken},
-      params: {practiceLogId},
-    })
-      .then(res => {
+    try {
+      const response = await Api.patch(
+        'like/' + practiceLogId,
+        {},
+        {headers: {Authorization: 'Bearer ' + accessToken}},
+      );
+      await Api.get('like/count', {
+        headers: {Authorization: 'Bearer ' + accessToken},
+        params: {practiceLogId},
+      }).then(res => {
         console.log('likes: ', res.data.count);
         setHasLike(res.data.count);
-        if (response.data[0] === 1) {
-          setLike(val => !val);
+        if (response) {
+          setLike(response.data.is_like);
         }
-      })
-      .catch(err => {
-        console.log(err);
       });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const deletePractice = async () => {

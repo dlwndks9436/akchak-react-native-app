@@ -28,7 +28,7 @@ const refresh = async (
       const tokensStr = await SecureStore.getItemAsync('tokens');
       if (tokensStr) {
         const {refreshToken} = JSON.parse(tokensStr);
-        const result = await axios.patch(API_URL + 'player/token', null, {
+        const result = await axios.patch(API_URL + 'token', null, {
           headers: {Authorization: 'Bearer ' + refreshToken},
         });
         if (result.status === 200) {

@@ -57,7 +57,7 @@ export default function VerifyEmailScreen({
       const email = loginEmail || route.params.email;
       (async () => {
         await axios
-          .post(API_URL + 'player/verification-code', {
+          .post(API_URL + 'verification-code', {
             email: email,
           })
           .catch(err => {
@@ -75,7 +75,7 @@ export default function VerifyEmailScreen({
     const email = loginEmail || route.params.email;
 
     await axios
-      .post(API_URL + 'player/verification-code', {
+      .post(API_URL + 'verification-code', {
         email,
       })
       .catch(err => {
@@ -91,7 +91,7 @@ export default function VerifyEmailScreen({
     const email = loginEmail || route.params.email;
     if (!validator.isEmpty(code)) {
       await axios
-        .get(API_URL + 'player/verification-code', {
+        .get(API_URL + 'verification-code', {
           params: {code, email},
         })
         .then(async () => {

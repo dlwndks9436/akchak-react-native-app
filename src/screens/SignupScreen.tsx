@@ -84,7 +84,7 @@ export default function SignupScreen({
     if (inputsAreValid()) {
       setIsSigningUp(true);
       await axios
-        .post(API_URL + 'player/signup', {
+        .post(API_URL + 'player', {
           username,
           email,
           password,
