@@ -327,7 +327,11 @@ export default function CameraScreen({
           </Dialog.Actions>
         </Dialog>
       </Portal>
-      <StatusBar translucent={true} backgroundColor={'#00000000'} />
+      <StatusBar
+        translucent={true}
+        backgroundColor={'#00000000'}
+        barStyle={'light-content'}
+      />
       {device != null && (
         <PinchGestureHandler onGestureEvent={onPinchGesture} enabled={isActive}>
           <Reanimated.View style={StyleSheet.absoluteFill}>
