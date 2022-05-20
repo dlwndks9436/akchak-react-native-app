@@ -34,6 +34,26 @@ https://play.google.com/store/apps/details?id=com.juann.akchak
 
 -----------------------------------------------------------
 
+#### 기술스택
+* typescript
+* react native
+
+#### CI
+* github
+
+#### 주요 패키지
+* react-navigation
+* reduxjs
+* ffmpeg-kit-react-native
+* react-native-paper
+* react-native-video
+* react-native-video-controls
+* react-native-vision-camera
+* react-redux
+* validator
+
+-----------------------------------------------------------
+
 ### UI 명세
 
 ![akchak 화면 설계서](https://user-images.githubusercontent.com/84265308/169447438-f33128da-6f49-4d5b-bbd1-ba5f2927b541.jpg)
@@ -63,24 +83,6 @@ https://play.google.com/store/apps/details?id=com.juann.akchak
 ![akchak 화면 설계서 (24)](https://user-images.githubusercontent.com/84265308/169447823-7997028d-b986-4904-bfc8-9a93560cc8bc.jpg)
 
 --------------------------------------------------
-
-#### 기술스택
-* typescript
-* react native
-
-#### CI
-* github
-
-#### 주요 패키지
-* react-navigation
-* reduxjs
-* ffmpeg-kit-react-native
-* react-native-paper
-* react-native-video
-* react-native-video-controls
-* react-native-vision-camera
-* react-redux
-* validator
 
 ## 구현한 기능
 
